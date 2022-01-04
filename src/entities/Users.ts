@@ -3,7 +3,7 @@ import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Index('email', ['email'], { unique: true })
-@Entity({ schema: 'ssazim', name: 'users' })
+@Entity({ schema: 'ZimSsaZa', name: 'users' })
 export class Users {
 
     @ApiProperty({ example: 3, description: '회원 id'})
@@ -22,6 +22,12 @@ export class Users {
     @ApiProperty({ example: '로다주', description: '회원 이름'})
     @Column('varchar', { name: 'name', length: 10 })
     name: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({ example: '010-000-0000', description: '회원 휴대폰 번호'})
+    @Column('varchar', { name: 'phoneNumber', length: 15 })
+    phoneNumber: string;
 
     @IsString()
     @IsNotEmpty()

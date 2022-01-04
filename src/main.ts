@@ -10,10 +10,10 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   
   const config = new DocumentBuilder()
-  .setTitle('ssazim')
-  .setDescription('싸짐 이사 어플 APIs')
+  .setTitle('ZimSsaZa')
+  .setDescription('짐싸자 이사 어플 APIs')
   .setVersion('1.0')
-  .addTag('ssazim')
+  // .addTag('ZimSsaZa')
   .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
