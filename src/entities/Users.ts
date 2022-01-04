@@ -26,8 +26,8 @@ export class Users {
     @IsString()
     @IsNotEmpty()
     @ApiProperty({ example: '010-000-0000', description: '회원 휴대폰 번호'})
-    @Column('varchar', { name: 'phoneNumber', length: 15 })
-    phoneNumber: string;
+    @Column('varchar', { name: 'phone_number', length: 15 })
+    phone_number: string;
 
     @IsString()
     @IsNotEmpty()
