@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express'
+import { HttpExceptionFilter } from './http-exception.filter';
 
 declare const module: any;
 
@@ -23,7 +24,9 @@ async function bootstrap() {
     module.hot.dispose(() => app.close());
   }
 
+  app.useGlobalFilters(new HttpExceptionFilter());
+  
   await app.listen(port);
-  console.log('server port:::', port)
+  console.log('listening on port:::', port)
 }
 bootstrap();

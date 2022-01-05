@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt } from "passport-jwt";
 import { Strategy } from "passport-local";
@@ -16,6 +16,10 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     async validate(payload, done: CallableFunction) {
         const user = await this.authService.validateUser(payload.email, payload.password);
 
+        if (!user) {
+            throw new ForbiddenException('존재하지 않는 회원입니다.')
+        }
+        
         console.log('local strategy payload:::', payload);
         console.log('local strategy done:::', done);
         return done(null, user);

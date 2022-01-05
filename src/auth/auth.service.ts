@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/Users';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -18,10 +18,6 @@ export class AuthService {
             .where('user.email = :email', { email })
             .getOne()
         console.log('auth service user:::', user)
-
-        if (!user) {
-            throw new ForbiddenException('존재하지 않는 회원입니다.')
-        }
         
         const result = await bcrypt.compare(password, user.password);
 
@@ -30,6 +26,7 @@ export class AuthService {
             return userInfoWithoutPassword;
         }
 
-        throw new ForbiddenException('비밀번호가 틀렸습니다.')
+        return null;
+        // throw new ForbiddenException('비밀번호가 틀렸습니다.')
     }
 }

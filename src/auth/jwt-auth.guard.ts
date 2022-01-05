@@ -2,9 +2,9 @@ import { ExecutionContext, Injectable } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 
 @Injectable()
-export class LocalAuthGuard extends AuthGuard('local') {
+export class JwtAuthGuard extends AuthGuard('jwt') {
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        console.log('local auth guard context:::', context)
+        // console.log('local auth guard context:::', context)
         const can  = await super.canActivate(context);
 
         if (can) {
