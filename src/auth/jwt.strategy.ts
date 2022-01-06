@@ -28,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             .getOne();
 
         if (!user) {
-            throw new ForbiddenException('인증되지 않은 회원입니다.');
+            throw new ForbiddenException('승인되지 않은 회원입니다.');
         }
         
         return user;
