@@ -25,13 +25,13 @@ export class Users {
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: '010-000-0000', description: '회원 휴대폰 번호'})
+    @ApiProperty({ example: '(3자리)-(3~4자리)-(4자리)', description: '회원 휴대폰 번호'})
     @Column('varchar', { name: 'phone_number', length: 15 })
     phone_number: string;
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: '문자+숫자+특수문자 8자리', description: '회원 비밀번호'})
+    @ApiProperty({ example: '알파벳+숫자+특수문자 8자리 이상', description: '회원 비밀번호'})
     @Column('varchar', { name: 'password', length: 100, select: false })
     password: string;
 

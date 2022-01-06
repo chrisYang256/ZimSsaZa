@@ -1,4 +1,4 @@
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { Users } from "./entities/Users";
 
@@ -14,9 +14,9 @@ const config: TypeOrmModuleOptions = {
     entities: [
         Users,
     ],
-    synchronize: true,
+    synchronize: false,
     logging: true,
-    migrations: [__dirname + '/src/migrations/*.{ts,js}'],
+    migrations: [__dirname + '/src/migrations/*{.ts,.js}'],
     cli: { migrationsDir: 'src/migrations' },
     keepConnectionAlive: true,
     charset: 'utf8mb4',
