@@ -6,8 +6,8 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, Update
 @Entity({ schema: 'ZimSsaZa', name: 'users' })
 export class Users {
 
-    @ApiProperty({ example: 3, description: '회원 id'})
-    @PrimaryGeneratedColumn({ type: 'int', name: 'id'})
+    @ApiProperty({ example: 3, description: 'users PK'})
+    @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
     id: number;
 
     @IsEmail()
