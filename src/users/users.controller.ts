@@ -3,7 +3,6 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
-import { NotLoggedInGuard } from 'src/auth/not-logged-in.guard';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { UndefinedTonNllInterceptor } from 'src/common/interceptor/undefinedToNull.interceptor';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -32,7 +31,6 @@ export class UsersController {
     @ApiOperation({ summary: '회원 가입' })
     @ApiResponse({ status: 201, description: 'response 성공', type: CreateUserDto })
     @ApiResponse({ status: 409, description: 'response 실패' })
-    @UseGuards(NotLoggedInGuard)
     @Post('signup')
     signUp(@Body() userJoinDto: CreateUserDto,) {
         return this.usersService.signUp(userJoinDto);
@@ -43,7 +41,7 @@ export class UsersController {
     @ApiResponse({ status: 401, description: '인증 실패' })
     @UseGuards(LocalAuthGuard)
     @Post('login')
-    async signIn(@GetUser('id') id: number) {
+    async signIn(@GetUser('id') id: number, @Body() body: UserLoginDto) {
         return await this.authService.login(id);
     }
 }
