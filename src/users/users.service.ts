@@ -2,7 +2,7 @@ import { ConflictException, ForbiddenException, Injectable, NotFoundException } 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/Users';
 import { Repository } from 'typeorm';
-import { UserSignUpDto } from './dto/user-signup.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import bcrypt from 'bcrypt';
 
 @Injectable()
@@ -12,8 +12,8 @@ export class UsersService {
         private usersRepository: Repository<Users>,
     ) {}
 
-    async signUp(userSignUpDto: UserSignUpDto) {
-        const { name, email, password, phone_number } = userSignUpDto;
+    async signUp(userJoinDto: CreateUserDto) {
+        const { name, email, password, phone_number } = userJoinDto;
         const passwordRegex = /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
         const phoneNumberRegex = /^010-\d{3,4}-\d{4}$/;
 
@@ -46,4 +46,5 @@ export class UsersService {
             })
             .execute();
     }
+
 }
