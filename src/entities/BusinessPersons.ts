@@ -1,11 +1,19 @@
+import { 
+    Index, 
+    Entity, 
+    Column, 
+    OneToMany, 
+    CreateDateColumn, 
+    UpdateDateColumn,
+    PrimaryGeneratedColumn,
+} from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { AreaCodes } from "./AreaCodes";
 import { Negotiations } from "./Negotiations";
 import { Reviews } from "./Reviews";
 
-// @Index('', [''], {})
+@Index('email', ['email'], { unique: true })
 @Entity({ schema: 'ZimSsaZa', name: 'business_persons' })
 export class BusinessPersons {
 
@@ -48,7 +56,7 @@ export class BusinessPersons {
     @IsNotEmpty()
     @ApiProperty({ example: 'move_status done이 되면 자동으로 +1', description: '회원 비밀번호'})
     @Column('int', { name: 'finish_count', default: 0 })
-    finish_count: string;
+    finish_count: Number;
 
     @CreateDateColumn()
     createdAt: Date;
@@ -60,7 +68,6 @@ export class BusinessPersons {
     Negotiation: Negotiations[];
 
     @OneToMany(() => AreaCodes, areacodes => areacodes.BusinessPerson)
-    @JoinColumn([{ name: 'AreaCodeId', referencedColumnName: 'id' }])
     AreaCodes: AreaCodes[];
 
     @OneToMany(() => Reviews, reviews => reviews.BusinessPerson)

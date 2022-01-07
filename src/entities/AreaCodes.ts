@@ -1,10 +1,20 @@
+import { 
+    Index, 
+    Entity, 
+    Column, 
+    OneToOne, 
+    ManyToOne, 
+    JoinColumn, 
+    CreateDateColumn, 
+    UpdateDateColumn,
+    PrimaryGeneratedColumn, 
+} from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber } from "class-validator";
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { BusinessPersons } from "./BusinessPersons";
 import { Movements } from "./Movements";
 
-// @Index('', [''], {})
+@Index('BusinessPersonId', ['BusinessPersonId'], {})
 @Entity({ schema: 'ZimSsaZa', name: 'area_codes' })
 export class AreaCodes {
 
@@ -15,7 +25,7 @@ export class AreaCodes {
     @IsNumber()
     @IsNotEmpty()
     @ApiProperty({ example: '1', description: '이사 지역 번호'})
-    @Column('int', { name: 'area_name', width: 10 })
+    @Column('int', { name: 'code', width: 10 })
     code: Number;
 
     @CreateDateColumn()
@@ -23,6 +33,12 @@ export class AreaCodes {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @Column('int', { name: 'BusinessPersonId', nullable: true })
+    BusinessPersonId: Number | null;
+
+    @Column('int', { name: 'MovementId', nullable: true })
+    MovementId: Number | null;
 
     @OneToOne(() => Movements, movements => movements.AreaCode, {
         onUpdate: 'CASCADE',

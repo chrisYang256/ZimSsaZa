@@ -1,4 +1,15 @@
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { 
+    Index, 
+    Entity, 
+    Column, 
+    OneToOne, 
+    ManyToOne, 
+    OneToMany, 
+    JoinColumn, 
+    CreateDateColumn, 
+    UpdateDateColumn,
+    PrimaryGeneratedColumn,
+} from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsDateString, IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { LoadInformations } from "./LoadInformations";
@@ -7,7 +18,7 @@ import { Negotiations } from "./Negotiations";
 import { Users } from "./Users";
 import { AreaCodes } from "./AreaCodes";
 
-// @Index('', [''], {})
+@Index('UserId', ['UserId'], {})
 @Entity({ schema: 'ZimSsaZa', name: 'movements' })
 export class Movements {
 
@@ -61,6 +72,12 @@ export class Movements {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @Column('int', { name: 'UserId'})
+    UserId: Number;
+
+    @Column('int', { name: 'MoveStatusId'})
+    MoveStatusId: Number;
 
     @OneToOne(() => LoadInformations, loadinformations => loadinformations.Movement)
     LoadInformation: LoadInformations;

@@ -1,6 +1,14 @@
+import { 
+    Index, 
+    Entity, 
+    Column, 
+    OneToMany, 
+    CreateDateColumn, 
+    UpdateDateColumn,
+    PrimaryGeneratedColumn,
+} from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Movements } from "./Movements";
 import { Reviews } from "./Reviews";
 
