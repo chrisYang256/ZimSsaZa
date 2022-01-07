@@ -1,6 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Movements } from "./Movements";
+import { Reviews } from "./Reviews";
 
 @Index('email', ['email'], { unique: true })
 @Entity({ schema: 'ZimSsaZa', name: 'users' })
@@ -40,4 +42,10 @@ export class Users {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @OneToMany(() => Movements, movements => movements.User)
+    Movements: Movements[]; 
+
+    @OneToMany(() => Reviews, reviews => reviews.User)
+    Reviews: Reviews[];
 }

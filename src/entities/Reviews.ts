@@ -1,6 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BusinessPersons } from "./BusinessPersons";
+import { Users } from "./Users";
 
 // @Index('', [''], {})
 @Entity({ schema: 'ZimSsaZa', name: 'reviews' })
@@ -27,4 +29,17 @@ export class Reviews {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @ManyToOne(() => Users, users => users.Reviews, { 
+        onUpdate: 'CASCADE', 
+        onDelete: 'SET NULL',
+    })
+    @JoinColumn([{ name: 'UserId', referencedColumnName: 'id' }])
+    User: Users;
+
+    @ManyToOne(() => BusinessPersons, businesspersons => businesspersons.Reviews, {
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+    })
+    BusinessPerson: BusinessPersons;
 }
