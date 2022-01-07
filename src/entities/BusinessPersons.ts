@@ -1,6 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { AreaCodes } from "./AreaCodes";
+import { Negotiations } from "./Negotiations";
+import { Reviews } from "./Reviews";
 
 // @Index('', [''], {})
 @Entity({ schema: 'ZimSsaZa', name: 'business_persons' })
@@ -52,4 +55,14 @@ export class BusinessPersons {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @OneToMany(() => Negotiations, negotiations => negotiations.BusinessPerson)
+    Negotiation: Negotiations[];
+
+    @OneToMany(() => AreaCodes, areacodes => areacodes.BusinessPerson)
+    @JoinColumn([{ name: 'AreaCodeId', referencedColumnName: 'id' }])
+    AreaCodes: AreaCodes[];
+
+    @OneToMany(() => Reviews, reviews => reviews.BusinessPerson)
+    Reviews: Reviews[];
 }

@@ -22,13 +22,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload) {
-        const user = await this.usersRepository
+        const user: Users = await this.usersRepository
             .createQueryBuilder('user')
             .where('user.id = :id', { id: payload.id })
             .getOne();
 
         if (!user) {
-            throw new ForbiddenException('승인되지 않은 회원입니다.');
+            throw new ForbiddenException('유효하지 않은 토큰입니다.');
         }
         
         return user;

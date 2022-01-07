@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, Index, IsNull, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, IsNull, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { LoadInformations } from "./LoadInformations";
 
 // @Index('', [''], {})
 @Entity({ schema: 'ZimSsaZa', name: 'load_mages' })
@@ -20,4 +21,11 @@ export class LoadImages {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @ManyToOne(() => LoadInformations, loadinformations => loadinformations.LoadImags, {
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn([{ name: 'LoadInformationId', referencedColumnName: 'id' }])
+    LoadInformation: LoadInformations;
 }
