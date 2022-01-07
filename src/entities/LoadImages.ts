@@ -1,9 +1,18 @@
+import { 
+    Index, 
+    Entity, 
+    Column, 
+    ManyToOne, 
+    JoinColumn, 
+    CreateDateColumn, 
+    UpdateDateColumn,
+    PrimaryGeneratedColumn, 
+} from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, Index, IsNull, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { IsString } from "class-validator";
 import { LoadInformations } from "./LoadInformations";
 
-// @Index('', [''], {})
+@Index('LoadInformationId', ['LoadInformationId'], {})
 @Entity({ schema: 'ZimSsaZa', name: 'load_mages' })
 export class LoadImages {
 
@@ -13,14 +22,17 @@ export class LoadImages {
 
     @IsString()
     @ApiProperty({ example: 'file-uploads/IMG_67781641020424734.jpeg', description: '이미지 주소'})
-    @Column('varchar', { name: 'img_path', length: 200, nullable: true })
-    img_path: string | null;
+    @Column('varchar', { name: 'img_path', length: 200})
+    img_path: string;
 
     @CreateDateColumn()
     createdAt: Date;
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @Column('int', { name: 'LoadInformationId'})
+    LoadInformationId: Number;
 
     @ManyToOne(() => LoadInformations, loadinformations => loadinformations.LoadImags, {
         onUpdate: 'CASCADE',

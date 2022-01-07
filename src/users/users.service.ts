@@ -45,6 +45,8 @@ export class UsersService {
                 name, email, password: hashedPassword, phone_number,
             })
             .execute();
+
+        return { 'message': 'User create success!' }
     }
 
 }

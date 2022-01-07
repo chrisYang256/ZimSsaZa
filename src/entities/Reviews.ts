@@ -1,10 +1,20 @@
+import { 
+    Index, 
+    Entity, 
+    Column, 
+    ManyToOne, 
+    JoinColumn, 
+    CreateDateColumn, 
+    UpdateDateColumn,
+    PrimaryGeneratedColumn, 
+} from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { BusinessPersons } from "./BusinessPersons";
 import { Users } from "./Users";
 
-// @Index('', [''], {})
+@Index('UserId', ['UserId'], {})
+@Index('BusinessPersonId', ['BusinessPersonId'], {})
 @Entity({ schema: 'ZimSsaZa', name: 'reviews' })
 export class Reviews {
 
@@ -30,6 +40,12 @@ export class Reviews {
     @UpdateDateColumn()
     updatedAt: Date;
 
+    @Column('int', { name: 'UserId', nullable: true })
+    UserId: Number | null;
+
+    @Column('int', { name: 'BusinessPersonId', nullable: true })
+    BusinessPersonId: Number | null;
+
     @ManyToOne(() => Users, users => users.Reviews, { 
         onUpdate: 'CASCADE', 
         onDelete: 'SET NULL',
@@ -39,7 +55,8 @@ export class Reviews {
 
     @ManyToOne(() => BusinessPersons, businesspersons => businesspersons.Reviews, {
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
+        onDelete: 'CASCADE',
     })
+    @JoinColumn([{ name: 'BusinessPersonId', referencedColumnName: 'id' }])
     BusinessPerson: BusinessPersons;
 }

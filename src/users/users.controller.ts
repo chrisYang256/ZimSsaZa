@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Post, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { UndefinedTonNllInterceptor } from 'src/common/interceptor/undefinedToNull.interceptor';
+import { MoveStatusEnum } from 'src/common/moveStatus.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserLoginDto } from './dto/user-login.dto';
 import { UserWithoutPasswordDto } from './dto/user-without-password.dto';
@@ -44,4 +45,17 @@ export class UsersController {
     async signIn(@GetUser('id') id: number, @Body() body: UserLoginDto) {
         return await this.authService.login(id);
     }
+
+
+    @ApiQuery({ name: 'status', enum: MoveStatusEnum})
+    @ApiOperation({ summary: 'enum test' })
+    @Get('test')
+    async testEnum(@Query('status') status: MoveStatusEnum = MoveStatusEnum.done) {
+        return { "msg" : status }
+    }
+
+
+    // 리뷰 작성 api
+
+    // 리뷰 조회 api -> 기사, 유저 각각
 }

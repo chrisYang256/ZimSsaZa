@@ -1,9 +1,14 @@
+import { 
+    Entity, 
+    Column, 
+    OneToMany, 
+    PrimaryGeneratedColumn,
+} from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, Index, JoinColumn, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Movements } from "./Movements";
+import { MoveStatusEnum } from "src/common/moveStatus.enum";
 
-// @Index('', [''], {})
 @Entity({ schema: 'ZimSsaZa', name: 'move_statuses' })
 export class MoveStatuses {
 
@@ -15,7 +20,7 @@ export class MoveStatuses {
     @IsNotEmpty()
     @ApiProperty({ example: 'nego', description: ''})
     @Column('enum', { name: 'status', enum: ['stay', 'nego', 'done']  })
-    status: 'stay' | 'nego' | 'done';
+    status: MoveStatusEnum;
 
     @OneToMany(() => Movements, movements => movements.MoveStatus)
     Movement: Movements[];
