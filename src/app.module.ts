@@ -7,6 +7,7 @@ import { LoggerMiddleware } from './middlewares/logger.middlewares';
 import { AuthModule } from './auth/auth.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './http-exception.filter';
+import { BusinessPersonModule } from './business-person/business-person.module';
 
 @Module({
   imports: [
@@ -14,8 +15,9 @@ import { HttpExceptionFilter } from './http-exception.filter';
       isGlobal: true,
     }),
     TypeOrmModule.forRoot(ormconfig),
-    UsersModule,
     AuthModule,
+    UsersModule,
+    BusinessPersonModule,
   ],
   providers: [
     {

@@ -1,19 +1,19 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from 'src/entities/Users';
+import { BusinessPersons } from 'src/entities/BusinessPersons';
+import { CreateBPDto } from './dto/create-bp.dto';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
 import bcrypt from 'bcrypt';
 
 @Injectable()
-export class UsersService {
+export class BusinessPersonService {
     constructor(
-        @InjectRepository(Users)
-        private usersRepository: Repository<Users>,
+        @InjectRepository(BusinessPersons)
+        private businessPerson: Repository<BusinessPersons>,
     ) {}
 
-    async signUp(createUserDto: CreateUserDto) {
-        const { name, email, password, phone_number } = createUserDto;
+    async signUp(createBPDto: CreateBPDto) {
+        const { name, email, password, phone_number, business_license } = createBPDto;
         const passwordRegex = /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
         const phoneNumberRegex = /^010-\d{3,4}-\d{4}$/;
 
@@ -34,9 +34,18 @@ export class UsersService {
         }
 
         try {
-            const user = await this.usersRepository
-                .createQueryBuilder('users')
-                .where('users.email = :email', { email })
+            const license = await this.businessPerson
+                .createQueryBuilder('business_persons')
+                .where('business_persons.business_license = :bl', { bl: business_license })
+                .getOne();
+
+            if (license) {
+                throw new ForbiddenException(`'${business_license}'는 이미 가입된 사업자번호입니다.`);
+            }
+
+            const user = await this.businessPerson
+                .createQueryBuilder('business_persons')
+                .where('business_persons.email = :email', { email })
                 .getOne();
     
             if (user) {
@@ -46,15 +55,16 @@ export class UsersService {
             const salt = await bcrypt.genSalt();
             const hashedPassword = await bcrypt.hash(password, salt);
     
-            await this.usersRepository
+            await this.businessPerson
                 .createQueryBuilder()
                 .insert()
-                .into('users')
+                .into('business_persons')
                 .values({ 
                     name, 
                     email, 
                     password: hashedPassword, 
                     phone_number,
+                    business_license,
                 })
                 .execute();
             return { 'message': '회원 가입 성공', 'statusCode': 200 };
