@@ -3,11 +3,12 @@ import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
-import { GetUser } from 'src/common/decorator/get-user.decorator';
+import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
+import { LoginDto } from 'src/common/dto/login.dto';
 import { UndefinedTonNllInterceptor } from 'src/common/interceptor/undefinedToNull.interceptor';
 import { MoveStatusEnum } from 'src/common/moveStatus.enum';
+import { Users } from 'src/entities/Users';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UserLoginDto } from './dto/user-login.dto';
 import { UserWithoutPasswordDto } from './dto/user-without-password.dto';
 import { UsersService } from './users.service';
 
@@ -20,30 +21,30 @@ export class UsersController {
         private authService: AuthService,
     ) {}
 
-    @ApiOperation({ summary: '내 정보 조회' })
-    @ApiResponse({ status: 200, description: 'response 성공', type: UserWithoutPasswordDto })
+    @ApiOperation({ summary: 'user 내 정보 조회' })
+    @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
     @UseGuards(JwtAuthGuard)
     @Get()
-    myInfo(@GetUser() user: UserWithoutPasswordDto) {
+    myInfo(@GetMyInfo() user: UserWithoutPasswordDto) {
         return user;
     }
 
-    @ApiOperation({ summary: '회원 가입' })
-    @ApiResponse({ status: 201, description: 'response 성공', type: CreateUserDto })
+    @ApiOperation({ summary: 'user 회원 가입' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 409, description: 'response 실패' })
     @Post('signup')
-    signUp(@Body() userJoinDto: CreateUserDto,) {
-        return this.usersService.signUp(userJoinDto);
+    signUp(@Body() createUserDto: CreateUserDto,) {
+        return this.usersService.signUp(createUserDto);
     }
 
-    @ApiOperation({ summary: '로그인' })
-    @ApiResponse({ status: 201, description: '인증 성공', type: UserLoginDto })
+    @ApiOperation({ summary: 'user 로그인' })
+    @ApiResponse({ status: 201, description: '인증 성공' })
     @ApiResponse({ status: 401, description: '인증 실패' })
     @UseGuards(LocalAuthGuard)
     @Post('login')
-    async signIn(@GetUser('id') id: number, @Body() body: UserLoginDto) {
-        return await this.authService.login(id);
+    async signIn(@GetMyInfo() user: Users, @Body() data: LoginDto) {
+        return await this.authService.login(user);
     }
 
 
@@ -51,7 +52,7 @@ export class UsersController {
     @ApiOperation({ summary: 'enum test' })
     @Get('test')
     async testEnum(@Query('status') status: MoveStatusEnum = MoveStatusEnum.done) {
-        return { "msg" : status }
+        return { "msg" : status };
     }
 
 

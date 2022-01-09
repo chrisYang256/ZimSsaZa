@@ -54,7 +54,7 @@ export class BusinessPersons {
 
     @IsNumber()
     @IsNotEmpty()
-    @ApiProperty({ example: 'move_status done이 되면 자동으로 +1', description: '회원 비밀번호'})
+    @ApiProperty({ example: 'move_status done이 되면 자동으로 +1', description: '이사 완료 건수'})
     @Column('int', { name: 'finish_count', default: 0 })
     finish_count: Number;
 
