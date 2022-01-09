@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { BusinessPersons } from 'src/entities/BusinessPersons';
-import { LoginDto } from 'src/common/dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -53,7 +52,7 @@ export class AuthService {
             ])
             .where('bp.email = :email', { email })
             .getOne()
-        console.log('auth service bp:::', bp);
+        // console.log('auth service bp:::', bp);
         
         if (!bp) {
             return null;
