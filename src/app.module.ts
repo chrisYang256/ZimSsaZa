@@ -7,7 +7,7 @@ import { LoggerMiddleware } from './middlewares/logger.middlewares';
 import { AuthModule } from './auth/auth.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './http-exception.filter';
-import { BusinessPersonModule } from './business-person/business-person.module';
+import { BusinessPersonsModule } from './business-persons/business-persons.module';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { BusinessPersonModule } from './business-person/business-person.module';
     TypeOrmModule.forRoot(ormconfig),
     AuthModule,
     UsersModule,
-    BusinessPersonModule,
+    BusinessPersonsModule,
   ],
   providers: [
     {

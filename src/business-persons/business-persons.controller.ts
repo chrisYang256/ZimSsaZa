@@ -1,18 +1,20 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Body, Controller, Get, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { BPJwtAuthGuard } from 'src/auth/bp-jwt-auth.guard';
 import { BPLocalAuthGuard } from 'src/auth/bp-local-auth.guard';
 import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
 import { LoginDto } from 'src/common/dto/login.dto';
-import { BusinessPersonService } from './business-person.service';
+import { BusinessPersons } from 'src/entities/BusinessPersons';
+import { BusinessPersonsService } from './business-persons.service';
 import { BPWithoutPasswordDto } from './dto/bp-without-password.dto';
 import { CreateBPDto } from './dto/create-bp.dto';
 
-@Controller('business-person')
-export class BusinessPersonController {
+@ApiTags('Business persons')
+@Controller('business-persons')
+export class BusinessPersonsController {
     constructor(
-        private businessPersonService: BusinessPersonService,
+        private businessPersonService: BusinessPersonsService,
         private authService: AuthService,
     ) {}
 
@@ -21,9 +23,8 @@ export class BusinessPersonController {
     @ApiResponse({ status: 401, description: 'response 실패' })
     @UseGuards(BPJwtAuthGuard)
     @Get()
-    myInfo(@GetMyInfo() data: BPWithoutPasswordDto) {
-        console.log('data:::', data)
-        return data;
+    myInfo(@GetMyInfo() bp: BPWithoutPasswordDto) {
+        return bp;
     }
 
     @ApiOperation({ summary: 'BP 회원 가입' })
@@ -39,7 +40,10 @@ export class BusinessPersonController {
     @ApiResponse({ status: 401, description: '인증 실패' })
     @UseGuards(BPLocalAuthGuard)
     @Post('login')
-    async signIn(@GetMyInfo() bp: LoginDto) {
+    async signIn(
+        @GetMyInfo() bp: BusinessPersons,
+        @Body() swagger: LoginDto,
+    ) {
         console.log('bp:::::::', bp)
         return await this.authService.login(bp);
     }
