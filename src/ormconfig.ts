@@ -30,7 +30,7 @@ const config: TypeOrmModuleOptions = {
         BusinessPersons,
         AreaCodes,
     ],
-    synchronize: true,
+    synchronize: false,
     logging: true,
     migrations: [__dirname + '/src/migrations/*{.ts,.js}'],
     cli: { migrationsDir: 'src/migrations' },
