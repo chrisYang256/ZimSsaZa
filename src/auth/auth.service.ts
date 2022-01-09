@@ -14,7 +14,6 @@ export class AuthService {
     ) {}
 
     async validateUser(email: string, password: string) {
-        console.log('auth service email:::', email);
         const user = await this.usersRepository
             .createQueryBuilder('user')
             .select(['user.id', 'user.email', 'user.password', 'user.name', 'user.phone_number'])
