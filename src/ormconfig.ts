@@ -2,9 +2,9 @@ import dotenv from 'dotenv';
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { Users } from "./entities/Users";
 import { Reviews } from './entities/Reviews';
-import { Movements } from './entities/Movements';
-import { MoveStatuses } from './entities/MoveStatuses';
-import { LoadInformations } from './entities/LoadInformations';
+import { MovingInformations } from './entities/MovingInformations';
+import { MovingStatuses } from './entities/MovingStatuses';
+import { MovingGoods } from './entities/MovingGoods';
 import { LoadImages } from './entities/LoadImages';
 import { BusinessPersons } from './entities/BusinessPersons';
 import { AreaCodes } from './entities/AreaCodes';
@@ -22,15 +22,15 @@ const config: TypeOrmModuleOptions = {
     entities: [
         Users,
         Reviews,
-        Negotiations,
-        MoveStatuses,
-        Movements,
-        LoadInformations,
         LoadImages,
+        Negotiations,
         BusinessPersons,
         AreaCodes,
+        MovingGoods,
+        MovingStatuses,
+        MovingInformations,
     ],
-    synchronize: false,
+    synchronize: true,
     logging: true,
     migrations: [__dirname + '/src/migrations/*{.ts,.js}'],
     cli: { migrationsDir: 'src/migrations' },

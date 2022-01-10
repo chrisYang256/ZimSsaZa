@@ -10,9 +10,9 @@ import {
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString } from "class-validator";
-import { LoadInformations } from "./LoadInformations";
+import { MovingGoods } from "./MovingGoods";
 
-@Index('LoadInformationId', ['LoadInformationId'], {})
+@Index('MovingGoodsId', ['MovingGoodsId'], {})
 @Entity({ schema: 'ZimSsaZa', name: 'load_mages' })
 export class LoadImages {
 
@@ -31,13 +31,13 @@ export class LoadImages {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @Column('int', { name: 'LoadInformationId'})
-    LoadInformationId: Number;
+    @Column('int', { name: 'MovingGoodsId'})
+    MovingGoodsId: Number;
 
-    @ManyToOne(() => LoadInformations, loadinformations => loadinformations.LoadImags, {
+    @ManyToOne(() => MovingGoods, movinggoods => movinggoods.LoadImags, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     })
-    @JoinColumn([{ name: 'LoadInformationId', referencedColumnName: 'id' }])
-    LoadInformation: LoadInformations;
+    @JoinColumn([{ name: 'MovingGoodsId', referencedColumnName: 'id' }])
+    MovingGoods: MovingGoods;
 }

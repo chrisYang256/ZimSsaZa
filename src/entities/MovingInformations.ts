@@ -12,15 +12,15 @@ import {
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsDateString, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { LoadInformations } from "./LoadInformations";
-import { MoveStatuses } from "./MoveStatuses";
 import { Negotiations } from "./Negotiations";
 import { Users } from "./Users";
 import { AreaCodes } from "./AreaCodes";
+import { MovingStatuses } from "./MovingStatuses";
+import { MovingGoods } from "./MovingGoods";
 
 @Index('UserId', ['UserId'], {})
-@Entity({ schema: 'ZimSsaZa', name: 'movements' })
-export class Movements {
+@Entity({ schema: 'ZimSsaZa', name: 'moveing_informations' })
+export class MovingInformations {
 
     @ApiProperty({ example: 3, description: 'movements PK'})
     @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
@@ -76,29 +76,29 @@ export class Movements {
     @Column('int', { name: 'UserId'})
     UserId: Number;
 
-    @Column('int', { name: 'MoveStatusId'})
-    MoveStatusId: Number;
+    @Column('int', { name: 'MovingStatusId'})
+    MovingStatusId: Number;
 
-    @OneToOne(() => LoadInformations, loadinformations => loadinformations.Movement)
-    LoadInformation: LoadInformations;
+    @OneToOne(() => MovingGoods, movinggoods => movinggoods.MovingInformation)
+    MovingGoods: MovingGoods;
 
-    @OneToOne(() => AreaCodes, areadoces => areadoces.Movement)
+    @OneToOne(() => AreaCodes, areacodes => areacodes.MovingInformation)
     AreaCode: AreaCodes;
 
-    @OneToMany(() => Negotiations, negotiationstables => negotiationstables.Movement)
+    @OneToMany(() => Negotiations, negotiations => negotiations.MovingInformation)
     Negotiations: Negotiations[];
 
-    @ManyToOne(() => Users, users => users.Movements, { 
+    @ManyToOne(() => Users, users => users.MovingInformations, { 
         onUpdate: 'CASCADE', 
         onDelete: 'CASCADE',
     })
     @JoinColumn([{ name: 'UserId', referencedColumnName: 'id' }])
     User: Users;
 
-    @ManyToOne(() => MoveStatuses, movestatuses => movestatuses.Movement, {
+    @ManyToOne(() => MovingStatuses, movingstatuses => movingstatuses.MovingInformations, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     })
-    @JoinColumn([{ name: 'MoveStatusId', referencedColumnName: 'id' }])
-    MoveStatus: MoveStatuses;
+    @JoinColumn([{ name: 'MovingStatusId', referencedColumnName: 'id' }])
+    MovingStatus: MovingStatuses;
 }

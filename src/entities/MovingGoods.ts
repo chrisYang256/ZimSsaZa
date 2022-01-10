@@ -12,11 +12,11 @@ import {
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber } from "class-validator";
 import { LoadImages } from "./LoadImages";
-import { Movements } from "./Movements";
+import { MovingInformations } from "./MovingInformations";
 
-@Index('MovementId', ['MovementId'], {})
-@Entity({ schema: 'ZimSsaZa', name: 'load_informations' })
-export class LoadInformations {
+@Index('MovingInformationId', ['MovingInformationId'], {})
+@Entity({ schema: 'ZimSsaZa', name: 'moving_goods' })
+export class MovingGoods {
 
     @ApiProperty({ example: 3, description: 'load_informations PK'})
     @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
@@ -58,16 +58,16 @@ export class LoadInformations {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @Column('int', { name: 'MovementId'})
-    MovementId: Number;
+    @Column('int', { name: 'MovingInformationId'})
+    MovingInformationId: Number;
 
-    @OneToOne(() => LoadInformations, loadinformations => loadinformations.Movement, {
+    @OneToOne(() => MovingInformations, movinginformations => movinginformations.MovingGoods, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     })
-    @JoinColumn({ name: 'MovementId', referencedColumnName: 'id' })
-    Movement: Movements;
+    @JoinColumn({ name: 'MovingInformationId', referencedColumnName: 'id' })
+    MovingInformation: MovingInformations;
 
-    @OneToMany(() => LoadImages, loadimages => loadimages.LoadInformation)
+    @OneToMany(() => LoadImages, loadimages => loadimages.MovingGoods)
     LoadImags: LoadImages[];
 }

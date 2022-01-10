@@ -6,11 +6,11 @@ import {
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
-import { Movements } from "./Movements";
 import { MoveStatusEnum } from "src/common/moveStatus.enum";
+import { MovingInformations } from "./MovingInformations";
 
-@Entity({ schema: 'ZimSsaZa', name: 'move_statuses' })
-export class MoveStatuses {
+@Entity({ schema: 'ZimSsaZa', name: 'moving_statuses' })
+export class MovingStatuses {
 
     @ApiProperty({ example: 3, description: 'move_statuses PK'})
     @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
@@ -22,6 +22,6 @@ export class MoveStatuses {
     @Column('enum', { name: 'status', enum: ['stay', 'nego', 'done']  })
     status: MoveStatusEnum;
 
-    @OneToMany(() => Movements, movements => movements.MoveStatus)
-    Movement: Movements[];
+    @OneToMany(() => MovingInformations, movinginformations => movinginformations.MovingStatus)
+    MovingInformations: MovingInformations[];
 }
