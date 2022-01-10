@@ -11,7 +11,7 @@ import {
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber } from "class-validator";
 import { BusinessPersons } from "./BusinessPersons";
-import { Movements } from "./Movements";
+import { MovingInformations } from "./MovingInformations";
 
 @Index('BusinessPersonId', ['BusinessPersonId'], {})
 @Entity({ schema: 'ZimSsaZa', name: 'negotiations' })
@@ -33,20 +33,20 @@ export class Negotiations {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @Column('int', { name: 'MovementId'})
-    MovementId: Number;
+    @Column('int', { name: 'MovingInformationtId'})
+    MovingInformationtId: Number;
 
     @Column('int', { name: 'BusinessPersonId'})
     BusinessPersonId: Number;
 
-    @ManyToOne(() => Movements, movements => movements.Negotiations, {
+    @ManyToOne(() => MovingInformations, moveinformations => moveinformations.Negotiations, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     })
-    @JoinColumn([{ name: 'MovementId', referencedColumnName: 'id' }])
-    Movement: Movements;
+    @JoinColumn([{ name: 'MovingInformationtId', referencedColumnName: 'id' }])
+    MovingInformation: MovingInformations;
 
-    @ManyToOne(() => BusinessPersons, businessperson => businessperson.Negotiation, {
+    @ManyToOne(() => BusinessPersons, businesspersons => businesspersons.Negotiation, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     })

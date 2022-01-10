@@ -66,7 +66,7 @@ export class BusinessPersonsService {
         console.log('isTransactionActive-2:::', queryRunner.isTransactionActive);
 
         try {
-        const bp = await this.businessPersonsRepository
+            const bp = await this.businessPersonsRepository
                 .createQueryBuilder('business_persons', queryRunner)
                 .insert()
                 .into('business_persons')

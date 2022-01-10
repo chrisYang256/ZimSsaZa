@@ -9,8 +9,8 @@ import {
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
-import { Movements } from "./Movements";
 import { Reviews } from "./Reviews";
+import { MovingInformations } from "./MovingInformations";
 
 @Index('email', ['email'], { unique: true })
 @Entity({ schema: 'ZimSsaZa', name: 'users' })
@@ -51,8 +51,8 @@ export class Users {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @OneToMany(() => Movements, movements => movements.User)
-    Movements: Movements[]; 
+    @OneToMany(() => MovingInformations, movinginformations => movinginformations.User)
+    MovingInformations: MovingInformations[]; 
 
     @OneToMany(() => Reviews, reviews => reviews.User)
     Reviews: Reviews[];
