@@ -22,16 +22,18 @@ export class AuthService {
             .select(['user.id', 'user.email', 'user.password', 'user.name', 'user.phone_number'])
             .where('user.email = :email', { email })
             .getOne()
-        // console.log('auth service user:::', user);
+        console.log('auth service user:::', user);
         
         if (!user) {
             return null;
         }
 
         const result = await bcrypt.compare(password, user.password);
+        console.log('bcrypt result:::', result)
 
         if (result) {
             const { password, ...userInfoWithoutPassword } = user;
+            console.log('userInfoWithoutPassword:::', userInfoWithoutPassword)
             return userInfoWithoutPassword;
         }
 

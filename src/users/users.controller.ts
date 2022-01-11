@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
 import { LoginDto } from 'src/common/dto/login.dto';
-import { MovingGoodsInfoDto } from 'src/common/dto/movingGoodsInfo.dto';
+import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
 import { UndefinedTonNllInterceptor } from 'src/common/interceptor/undefinedToNull.interceptor';
 import { MoveStatusEnum } from 'src/common/moveStatus.enum';
 import { Users } from 'src/entities/Users';
@@ -49,21 +49,24 @@ export class UsersController {
     signUp(@Body() createUserDto: CreateUserDto,) {
         return this.usersService.signUp(createUserDto);
     }
-
+    
     @ApiOperation({ summary: 'user 로그인' })
     @ApiResponse({ status: 200, description: '인증 성공' })
     @ApiResponse({ status: 401, description: '인증 실패' })
+    @ApiBody({ type: LoginDto })
     @UseGuards(LocalAuthGuard)
     @Post('login')
-    signIn(@GetMyInfo() user: Users, @Body() data: LoginDto) {
+    signIn(@GetMyInfo() user: Users) {
         return this.authService.login(user);
     }
 
 
-    @ApiOperation({ summary: '이삿짐 정보' })
+    @ApiOperation({ summary: '이삿짐 생성' })
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 409, description: 'response 실패' }) // response 세분화해서 추가하기
-    @UseInterceptors(FilesInterceptor('img_path', 10, {
+    @ApiConsumes('multipart/form-data') // m/f-d
+    @ApiBody({ description: '이삿짐 정보 / 이미지', type: CreateMovingGoodsDto })  // m/f-d
+    @UseInterceptors(FilesInterceptor('img_path', 20, {
         storage: multer.diskStorage({
             destination: (req, file, cd) => {
                 cd(null, 'img-uploads/');
@@ -75,15 +78,17 @@ export class UsersController {
         }),
         limits: { fileSize: 10 * 1024 * 1024 } // 10Mb
     }))
+    @ApiBearerAuth('JWT-Auth')
     @UseGuards(JwtAuthGuard)
     @Post('loads')
-    makePackForMoving(
-        @Body() movingGoodsInfoDto: MovingGoodsInfoDto,
-        @UploadedFiles() files: Array<Express.Multer.File>,
+    async makePackForMoving(
         @GetMyInfo() user: Users,
+        @Body() createMovingGoodsDto: CreateMovingGoodsDto,
+        @UploadedFiles() files: Array<Express.Multer.File>,
     ) {
-        // console.log('multer files:::', files);
-        return this.usersService.makePackForMoving(movingGoodsInfoDto, files, user.id)
+        // console.log('makePackForMoving - multer files:::', files);
+        console.log('makePackForMoving - movingGoodsInfoDto:::', createMovingGoodsDto);
+        return this.usersService.makePackForMoving(createMovingGoodsDto, files, user.id);
     }
 
 

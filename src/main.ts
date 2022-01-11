@@ -12,11 +12,16 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   
   const config = new DocumentBuilder()
-  .setTitle('ZimSsaZa')
-  .setDescription('짐싸자 이사 어플 APIs')
-  .setVersion('1.0')
-  // .addTag('ZimSsaZa')
-  .build();
+    .addBearerAuth({ 
+      // name: '',
+      type: 'http', 
+      scheme: 'bearer', 
+      bearerFormat: 'JWT',
+    }, 'JWT-Auth')
+    .setTitle('ZimSsaZa')
+    .setDescription('짐싸자 이사 어플 APIs')
+    .setVersion('1.0')
+    .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 

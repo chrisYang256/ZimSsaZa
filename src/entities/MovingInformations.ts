@@ -46,7 +46,7 @@ export class MovingInformations {
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: 'HH:MM', description: '이사 시간'})
+    @ApiProperty({ example: '15:30', description: '이사 시간'})
     @Column('varchar', { name: 'move_time', length: 5 })
     move_time: string;
 

@@ -29,19 +29,19 @@ export class Users {
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: '로다주', description: '회원 이름'})
+    @ApiProperty({ example: '브래드 피트', description: '회원 이름'})
     @Column('varchar', { name: 'name', length: 10 })
     name: string;
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: '010-(3~4자리)-(4자리)', description: '회원 휴대폰 번호'})
+    @ApiProperty({ example: '010-0000-0000(010-숫자 3~4자리-숫자 4자리)', description: '회원 휴대폰 번호'})
     @Column('varchar', { name: 'phone_number', length: 15 })
     phone_number: string;
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: '알파벳+숫자+특수문자 8~15자리', description: '회원 비밀번호'})
+    @ApiProperty({ example: '1234abcd!(알파벳+숫자+특수문자 8~15자리)', description: '회원 비밀번호'})
     @Column('varchar', { name: 'password', length: 100, select: false })
     password: string;
 

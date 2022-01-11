@@ -2,9 +2,8 @@ import { ApiProperty, PickType } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { MovingInformations } from "src/entities/MovingInformations";
 import { Column } from "typeorm";
-import { MoveStatusEnum } from "../moveStatus.enum";
 
-export class MovingGoodsInfoDto extends PickType(MovingInformations, [
+export class CreateMovingGoodsDto extends PickType(MovingInformations, [
     'start_point',
     'destination',
     'move_date',
@@ -40,16 +39,13 @@ export class MovingGoodsInfoDto extends PickType(MovingInformations, [
     @ApiProperty({ example: '1', description: '우체국 5호 사이즈 이삿짐 박스 갯수'})
     @Column('int', { name: 'box', width: 5, default: 0 })
     box: Number;
-
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty({ example: 'nego', description: ''})
-    @Column('enum', { name: 'status', enum: ['stay', 'nego', 'done']  })
-    status: MoveStatusEnum;
     
     @IsNumber()
     @IsNotEmpty()
     @ApiProperty({ example: '1', description: '이사 지역 번호'})
     @Column('int', { name: 'code', width: 10 })
     code: Number;
+
+    @ApiProperty({ type: 'array', items: { type: 'string', format: 'binary' } })  // m/f-d
+    img_path: Array<any>;
 }

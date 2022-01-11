@@ -4,7 +4,7 @@ import { Users } from 'src/entities/Users';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import bcrypt from 'bcrypt';
-import { MovingGoodsInfoDto } from 'src/common/dto/movingGoodsInfo.dto';
+import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
 import { MovingInformations } from 'src/entities/MovingInformations';
 import { MovingGoods } from 'src/entities/MovingGoods';
 import { LoadImages } from 'src/entities/LoadImages';
@@ -79,8 +79,8 @@ export class UsersService {
         }
     }
 
-    async makePackForMoving(
-        movingGoodsInfoDto: MovingGoodsInfoDto, 
+    async makePackForMoving( // !!!! 트랜젝션 처리 하기
+        createMovingGoodsDto: CreateMovingGoodsDto, 
         files: Array<Express.Multer.File>, 
         myId: number,
     ) {
@@ -96,7 +96,7 @@ export class UsersService {
             sofa,
             box,
             code,
-        } = movingGoodsInfoDto;
+        } = createMovingGoodsDto;
 
         const user = await this.usersRepository
             .createQueryBuilder('user')
@@ -123,7 +123,7 @@ export class UsersService {
                 .execute();
             // console.log('movingInfo::;', movingInfo)
     
-            const areaCode = await this.areaCodesRepository
+            await this.areaCodesRepository
                 .createQueryBuilder()
                 .insert()
                 .into('area_codes')
@@ -133,7 +133,6 @@ export class UsersService {
                     MovingInformationId: movingInfo.identifiers[0].id,
                 })
                 .execute();
-            // console.log('areaCode::;', areaCode)
     
             const MovingGoods = await this.movingGoodsRepository
                 .createQueryBuilder()

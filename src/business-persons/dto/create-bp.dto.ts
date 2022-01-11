@@ -10,7 +10,7 @@ export class CreateBPDto {
     @ApiProperty({ example: '알파벳+숫자+특수문자 8~15자리', description: '사업자 비밀번호'})
     password: string;
     
-    @ApiProperty({ example: '010-(3~4자리)-(4자리)', description: '사업자 휴대폰 번호'})
+    @ApiProperty({ example: '010-0000-0000(010-숫자 3~4자리-숫자 4자리)', description: '사업자 휴대폰 번호'})
     phone_number: string;
 
     @ApiProperty({ example: '123-45-67890', description: '사업자 번호'})
