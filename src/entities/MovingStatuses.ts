@@ -18,8 +18,8 @@ export class MovingStatuses {
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: 'nego', description: ''})
-    @Column('enum', { name: 'status', enum: ['stay', 'nego', 'done']  })
+    @ApiProperty({ example: 'nego', description: '이사 진행 상태', enum: ['stay', 'nego', 'done'] })
+    @Column('enum', { name: 'status', enum: ['stay', 'nego', 'done'] })
     status: MoveStatusEnum;
 
     @OneToMany(() => MovingInformations, movinginformations => movinginformations.MovingStatus)
