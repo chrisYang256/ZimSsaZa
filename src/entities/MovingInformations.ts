@@ -19,7 +19,7 @@ import { MovingStatuses } from "./MovingStatuses";
 import { MovingGoods } from "./MovingGoods";
 
 @Index('UserId', ['UserId'], {})
-@Entity({ schema: 'ZimSsaZa', name: 'moveing_informations' })
+@Entity({ schema: 'ZimSsaZa', name: 'moving_informations' })
 export class MovingInformations {
 
     @ApiProperty({ example: 3, description: 'movements PK'})
