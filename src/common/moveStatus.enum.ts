@@ -1,5 +1,5 @@
 export enum MoveStatusEnum {
-    stay = 'stay',
-    nego = 'nego',
-    done = 'done',
+    stay = 1,
+    nego = 2,
+    done = 3,
 }

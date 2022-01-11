@@ -4,12 +4,27 @@ import { Users } from 'src/entities/Users';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import bcrypt from 'bcrypt';
+import { MovingGoodsInfoDto } from 'src/common/dto/movingGoodsInfo.dto';
+import { MovingInformations } from 'src/entities/MovingInformations';
+import { MovingGoods } from 'src/entities/MovingGoods';
+import { LoadImages } from 'src/entities/LoadImages';
+import { AreaCodes } from 'src/entities/AreaCodes';
+import { MoveStatusEnum } from 'src/common/moveStatus.enum';
+import multer from 'multer';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectRepository(Users)
         private usersRepository: Repository<Users>,
+        @InjectRepository(MovingInformations)
+        private movingInformationsRepository: Repository<MovingInformations>,
+        @InjectRepository(MovingGoods)
+        private movingGoodsRepository: Repository<MovingGoods>,
+        @InjectRepository(LoadImages)
+        private loadImageRepository: Repository<LoadImages>,
+        @InjectRepository(AreaCodes)
+        private areaCodesRepository: Repository<AreaCodes>,
     ) {}
 
     async signUp(createUserDto: CreateUserDto) {
@@ -63,4 +78,97 @@ export class UsersService {
             throw error;
         }
     }
+
+    async makePackForMoving(
+        movingGoodsInfoDto: MovingGoodsInfoDto, 
+        files: Array<Express.Multer.File>, 
+        myId: number,
+    ) {
+        const {  
+            start_point,  
+            destination,
+            move_date,
+            move_time,
+            bed,
+            closet,
+            storage_closet,
+            table,
+            sofa,
+            box,
+            code,
+        } = movingGoodsInfoDto;
+
+        const user = await this.usersRepository
+            .createQueryBuilder('user')
+            .where('user.id = :id', { id: myId })
+            .getOne();
+
+        if (!user) {
+            throw new ForbiddenException('회원 정보를 찾을 수 없습니다.')
+        }
+
+        try {
+            const movingInfo = await this.movingInformationsRepository
+                .createQueryBuilder()
+                .insert()
+                .into('moving_informations')
+                .values({
+                    start_point,
+                    destination,
+                    move_date,
+                    move_time,
+                    MovingStatusId: MoveStatusEnum.stay,
+                    UserId: user.id,
+                })
+                .execute();
+            // console.log('movingInfo::;', movingInfo)
+    
+            const areaCode = await this.areaCodesRepository
+                .createQueryBuilder()
+                .insert()
+                .into('area_codes')
+                .values({
+                    code,
+                    userId: user.id,
+                    MovingInformationId: movingInfo.identifiers[0].id,
+                })
+                .execute();
+            // console.log('areaCode::;', areaCode)
+    
+            const MovingGoods = await this.movingGoodsRepository
+                .createQueryBuilder()
+                .insert()
+                .into('moving_goods')
+                .values({
+                    bed,
+                    closet,
+                    storage_closet,
+                    table,
+                    sofa,
+                    box,
+                    MovingInformationId: movingInfo.identifiers[0].id,
+                })
+                .execute()
+            // console.log('MovingGoods::;', MovingGoods)
+            
+            for (let i = 0; i < files.length; i++) {
+                await this.loadImageRepository
+                    .createQueryBuilder()
+                    .insert()
+                    .into('load_images')
+                    .values({
+                        img_path: files[i].path,
+                        MovingGoodsId: MovingGoods.identifiers[0].id,
+                    })
+                    .execute();
+            }
+
+            // console.log('LoadImg:::', LoadImg)
+            return { "message" : "짐 싸기 완료!", "status" : 200 }
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
 }
