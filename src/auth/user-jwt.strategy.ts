@@ -9,7 +9,7 @@ import { Repository } from 'typeorm';
 dotenv.config();
 
 @Injectable()
-export class UserJwtStrategy extends PassportStrategy(Strategy) {
+export class UserJwtStrategy extends PassportStrategy(Strategy, 'user-jwt') {
     constructor(
         @InjectRepository(Users)
         private usersRepository: Repository<Users>,
