@@ -64,7 +64,6 @@ export class BusinessPersonsService {
         console.log('isTransactionActive-1:::', queryRunner.isTransactionActive);
         await queryRunner.startTransaction();
         console.log('isTransactionActive-2:::', queryRunner.isTransactionActive);
-
         try {
             const bp = await this.businessPersonsRepository
                 .createQueryBuilder('business_persons', queryRunner)
@@ -86,7 +85,7 @@ export class BusinessPersonsService {
                     .insert()
                     .into('area_codes')
                     .values({
-                        BusinessPersonId: bp.identifiers[0],
+                        BusinessPersonId: bp.identifiers[0].id,
                         code: code[i]
                     })
                     .execute();
@@ -95,13 +94,11 @@ export class BusinessPersonsService {
             await queryRunner.commitTransaction();
             console.log('isTransactionActive-3:::', queryRunner.isTransactionActive);
 
-            return { 'message': '회원 가입 성공', 'statusCode': 200 };
-
+            return { 'message': '회원 가입 성공', 'statusCode': 201 };
         } catch (error) {
             await queryRunner.rollbackTransaction();
             console.error(error);
             throw error;
-
         } finally {
             await queryRunner.release();
         }

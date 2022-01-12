@@ -86,7 +86,7 @@ export class UsersController {
         @Body() createMovingGoodsDto: CreateMovingGoodsDto,
         @UploadedFiles() files: Array<Express.Multer.File>,
     ) {
-        // console.log('makePackForMoving - multer files:::', files);
+        console.log('makePackForMoving - multer files:::', files);
         console.log('makePackForMoving - movingGoodsInfoDto:::', createMovingGoodsDto);
         return this.usersService.makePackForMoving(createMovingGoodsDto, files, user.id);
     }

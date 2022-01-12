@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/Users';
 import { Repository } from 'typeorm';
@@ -25,7 +25,7 @@ export class AuthService {
         console.log('auth service user:::', user);
         
         if (!user) {
-            return null;
+            throw new ForbiddenException(`'${email}' 회원을 찾을 수 없습니다.`)
         }
 
         const result = await bcrypt.compare(password, user.password);
@@ -37,7 +37,7 @@ export class AuthService {
             return userInfoWithoutPassword;
         }
 
-        return null;
+        throw new ForbiddenException(`비밀번호가 일치하지 않습니다.`)
     }
 
     async validateBP(email: string, password: string) {

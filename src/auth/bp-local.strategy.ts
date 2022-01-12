@@ -11,10 +11,8 @@ export class BPLocalStrategy extends PassportStrategy(Strategy, 'bp-local') {
 
   async validate(email: string, password: string): Promise<any> {
     const bp = await this.authService.validateBP(email, password);
+    // console.log('business-person:::', bp);
     
-    if (!bp) {
-        throw new UnauthorizedException('회원 정보를 찾을 수 없습니다.');
-    }
     return bp;
   }
 }
