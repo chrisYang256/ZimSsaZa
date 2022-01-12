@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/Users';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import bcrypt from 'bcrypt';
 import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
@@ -25,6 +25,7 @@ export class UsersService {
         private loadImageRepository: Repository<LoadImages>,
         @InjectRepository(AreaCodes)
         private areaCodesRepository: Repository<AreaCodes>,
+        private connection: Connection,
     ) {}
 
     async signUp(createUserDto: CreateUserDto) {
@@ -79,7 +80,7 @@ export class UsersService {
         }
     }
 
-    async makePackForMoving( // !!!! 트랜젝션 처리 하기
+    async makePackForMoving(
         createMovingGoodsDto: CreateMovingGoodsDto, 
         files: Array<Express.Multer.File>, 
         myId: number,
@@ -98,6 +99,9 @@ export class UsersService {
             code,
         } = createMovingGoodsDto;
 
+        const queryRunner = this.connection.createQueryRunner();
+        await queryRunner.connect();
+
         const user = await this.usersRepository
             .createQueryBuilder('user')
             .where('user.id = :id', { id: myId })
@@ -107,9 +111,12 @@ export class UsersService {
             throw new ForbiddenException('회원 정보를 찾을 수 없습니다.')
         }
 
+        console.log('isTransactionActive-1:::', queryRunner.isTransactionActive);
+        await queryRunner.startTransaction();
+        console.log('isTransactionActive-2:::', queryRunner.isTransactionActive);
         try {
             const movingInfo = await this.movingInformationsRepository
-                .createQueryBuilder()
+                .createQueryBuilder('moving_informations', queryRunner)
                 .insert()
                 .into('moving_informations')
                 .values({
@@ -124,7 +131,7 @@ export class UsersService {
             // console.log('movingInfo::;', movingInfo)
     
             await this.areaCodesRepository
-                .createQueryBuilder()
+                .createQueryBuilder('area_codes', queryRunner)
                 .insert()
                 .into('area_codes')
                 .values({
@@ -135,7 +142,7 @@ export class UsersService {
                 .execute();
     
             const MovingGoods = await this.movingGoodsRepository
-                .createQueryBuilder()
+                .createQueryBuilder('moving_goods', queryRunner)
                 .insert()
                 .into('moving_goods')
                 .values({
@@ -152,7 +159,7 @@ export class UsersService {
             
             for (let i = 0; i < files.length; i++) {
                 await this.loadImageRepository
-                    .createQueryBuilder()
+                    .createQueryBuilder('load_images', queryRunner)
                     .insert()
                     .into('load_images')
                     .values({
@@ -162,11 +169,16 @@ export class UsersService {
                     .execute();
             }
 
-            // console.log('LoadImg:::', LoadImg)
-            return { "message" : "짐 싸기 완료!", "status" : 200 }
+            await queryRunner.commitTransaction();
+            console.log('isTransactionActive-3:::', queryRunner.isTransactionActive);
+
+            return { "message" : "짐 싸기 완료!", "status" : 201 }
         } catch (error) {
+            await queryRunner.rollbackTransaction();
             console.error(error);
             throw error;
+        } finally {
+            await queryRunner.release();
         }
     }
 
