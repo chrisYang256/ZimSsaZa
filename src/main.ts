@@ -19,7 +19,7 @@ async function bootstrap() {
       bearerFormat: 'JWT',
     }, 'JWT-Auth')
     .setTitle('ZimSsaZa')
-    .setDescription('짐싸자 이사 어플 APIs')
+    .setDescription('짐싸자 이사 어플 APIs\n testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQxOTg0MjYzLCJleHAiOjE2NDIwNzA2NjN9.5JLrnrY9SQ50cExs0JtyPKeLhrGk9CbnqwEOkIzyg4U')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
