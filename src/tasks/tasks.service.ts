@@ -43,6 +43,8 @@ export class TasksService {
                 throw new ForbiddenException('이미 견적을 받고 있는 이삿짐이 존재합니다.')
             }
     
+            // 견적은 가장 최근 기록된 이사 정보만 제출할 수 있도록 함
+            // 여러개의 견적을 볼 필요도 없고 악용될 수도 있기 때문
             const movingInfo = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
                 .select([
@@ -51,16 +53,25 @@ export class TasksService {
                     'movingInfo.destination',
                     'movingInfo.move_date',
                     'movingInfo.move_time',
-                    'areacode.code'
                 ])
-                .leftJoinAndSelect('movingInfo.AreaCode', 'areacode')
-                .leftJoinAndSelect('movingInfo.MovingGoods', 'goods')
-                .leftJoinAndSelect('goods.LoadImags', 'images')
+                .addSelect('areacode.code')
+                .addSelect([
+                    'goods.bed', 
+                    'goods.closet',
+                    'goods.storage_closet',
+                    'goods.table',
+                    'goods.sofa',
+                    'goods.box',
+                ])
+                .innerJoin('movingInfo.AreaCode', 'areacode')
+                .innerJoin('movingInfo.MovingGoods', 'goods')
+                .innerJoin('goods.LoadImags', 'images')
                 .where('movingInfo.UserId = :id', { id: myId })
                 .orderBy('movingInfo.createdAt', "DESC")
                 .getOne();
             // console.log('movingInfo:::', movingInfo)
     
+            // 24시간 동안 견적을 받을 수 있기 때문에 견적서 제출 시간을 기록
             await this.movingInformationsRepository
             .createQueryBuilder()
             .update('moving_informations')

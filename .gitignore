@@ -39,3 +39,6 @@ lerna-debug.log*
 
 # secure
 .env
+
+# others
+memo

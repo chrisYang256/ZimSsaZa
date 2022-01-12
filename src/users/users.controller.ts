@@ -90,18 +90,4 @@ export class UsersController {
         console.log('makePackForMoving - movingGoodsInfoDto:::', createMovingGoodsDto);
         return this.usersService.makePackForMoving(createMovingGoodsDto, files, user.id);
     }
-
-
-
-    @ApiQuery({ name: 'status', enum: MoveStatusEnum})
-    @ApiOperation({ summary: 'enum test' })
-    @Get('test')
-    async testEnum(@Query('status') status: MoveStatusEnum = MoveStatusEnum.done) {
-        return { "msg" : status };
-    }
-
-
-    // 리뷰 작성 api
-
-    // 리뷰 조회 api -> 기사, 유저 각각
 }
