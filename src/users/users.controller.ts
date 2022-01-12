@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { LocalAuthGuard } from 'src/auth/local-auth.guard';
+import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
+import { UserLocalAuthGuard } from 'src/auth/user-local-auth.guard';
 import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
 import { LoginDto } from 'src/common/dto/login.dto';
 import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
@@ -36,7 +36,7 @@ export class UsersController {
     @ApiOperation({ summary: 'user 내 정보 조회' })
     @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(UserJwtAuthGuard)
     @Get()
     myInfo(@GetMyInfo() user: UserWithoutPasswordDto) {
         return user;
@@ -54,7 +54,7 @@ export class UsersController {
     @ApiResponse({ status: 200, description: '인증 성공' })
     @ApiResponse({ status: 401, description: '인증 실패' })
     @ApiBody({ type: LoginDto })
-    @UseGuards(LocalAuthGuard)
+    @UseGuards(UserLocalAuthGuard)
     @Post('login')
     signIn(@GetMyInfo() user: Users) {
         return this.authService.login(user);
@@ -79,7 +79,7 @@ export class UsersController {
         limits: { fileSize: 10 * 1024 * 1024 } // 10Mb
     }))
     @ApiBearerAuth('JWT-Auth')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(UserJwtAuthGuard)
     @Post('loads')
     async makePackForMoving(
         @GetMyInfo() user: Users,

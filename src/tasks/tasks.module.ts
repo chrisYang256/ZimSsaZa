@@ -2,25 +2,29 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { AreaCodes } from 'src/entities/AreaCodes';
+import { BusinessPersons } from 'src/entities/BusinessPersons';
 import { LoadImages } from 'src/entities/LoadImages';
 import { MovingGoods } from 'src/entities/MovingGoods';
 import { MovingInformations } from 'src/entities/MovingInformations';
+import { Negotiations } from 'src/entities/Negotiations';
 import { Users } from 'src/entities/Users';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+import { TasksController } from './tasks.controller';
+import { TasksService } from './tasks.service';
 
 @Module({
-  controllers: [UsersController],
-  providers: [UsersService],
+  controllers: [TasksController],
+  providers: [TasksService],
   imports: [
     TypeOrmModule.forFeature([
       Users,
+      BusinessPersons,
+      Negotiations,
       MovingInformations,
       MovingGoods,
       LoadImages,
-      AreaCodes,
+      AreaCodes
     ]),
     AuthModule,
   ]
 })
-export class UsersModule {}
+export class TasksModule {}
