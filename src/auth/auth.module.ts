@@ -7,14 +7,14 @@ import { Users } from 'src/entities/Users';
 import { AuthService } from './auth.service';
 import { BPJwtStrategy } from './bp-jwt.strategy';
 import { BPLocalStrategy } from './bp-local.strategy';
-import { JwtStrategy } from './jwt.strategy';
-import { LocalStrategy } from './local.strategy';
+import { UserJwtStrategy } from './user-jwt.strategy';
+import { UserLocalStrategy } from './user-local.strategy';
 
 @Module({
   providers: [
     AuthService, 
-    LocalStrategy, 
-    JwtStrategy, 
+    UserLocalStrategy, 
+    UserJwtStrategy, 
     BPLocalStrategy,
     BPJwtStrategy,
   ],

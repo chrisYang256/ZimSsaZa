@@ -57,7 +57,7 @@ export class AuthService {
         // console.log('auth service bp:::', bp);
         
         if (!bp) {
-            return null;
+            throw new ForbiddenException(`'${email}' 회원을 찾을 수 없습니다.`)
         }
 
         const result = await bcrypt.compare(password, bp.password);
@@ -67,7 +67,7 @@ export class AuthService {
             return BPInfoWithoutPassword;
         }
 
-        return null;
+        throw new ForbiddenException(`비밀번호가 일치하지 않습니다.`)
     }
 
     async login(user): Promise<{access_token: string}> {

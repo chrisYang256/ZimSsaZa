@@ -10,7 +10,6 @@ import { MovingGoods } from 'src/entities/MovingGoods';
 import { LoadImages } from 'src/entities/LoadImages';
 import { AreaCodes } from 'src/entities/AreaCodes';
 import { MoveStatusEnum } from 'src/common/moveStatus.enum';
-import multer from 'multer';
 
 @Injectable()
 export class UsersService {
@@ -181,5 +180,6 @@ export class UsersService {
             await queryRunner.release();
         }
     }
+
 
 }
