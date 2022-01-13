@@ -9,7 +9,7 @@ import { MovingInformations } from 'src/entities/MovingInformations';
 import { MovingGoods } from 'src/entities/MovingGoods';
 import { LoadImages } from 'src/entities/LoadImages';
 import { AreaCodes } from 'src/entities/AreaCodes';
-import { MoveStatusEnum } from 'src/common/moveStatus.enum';
+import { MovingStatusEnum } from 'src/common/movingStatus.enum';
 
 @Injectable()
 export class UsersService {
@@ -123,7 +123,7 @@ export class UsersService {
                     destination,
                     move_date,
                     move_time,
-                    MovingStatusId: MoveStatusEnum.stay,
+                    MovingStatusId: MovingStatusEnum.stay,
                     UserId: user.id,
                 })
                 .execute();
