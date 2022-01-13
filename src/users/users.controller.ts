@@ -7,7 +7,6 @@ import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
 import { LoginDto } from 'src/common/dto/login.dto';
 import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
 import { UndefinedTonNllInterceptor } from 'src/common/interceptor/undefinedToNull.interceptor';
-import { MoveStatusEnum } from 'src/common/moveStatus.enum';
 import { Users } from 'src/entities/Users';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserWithoutPasswordDto } from './dto/user-without-password.dto';

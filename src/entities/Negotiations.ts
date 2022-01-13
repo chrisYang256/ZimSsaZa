@@ -36,8 +36,8 @@ export class Negotiations {
     @Column('int', { name: 'MovingInformationtId'})
     MovingInformationtId: Number;
 
-    @Column('int', { name: 'BusinessPersonId'})
-    BusinessPersonId: Number;
+    @Column('int', { name: 'BusinessPersonId', nullable: true })
+    BusinessPersonId: Number | null;
 
     @ManyToOne(() => MovingInformations, moveinformations => moveinformations.Negotiations, {
         onUpdate: 'CASCADE',
