@@ -24,6 +24,8 @@ export class BPJwtStrategy extends PassportStrategy(Strategy, 'bp-jwt') {
     async validate(payload) {
         const bp: BusinessPersons = await this.businessPersons
             .createQueryBuilder('businessPersons')
+            .leftJoin('businessPersons.AreaCodes', 'areacodes')
+            .addSelect('areacodes.code')
             .where('businessPersons.id = :id', { id: payload.id })
             .getOne();
 
