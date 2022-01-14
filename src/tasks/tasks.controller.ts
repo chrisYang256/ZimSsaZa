@@ -1,4 +1,4 @@
-import { Controller, Get, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BPJwtAuthGuard } from 'src/auth/bp-jwt-auth.guard';
 import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
@@ -40,11 +40,14 @@ export class TasksController {
         return this.taskService.getMovingInfoList(bp, pagenation)
     }    
 
+    @ApiOperation({ summary: '견적요청 상세 조회'})
+    @ApiResponse({ status: 200, description: 'response 성공' })
+    @ApiResponse({ status: 404, description: '게시물이 존재하지 않습니다.' })
     @ApiBearerAuth('JWT-Auth')
-    @UseGuards(UserJwtAuthGuard)
-    @Get('test')
-    getMovingInfo(@GetMyInfo() user) {
-        return this.taskService.getMovingInfo(user)
+    @UseGuards(BPJwtAuthGuard)
+    @Get('movingInfo/:id')
+    getMovingInfo(@Param('id') id: number) {
+        return this.taskService.getMovingInfo(id)
     }
 
     // @ApiOperation({ summary: '기사님이 제출된 이사정보에 대해 견적 제출' })
