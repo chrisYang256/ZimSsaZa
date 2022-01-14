@@ -1,13 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateBPDto {
-    @ApiProperty({ example: 3, description: 'users PK'})
+    @ApiProperty({ example: '바티스타', description: '사업자 이름'})
     name: string;
 
     @ApiProperty({ example: 'ssazim@google.com', description: '사업자 이메일'})
     email: string;
 
-    @ApiProperty({ example: '알파벳+숫자+특수문자 8~15자리', description: '사업자 비밀번호'})
+    @ApiProperty({ example: '1234abcd!(알파벳+숫자+특수문자 8~15자리)', description: '사업자 비밀번호'})
     password: string;
     
     @ApiProperty({ example: '010-0000-0000(010-숫자 3~4자리-숫자 4자리)', description: '사업자 휴대폰 번호'})

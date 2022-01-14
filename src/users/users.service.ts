@@ -123,7 +123,7 @@ export class UsersService {
                     destination,
                     move_date,
                     move_time,
-                    MovingStatusId: MovingStatusEnum.stay,
+                    MovingStatusId: MovingStatusEnum.STAY,
                     UserId: user.id,
                 })
                 .execute();

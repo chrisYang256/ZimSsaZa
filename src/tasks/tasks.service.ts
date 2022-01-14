@@ -1,5 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BPWithoutPasswordDto } from 'src/business-persons/dto/bp-without-password.dto';
+import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
 import { AreaCodes } from 'src/entities/AreaCodes';
 import { BusinessPersons } from 'src/entities/BusinessPersons';
@@ -8,7 +10,7 @@ import { MovingGoods } from 'src/entities/MovingGoods';
 import { MovingInformations } from 'src/entities/MovingInformations';
 import { Negotiations } from 'src/entities/Negotiations';
 import { Users } from 'src/entities/Users';
-import { Connection, createQueryBuilder, Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 
 @Injectable()
 export class TasksService {
@@ -38,7 +40,7 @@ export class TasksService {
                 .getMany();
             console.log('isSubmitting:::', isSubmitting)
     
-            if (isSubmitting.find((v) => v.MovingStatusId === MovingStatusEnum.nego)) { // 견적 장난질 방지
+            if (isSubmitting.find((v) => v.MovingStatusId === MovingStatusEnum.NEGO)) { // 견적 장난질 방지
                 throw new ForbiddenException('이미 견적을 받고 있는 이삿짐이 존재합니다.')
             }
 
@@ -59,15 +61,17 @@ export class TasksService {
                 })
                 .execute();
 
-            // moving_status STAY -> NEGO
+            // 견적 요청 시 STAY -> NEGO
             await this.movingInformationsRepository
                 .createQueryBuilder()
                 .update('moving_informations')
-                .set({ MovingStatusId: MovingStatusEnum.nego })
+                .set({ MovingStatusId: MovingStatusEnum.NEGO })
                 .where('id = :id', { id: movingInfoToNego.id })
                 .execute();
 
-            // scheduler로 24시간 경과(nego table createAt으로 확인) / 견적 10개 초과 여부(nego table cost로 확인) 체크
+            // scheduler로 24시간 경과(nego table createAt으로 확인)시 nego -> stay
+            // 기사 견적 체크로 견적 10개 초과 여부(nego table cost로 확인) 체크
+            // 둘 다 유저에게 알림 필요 -> 웹소켓 사용 
 
         } catch (error) {
             console.log(error);
@@ -75,13 +79,43 @@ export class TasksService {
         }
     }
 
-    // 이사견적 요청 목록 조회(내 관심지역 목록만 나오도록, 페이지네이션)
+    async getMovingInfoList(
+        bp: BPWithoutPasswordDto,
+        pagenation: PagenationDto
+    ) {
+        const { perPage, page } = pagenation;
+        const bpAreaCodes = bp.AreaCodes.map((v) => v);
+        console.log('bpAreaCodes:::', bpAreaCodes);
+        
+        // NEGO 중인 submitMovingInfo 중에서 기사님 관심 area_code들과 일치하는 결과만 리턴
+        const movingInfoList = await this.movingInformationsRepository
+            .createQueryBuilder('movingInfo')
+            .innerJoin('movingInfo.AreaCode', 'AC')
+            .select([
+                'movingInfo.id',
+                'movingInfo.start_point', 
+                'movingInfo.destination',
+            ])
+            .where('movingInfo.MovingStatusId = :id', { 
+                id: MovingStatusEnum.NEGO 
+            })
+            .andWhere('AC.code In (:...codes)', { codes: bpAreaCodes })
+            .take(perPage)
+            .skip(perPage * (page - 1))
+            .getMany();
+        console.log('results:::', movingInfoList)
+
+        return { 'movingInfoList': movingInfoList, 'status': 200 }
+    }
 
     // 이사견적 요청 상세정보 조회
     async getMovingInfo(movingInfoId) {
         try {
             const movingInfo = await this.movingInformationsRepository
             .createQueryBuilder('movingInfo')
+            .innerJoin('movingInfo.AreaCode', 'areacode')
+            .innerJoin('movingInfo.MovingGoods', 'goods')
+            .innerJoin('goods.LoadImags', 'images')
             .select([
                 'movingInfo.id',
                 'movingInfo.start_point',
@@ -104,10 +138,7 @@ export class TasksService {
             .addSelect(
                 'images.img_path'
             )
-            .innerJoin('movingInfo.AreaCode', 'areacode')
-            .innerJoin('movingInfo.MovingGoods', 'goods')
-            .innerJoin('goods.LoadImags', 'images')
-            .where('movingInfo.UserId = :id', { id: movingInfoId })
+            .where('movingInfo.UserId = :id', { id: movingInfoId.id })
             .orderBy('movingInfo.createdAt', "DESC")
             .getOne();
         console.log('movingInfo:::', movingInfo)
@@ -120,6 +151,7 @@ export class TasksService {
         }
     }
 
+    // 기사님 이사 견적 제출하기
     async submitNegoCost(movingInfoId, bp) {
 
     }
