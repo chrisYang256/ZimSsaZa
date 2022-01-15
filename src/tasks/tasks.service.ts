@@ -70,7 +70,7 @@ export class TasksService {
                 .execute();
 
             // scheduler로 24시간 경과(nego table createAt으로 확인)시 nego -> stay, 
-            // 기사 견적 체크로 견적 10개 초과 여부(nego table cost로 확인) 체크
+            // 기사님 견적 전송 체크로 견적 10개 초과 여부(nego table cost로 확인) 체크
             // 둘 다 유저에게 알림 필요 -> 웹소켓 사용 
 
         } catch (error) {
@@ -80,8 +80,8 @@ export class TasksService {
     }
 
     async getMovingInfoList(
-        bp: BPWithoutPasswordDto,
-        pagenation: PagenationDto
+        pagenation: PagenationDto,
+        bp: BPWithoutPasswordDto
     ) { 
         // NEGO 중인 submitMovingInfo 중에서 기사님 관심 area_code들과 일치하는 결과만 리턴
         try {
@@ -177,7 +177,38 @@ export class TasksService {
     }
 
     // 기사님 이사 견적 제출하기
-    async submitNegoCost(movingInfoId, bp) {
+    async submitNegoCost(
+        movingInfoId: number, 
+        bp: BPWithoutPasswordDto
+        ) {
+        // nego 테이블에서 견적받을 row 조회
+        const findNego = await this.negotiationsRepository
+            .createQueryBuilder('nego')
+            .where('nego.MovingInformationId = :id', { id: movingInfoId })
+            .andWhere('nego.BusinessPersonId IS NULL')
+            .andWhere('nego.cost IS NULL')
+            .getOne();
+        console.log('findNego:::', findNego);
 
+        // 동일한 견적요청에 대해 1번만 견적을 제출할 수 있도록
+        const isDupl = await this.negotiationsRepository
+            .createQueryBuilder('nego')
+            .where('nego.MovingInformationId = :id', { id: movingInfoId })
+            .andWhere('nego.BusinessPersonId = :id', { id: bp.id })
+            .getOne();
+
+        if (isDupl) {
+            throw new ForbiddenException('이미 해당 견적요청에 응답하셨습니다.')
+        }
+
+
+        // 앞서 제출된 견적서 10개 여부 확인
+
+        // 견적금액 적어서 제출
+
+        // finally에서 제출 후 nego 테이블에서 받은 견적서 10개 이상인지 체크
+        // 10개 이상이면 유저에게 견적서 확인하라고 메시지 발송
     }
+
+    // 유저 받은 견적 리스트 보기(낮은 가격순으로 5개만 보여주기)
 }

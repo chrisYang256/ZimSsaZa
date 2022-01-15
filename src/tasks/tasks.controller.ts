@@ -34,10 +34,10 @@ export class TasksController {
     @UseGuards(BPJwtAuthGuard)
     @Get('movingInfo/board')
     getMovingInfoList(
-        @GetMyInfo() bp: BPWithoutPasswordDto,
-        @Query() pagenation: PagenationDto
+        @Query() pagenation: PagenationDto,
+        @GetMyInfo() bp: BPWithoutPasswordDto
         ) {
-        return this.taskService.getMovingInfoList(bp, pagenation)
+        return this.taskService.getMovingInfoList(pagenation, bp)
     }    
 
     @ApiOperation({ summary: '견적요청 상세 조회'})
@@ -46,20 +46,20 @@ export class TasksController {
     @ApiBearerAuth('JWT-Auth')
     @UseGuards(BPJwtAuthGuard)
     @Get('movingInfo/:id')
-    getMovingInfo(@Param('id') id: number) {
-        return this.taskService.getMovingInfo(id)
+    getMovingInfo(@Param('id') movingInfoId: number) {
+        return this.taskService.getMovingInfo(movingInfoId)
     }
 
-    // @ApiOperation({ summary: '기사님이 제출된 이사정보에 대해 견적 제출' })
-    // @ApiResponse({ status: 200, description: 'response 성공' })
-    // @ApiResponse({ status: 401, description: 'response 실패' })
-    // @ApiBearerAuth('JWT-Auth')
-    // @UseGuards(BPJwtAuthGuard)
-    // @Post('movingInfo/:id/cost')
-    // submitNegoCost(
-    //     @Query() movingInfoId: number,
-    //     @GetMyInfo() bp: BPWithoutPasswordDto
-    // ) {
-    //     return this.taskService.submitNegoCost(movingInfoId, bp)
-    // }
+    @ApiOperation({ summary: '기사님이 견적 금액 제출' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('JWT-Auth')
+    @UseGuards(BPJwtAuthGuard)
+    @Post('movingInfo/:id/cost')
+    submitNegoCost(
+        @Param('id') movingInfoId: number,
+        @GetMyInfo() bp: BPWithoutPasswordDto
+    ) {
+        return this.taskService.submitNegoCost(movingInfoId, bp)
+    }
 }
