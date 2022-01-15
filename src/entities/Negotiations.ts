@@ -33,8 +33,8 @@ export class Negotiations {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @Column('int', { name: 'MovingInformationtId'})
-    MovingInformationtId: Number;
+    @Column('int', { name: 'MovingInformationId'})
+    MovingInformationId: Number;
 
     @Column('int', { name: 'BusinessPersonId', nullable: true })
     BusinessPersonId: Number | null;
@@ -43,7 +43,7 @@ export class Negotiations {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     })
-    @JoinColumn([{ name: 'MovingInformationtId', referencedColumnName: 'id' }])
+    @JoinColumn([{ name: 'MovingInformationId', referencedColumnName: 'id' }])
     MovingInformation: MovingInformations;
 
     @ManyToOne(() => BusinessPersons, businesspersons => businesspersons.Negotiation, {
