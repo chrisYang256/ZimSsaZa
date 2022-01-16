@@ -1,11 +1,12 @@
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BPJwtAuthGuard } from 'src/auth/bp-jwt-auth.guard';
 import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
 import { BPWithoutPasswordDto } from 'src/business-persons/dto/bp-without-password.dto';
 import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { UserWithoutPasswordDto } from 'src/users/dto/user-without-password.dto';
+import { NegoCostDto } from './dto/nego-cost.dto';
 import { TasksService } from './tasks.service';
 
 @ApiTags('TASK')
@@ -53,13 +54,15 @@ export class TasksController {
     @ApiOperation({ summary: '기사님이 견적 금액 제출' })
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBody({ description: '이사 견적 금액', type: NegoCostDto })
     @ApiBearerAuth('JWT-Auth')
     @UseGuards(BPJwtAuthGuard)
     @Post('movingInfo/:id/cost')
     submitNegoCost(
         @Param('id') movingInfoId: number,
+        @Body('cost') cost: NegoCostDto,
         @GetMyInfo() bp: BPWithoutPasswordDto
     ) {
-        return this.taskService.submitNegoCost(movingInfoId, bp)
+        return this.taskService.submitNegoCost(movingInfoId, bp, cost)
     }
 }

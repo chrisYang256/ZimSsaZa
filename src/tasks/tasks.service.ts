@@ -11,6 +11,7 @@ import { MovingInformations } from 'src/entities/MovingInformations';
 import { Negotiations } from 'src/entities/Negotiations';
 import { Users } from 'src/entities/Users';
 import { Connection, Repository } from 'typeorm';
+import { NegoCostDto } from './dto/nego-cost.dto';
 
 @Injectable()
 export class TasksService {
@@ -31,6 +32,17 @@ export class TasksService {
         private areaCodesRepository: Repository<AreaCodes>,
         private connection: Connection,
     ) {}
+
+    async countNegoByBusinessPersons(movingInfoId): Promise<number> {
+        const countNegoByBps = await this.negotiationsRepository
+        .createQueryBuilder('nego')
+        .select('COUNT(nego.cost)', 'count')
+        .where('nego.MovingInformationId = :id', { id: movingInfoId })
+        .andWhere('nego.cost IS NOT NULL')
+        .getRawOne();
+
+        return +countNegoByBps.count;
+    }
 
     async submitMovingInfo(myId: number) {
         try {
@@ -69,9 +81,7 @@ export class TasksService {
                 .where('id = :id', { id: movingInfoToNego.id })
                 .execute();
 
-            // scheduler로 24시간 경과(nego table createAt으로 확인)시 nego -> stay, 
-            // 기사님 견적 전송 체크로 견적 10개 초과 여부(nego table cost로 확인) 체크
-            // 둘 다 유저에게 알림 필요 -> 웹소켓 사용 
+            // scheduler로 24시간 경과(nego table createAt으로) 확인로직 추가하기!!
 
         } catch (error) {
             console.log(error);
@@ -114,7 +124,6 @@ export class TasksService {
         }
     }
 
-    // 이사견적 요청 상세정보 조회
     async getMovingInfo(movingInfoId: number) {
         try {
             // 특정 견적요청 게시물 버튼을 눌렀을 때의 게시물 상태 확인
@@ -176,11 +185,31 @@ export class TasksService {
         }
     }
 
-    // 기사님 이사 견적 제출하기
     async submitNegoCost(
         movingInfoId: number, 
-        bp: BPWithoutPasswordDto
+        bp: BPWithoutPasswordDto,
+        cost: NegoCostDto
         ) {
+        // 동일한 견적요청에 대해 1번만 견적을 제출할 수 있도록 체크
+        const isDuplication = await this.negotiationsRepository
+            .createQueryBuilder('nego')
+            .where('nego.MovingInformationId = :movingInfoId', { movingInfoId })
+            .andWhere('nego.BusinessPersonId = :id', { id: bp.id })
+            .getOne();
+        console.log('isDuplication:::', isDuplication);
+
+        if (isDuplication) {
+            throw new ForbiddenException('이미 해당 견적요청에 응답하셨습니다.')
+        }
+
+        // 기존 제출된 견적서 10개 여부 확인(기사님들 견적서 10개 이상 제출 방지)
+        const checkBeforeSubmitCost = await this.countNegoByBusinessPersons(movingInfoId);
+        console.log('checkBeforeSubmitCost:::', checkBeforeSubmitCost);
+
+        if (checkBeforeSubmitCost >= 10) {
+            throw new ForbiddenException('이미 10건의 견적서 제출이 완료되었습니다')
+        }
+
         // nego 테이블에서 견적받을 row 조회
         const findNego = await this.negotiationsRepository
             .createQueryBuilder('nego')
@@ -190,25 +219,31 @@ export class TasksService {
             .getOne();
         console.log('findNego:::', findNego);
 
-        // 동일한 견적요청에 대해 1번만 견적을 제출할 수 있도록
-        const isDupl = await this.negotiationsRepository
-            .createQueryBuilder('nego')
-            .where('nego.MovingInformationId = :id', { id: movingInfoId })
-            .andWhere('nego.BusinessPersonId = :id', { id: bp.id })
-            .getOne();
-
-        if (isDupl) {
-            throw new ForbiddenException('이미 해당 견적요청에 응답하셨습니다.')
-        }
-
-
-        // 앞서 제출된 견적서 10개 여부 확인
-
         // 견적금액 적어서 제출
+        await this.negotiationsRepository
+            .createQueryBuilder()
+            .insert()
+            .into('negotiations')
+            .values({
+                cost,
+                MovingInformationId: movingInfoId,
+                BusinessPersonId: bp.id,
+            })
+            .execute();
 
-        // finally에서 제출 후 nego 테이블에서 받은 견적서 10개 이상인지 체크
-        // 10개 이상이면 유저에게 견적서 확인하라고 메시지 발송
+        // 현재 제출된 견적서 추가 합계 10개 여부 확인, 10개 도달 시 유저에게 알림
+        const checkAfterSubmitCost = await this.countNegoByBusinessPersons(movingInfoId);
+        console.log('checkAfterSubmitCost:::', checkAfterSubmitCost);
+
+        if (checkAfterSubmitCost >= 10) {
+            // 10개 완료시 유저에게 알림 로직 추가하기!!(웹소켓)
+            return { 'message' : '견적 신청이 완료되었습니다. 확인해주세요!' } // after 10개 체크 test
+        }
     }
 
-    // 유저 받은 견적 리스트 보기(낮은 가격순으로 5개만 보여주기)
+    // 받은 견적 리스트 보기(낮은 가격순으로 5개만 보여주기)
+
+    // 견적서 pick하기(NEGO -> PICK)
+
+    // 이사 완료(PICK -> DONE)
 }
