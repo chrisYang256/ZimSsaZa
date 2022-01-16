@@ -19,7 +19,11 @@ export class AuthService {
     async validateUser(email: string, password: string) {
         const user = await this.usersRepository
             .createQueryBuilder('user')
-            .select(['user.id', 'user.email', 'user.password', 'user.name', 'user.phone_number'])
+            .select([
+                'user.id', 
+                'user.email', 
+                'user.password', 
+            ])
             .where('user.email = :email', { email })
             .getOne()
         console.log('auth service user:::', user);
@@ -45,12 +49,8 @@ export class AuthService {
             .createQueryBuilder('bp')
             .select([
                 'bp.id', 
-                'bp.name', 
                 'bp.email', 
                 'bp.password', 
-                'bp.phone_number', 
-                'bp.business_license', 
-                'bp.finish_count',
             ])
             .where('bp.email = :email', { email })
             .getOne()

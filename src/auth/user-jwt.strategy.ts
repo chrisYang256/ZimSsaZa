@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { InjectRepository } from '@nestjs/typeorm';
@@ -28,7 +28,7 @@ export class UserJwtStrategy extends PassportStrategy(Strategy, 'user-jwt') {
             .getOne();
 
         if (!user) {
-            throw new ForbiddenException('유효하지 않은 토큰입니다.');
+            throw new UnauthorizedException('유효하지 않은 토큰입니다.');
         }
         
         return user;

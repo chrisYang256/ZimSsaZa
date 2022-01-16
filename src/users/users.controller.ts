@@ -35,6 +35,7 @@ export class UsersController {
     @ApiOperation({ summary: 'user 내 정보 조회' })
     @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
     @Get()
     myInfo(@GetMyInfo() user: UserWithoutPasswordDto) {
