@@ -1,5 +1,5 @@
 import { Body, Controller, Get, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { BPJwtAuthGuard } from 'src/auth/bp-jwt-auth.guard';
 import { BPLocalAuthGuard } from 'src/auth/bp-local-auth.guard';
@@ -21,6 +21,7 @@ export class BusinessPersonsController {
     @ApiOperation({ summary: 'BP 내 정보 조회' })
     @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('JWT-Auth')
     @UseGuards(BPJwtAuthGuard)
     @Get()
     myInfo(@GetMyInfo() bp: BPWithoutPasswordDto) {
@@ -42,7 +43,7 @@ export class BusinessPersonsController {
     @UseGuards(BPLocalAuthGuard)
     @Post('login')
     async signIn(@GetMyInfo() bp: BusinessPersons) {
-        console.log('bp:::::::', bp)
+        console.log('bp:::', bp)
         return await this.authService.login(bp);
     }
 }

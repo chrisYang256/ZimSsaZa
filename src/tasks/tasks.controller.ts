@@ -65,4 +65,18 @@ export class TasksController {
     ) {
         return this.taskService.submitNegoCost(movingInfoId, bp, cost)
     }
+
+    @ApiOperation({ summary: '받은 견적 리스트 보기' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('JWT-Auth')
+    @UseGuards(BPJwtAuthGuard, UserJwtAuthGuard)
+    @Get('movingInfo/estimates')
+    checkEestimateList(
+        // @Param('id') movingInfoId: number,
+        @GetMyInfo() user
+    ) {
+        return user
+        // return this.taskService.submitNegoCost(movingInfoId, bp, cost)
+    }
 }
