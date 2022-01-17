@@ -50,15 +50,10 @@ export class MovingInformations {
     @Column('varchar', { name: 'move_time', length: 5 })
     move_time: string;
 
-    @IsString()
-    @ApiProperty({ example: '2022-01-12 16:27:13.872773', description: '견적 제출 일시'})
-    @Column('varchar', { name: 'submit', nullable: true })
-    submit: Date | null;
-
     @IsNumber()
     @ApiProperty({ example: '5', description: '유저에게 선택된 기사님 id'})
-    @Column('int', { name: 'chosen_bp', nullable: true })
-    chosen_bp: number | null;
+    @Column('int', { name: 'picked_business_person', nullable: true })
+    picked_business_person: number | null;
 
     @IsNumber()
     @IsNotEmpty()
@@ -69,8 +64,8 @@ export class MovingInformations {
     @IsNumber()
     @IsNotEmpty()
     @ApiProperty({ example: '1', description: '기사님 이사완료 확인 여부'})
-    @Column('tinyint', { name: 'bp_done', width: 1, default: () => "'0'" })
-    bp_done: boolean;
+    @Column('tinyint', { name: 'business_person_done', width: 1, default: () => "'0'" })
+    business_person_done: boolean;
 
     @CreateDateColumn()
     createdAt: Date;

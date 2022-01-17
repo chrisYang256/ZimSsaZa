@@ -90,4 +90,7 @@ export class UsersController {
         console.log('makePackForMoving - movingGoodsInfoDto:::', createMovingGoodsDto);
         return this.usersService.makePackForMoving(createMovingGoodsDto, files, user.id);
     }
+    
+    // nego 이상 진행중인 movingInfo관련 조회(pick한 기사님의 정보 조회 가능)
+
 }

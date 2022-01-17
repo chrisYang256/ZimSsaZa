@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import e from 'express';
 import { BPWithoutPasswordDto } from 'src/business-persons/dto/bp-without-password.dto';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
@@ -243,11 +244,20 @@ export class TasksService {
         }
     }
 
-    async checkEestimateList(movingInfoId: number) {
+    async checkEestimateList(userId: number) {
+        const myMovingInfo = await this.movingInformationsRepository
+            .createQueryBuilder('movingInfo')
+            .where('movingInfo.UserId = :userId', { userId })
+            .andWhere('movingInfo.MovingStatusId = :id', { id: MovingStatusEnum.NEGO })
+            .orderBy('movingInfo.createdAt', "DESC")
+            .getOne();
+        console.log('myMovingInfo:::', myMovingInfo)
+
         // 받은 견적 리스트 10개 중 낮은 가격순으로 5개만 return
         const estimateList = await this.negotiationsRepository
             .createQueryBuilder('nego')
             .innerJoin('nego.BusinessPerson', 'businessPerson')
+            .innerJoin('nego.MovingInformation', 'movingInfo')
             .innerJoin('businessPerson.Reviews', 'reviews')
             .innerJoin('reviews.User', 'reviewer')
             .select([
@@ -265,21 +275,26 @@ export class TasksService {
                 'reviews.content', 
                 'reviews.createdAt',
             ])
-            .addSelect(['reviewer.name'])
-            .where('nego.MovingInformationId = :id', { id: movingInfoId })
+            .addSelect('reviewer.name')
+            .addSelect('movingInfo.id')
+            .where('nego.MovingInformationId = :id', { id: myMovingInfo.id })
             .andWhere('nego.cost IS NOT NULL')
             .orderBy('reviews.createdAt', 'DESC')
             .addOrderBy('nego.cost', 'ASC')
             .take(5)
             .getMany();
 
+        if (estimateList.length === 0) {
+            return { 'message' : '받은 견적이 "0"건입니다.'}
+        }
+
         //  기사님 각각의 리뷰 별점 평균 포함시키기
         for (let i = 0; i < estimateList.length; i++) {
             let stars = 0;
             for (let j = 0; j < estimateList[i].BusinessPerson.Reviews.length; j++) {
-                stars += estimateList[i].BusinessPerson.Reviews[j].star
+                stars += estimateList[i].BusinessPerson.Reviews[j].star;
             }
-            let AVGstars =  stars / estimateList[i].BusinessPerson.Reviews.length
+            let AVGstars = stars / estimateList[i].BusinessPerson.Reviews.length;
             estimateList[i].BusinessPerson['averageOfStarsCount'] = Math.round(AVGstars * 10) / 10;
         }
 
@@ -288,11 +303,46 @@ export class TasksService {
             'length:::', estimateList.length
         );
 
-        return estimateList;
+        return { 'estimateList' : estimateList, 'status': 200 }
     }
 
-
     // 견적서 pick하기(NEGO -> PICK)
+    async pickEestimate(
+        movingInfoId: number, 
+        businessPersonId: number
+    ) {
+        const checkBusinessPerson = await this.businessPersonsRepository
+            .createQueryBuilder('businessPerson')
+            .where('businessPerson.id = :id', { id: businessPersonId })
+            .getOne();
 
-    // 이사 완료(PICK -> DONE)
+        if (!checkBusinessPerson) {
+            throw new NotFoundException('존재하지 않거나 탈퇴한 기사님입니다.');
+        }
+
+        const checkAleadyPicked = await this.movingInformationsRepository
+            .createQueryBuilder('movingInfo')
+            .where('movingInfo.id = :id', { id: movingInfoId })
+            .getOne()
+
+        if (checkAleadyPicked.picked_business_person !== null) {
+            throw new ForbiddenException(`이미 '${checkBusinessPerson.name}'기사님의 견적서를 선택하셨습니다.`);
+        }
+
+        // 선택된 기사님 id 입력, 현재 진행상태 변경(NEGO -> PICK)
+        await this.movingInformationsRepository
+            .createQueryBuilder()
+            .update('MovingInformations')
+            .set({ 
+                picked_business_person: businessPersonId,
+                MovingStatusId: MovingStatusEnum.PICK,
+            })
+            .where('id = :id', { id: movingInfoId })
+            .execute();
+        
+        // 해당 기사님에게 알림 주기(웹소켓)
+
+        return { 'message' : '기사님 선택 완료!', 'status' : 201 }
+    }
+
 }

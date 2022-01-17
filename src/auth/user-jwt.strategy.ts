@@ -26,7 +26,8 @@ export class UserJwtStrategy extends PassportStrategy(Strategy, 'user-jwt') {
             .createQueryBuilder('user')
             .where('user.id = :id', { id: payload.id })
             .getOne();
-
+        // console.log('user-token:::', user);
+        
         if (!user) {
             throw new UnauthorizedException('유효하지 않은 토큰입니다.');
         }
