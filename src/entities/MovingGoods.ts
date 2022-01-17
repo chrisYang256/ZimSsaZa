@@ -20,37 +20,37 @@ export class MovingGoods {
 
     @ApiProperty({ example: 3, description: 'load_informations PK'})
     @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
-    id: Number;
+    id: number;
 
     @IsNumber()
     @ApiProperty({ example: '2', description: '침대 갯수'})
     @Column('int', { name: 'bed', width: 5, default: 0 })
-    bed: Number;
+    bed: number;
 
     @IsNumber()
     @ApiProperty({ example: '2', description: '옷장 갯수'})
     @Column('int', { name: 'closet', width: 5, default: 0 })
-    closet: Number;
+    closet: number;
 
     @IsNumber()
     @ApiProperty({ example: '2', description: '수납장 갯수'})
     @Column('int', { name: 'storage_closet', width: 5, default: 0 })
-    storage_closet: Number;
+    storage_closet: number;
 
     @IsNumber()
     @ApiProperty({ example: '2', description: '테이블 갯수'})
     @Column('int', { name: 'table', width: 5, default: 0 })
-    table: Number;
+    table: number;
 
     @IsNumber()
     @ApiProperty({ example: '2', description: '소파 갯수'})
     @Column('int', { name: 'sofa', width: 5, default: 0 })
-    sofa: Number;
+    sofa: number;
 
     @IsNumber()
     @ApiProperty({ example: '1', description: '우체국 5호 사이즈 이삿짐 박스 갯수'})
     @Column('int', { name: 'box', width: 5, default: 0 })
-    box: Number;
+    box: number;
 
     @CreateDateColumn()
     createdAt: Date;
@@ -59,7 +59,7 @@ export class MovingGoods {
     updatedAt: Date;
 
     @Column('int', { name: 'MovingInformationId'})
-    MovingInformationId: Number;
+    MovingInformationId: number;
 
     @OneToOne(() => MovingInformations, movinginformations => movinginformations.MovingGoods, {
         onUpdate: 'CASCADE',

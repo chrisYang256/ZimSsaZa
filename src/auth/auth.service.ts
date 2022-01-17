@@ -26,7 +26,7 @@ export class AuthService {
             ])
             .where('user.email = :email', { email })
             .getOne()
-        console.log('auth service user:::', user);
+        // console.log('auth service user:::', user);
         
         if (!user) {
             throw new ForbiddenException(`'${email}' 회원을 찾을 수 없습니다.`)
@@ -37,7 +37,6 @@ export class AuthService {
 
         if (result) {
             const { password, ...userInfoWithoutPassword } = user;
-            console.log('userInfoWithoutPassword:::', userInfoWithoutPassword)
             return userInfoWithoutPassword;
         }
 

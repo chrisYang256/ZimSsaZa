@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BPJwtAuthGuard } from 'src/auth/bp-jwt-auth.guard';
 import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
@@ -36,9 +36,9 @@ export class TasksController {
     @Get('movingInfo/board')
     getMovingInfoList(
         @Query() pagenation: PagenationDto,
-        @GetMyInfo() bp: BPWithoutPasswordDto
+        @GetMyInfo() businessPerson: BPWithoutPasswordDto
         ) {
-        return this.taskService.getMovingInfoList(pagenation, bp)
+        return this.taskService.getMovingInfoList(pagenation, businessPerson)
     }    
 
     @ApiOperation({ summary: '견적요청 상세 조회'})
@@ -61,22 +61,20 @@ export class TasksController {
     submitNegoCost(
         @Param('id') movingInfoId: number,
         @Body('cost') cost: NegoCostDto,
-        @GetMyInfo() bp: BPWithoutPasswordDto
+        @GetMyInfo() businessPerson: BPWithoutPasswordDto
     ) {
-        return this.taskService.submitNegoCost(movingInfoId, bp, cost)
+        return this.taskService.submitNegoCost(movingInfoId, businessPerson.id, cost);
     }
 
-    @ApiOperation({ summary: '받은 견적 리스트 보기' })
-    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiOperation({ summary: '받은 견적 리스트 보기'})
+    @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
     @ApiBearerAuth('JWT-Auth')
-    @UseGuards(BPJwtAuthGuard, UserJwtAuthGuard)
-    @Get('movingInfo/estimates')
+    @UseGuards(UserJwtAuthGuard)
+    @Post('movingInfo/:id/estimates')
     checkEestimateList(
-        // @Param('id') movingInfoId: number,
-        @GetMyInfo() user
-    ) {
-        return user
-        // return this.taskService.submitNegoCost(movingInfoId, bp, cost)
+        @Param('id', ParseIntPipe) movingInfoId: number,
+        ) {
+        return this.taskService.checkEestimateList(movingInfoId)
     }
 }

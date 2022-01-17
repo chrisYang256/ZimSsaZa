@@ -26,7 +26,7 @@ export class AreaCodes {
     @IsNotEmpty()
     @ApiProperty({ example: '1', description: '이사 지역 코드'})
     @Column('int', { name: 'code', width: 10 })
-    code: Number;
+    code: number;
 
     @CreateDateColumn()
     createdAt: Date;
@@ -35,10 +35,10 @@ export class AreaCodes {
     updatedAt: Date;
 
     @Column('int', { name: 'BusinessPersonId', nullable: true })
-    BusinessPersonId: Number | null;
+    BusinessPersonId: number | null;
 
     @Column('int', { name: 'MovingInformationId', nullable: true })
-    MovingInformationId: Number | null;
+    MovingInformationId: number | null;
 
     @OneToOne(() => MovingInformations, movingformations => movingformations.AreaCode, {
         onUpdate: 'CASCADE',

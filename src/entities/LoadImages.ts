@@ -32,7 +32,7 @@ export class LoadImages {
     updatedAt: Date;
 
     @Column('int', { name: 'MovingGoodsId'})
-    MovingGoodsId: Number;
+    MovingGoodsId: number;
 
     @ManyToOne(() => MovingGoods, movinggoods => movinggoods.LoadImags, {
         onUpdate: 'CASCADE',
