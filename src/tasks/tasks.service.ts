@@ -1,16 +1,12 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import e from 'express';
 import { BPWithoutPasswordDto } from 'src/business-persons/dto/bp-without-password.dto';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
-import { AreaCodes } from 'src/entities/AreaCodes';
 import { BusinessPersons } from 'src/entities/BusinessPersons';
-import { LoadImages } from 'src/entities/LoadImages';
 import { MovingGoods } from 'src/entities/MovingGoods';
 import { MovingInformations } from 'src/entities/MovingInformations';
 import { Negotiations } from 'src/entities/Negotiations';
-import { Users } from 'src/entities/Users';
 import { Connection, Repository } from 'typeorm';
 import { NegoCostDto } from './dto/nego-cost.dto';
 const util = require('util')
@@ -18,8 +14,6 @@ const util = require('util')
 @Injectable()
 export class TasksService {
     constructor(
-        @InjectRepository(Users)
-        private usersRepository: Repository<Users>,
         @InjectRepository(BusinessPersons)
         private businessPersonsRepository: Repository<BusinessPersons>,
         @InjectRepository(Negotiations)
@@ -27,13 +21,34 @@ export class TasksService {
         @InjectRepository(MovingInformations)
         private movingInformationsRepository: Repository<MovingInformations>,
         @InjectRepository(MovingGoods)
-        private movingGoodsRepository: Repository<MovingGoods>,
-        @InjectRepository(LoadImages)
-        private loadImageRepository: Repository<LoadImages>,
-        @InjectRepository(AreaCodes)
-        private areaCodesRepository: Repository<AreaCodes>,
         private connection: Connection,
     ) {}
+
+    async checkMovingToDone(checkDone, businessPersonId, movingInfoId) {
+        if (checkDone) {
+            const exFinishCount = await this.businessPersonsRepository
+                .createQueryBuilder('businessPerson')
+                .select('businessPerson.finish_count')
+                .where('id = :id', { id: businessPersonId })
+                .getOne();
+            console.log('exFinishCount:::', exFinishCount)
+
+            await this.businessPersonsRepository
+                .createQueryBuilder()
+                .update('BusinessPersons')
+                .set({ finish_count: exFinishCount.finish_count +1 })
+                .where('id = :id', { id: businessPersonId })
+                .execute();
+
+            await this.movingInformationsRepository
+                .createQueryBuilder()
+                .update('MovingInformations')
+                .set({ MovingStatusId: MovingStatusEnum.DONE })
+                .where('id = :id', { id: movingInfoId })
+                .execute();
+            }
+        return { 'message' : '이사 완료!', 'status' : 201 }
+    }
 
     async submitMovingInfo(userId: number) {
         try {
@@ -345,4 +360,61 @@ export class TasksService {
         return { 'message' : '기사님 선택 완료!', 'status' : 201 }
     }
 
+    async makeMovingToDoneByUser(
+        movingInfoId: number, 
+        businessPersonId: number
+    ) {
+        await this.movingInformationsRepository
+            .createQueryBuilder()
+            .update('MovingInformations')
+            .set({ 
+                user_done: true, 
+            })
+            .where('id = :movingInfoId', { movingInfoId })
+            .andWhere('picked_business_person = :businessPersonId', { businessPersonId })
+            .execute();
+
+        // 기사님 완료 체크여부 확인
+        const checkedBusinessPersonDone = await this.movingInformationsRepository
+            .createQueryBuilder('movingInfo')
+            .where('movingInfo.id = :id', { id: movingInfoId })
+            .andWhere('movingInfo.picked_business_person', { businessPersonId })
+            .andWhere('movingInfo.business_person_done IS TRUE')
+            .getOne();
+        console.log('checkBusinessPersonDone:::', checkedBusinessPersonDone);
+
+        // 유저 + 기사님 완료 체크시 기사님 이사완료 카운트 +1, movingInfo 상태 PICK -> DONE
+        await this.checkMovingToDone(checkedBusinessPersonDone, businessPersonId, movingInfoId);
+
+        return { 'message' : '유저 이사완료 확인', 'status' : 201 }
+    }
+
+    async makeMovingToDoneByBusinessPerson(
+        movingInfoId: number, 
+        businessPersonId: number,
+    ) {
+        await this.movingInformationsRepository
+            .createQueryBuilder()
+            .update('MovingInformations')
+            .set({ 
+                business_person_done: true, 
+            })
+            .where('id = :movingInfoId', { movingInfoId })
+            .andWhere('picked_business_person = :businessPersonId', { businessPersonId })
+            .execute();
+
+        // 유저 완료 체크여부 확인
+        const checkedUserDone = await this.movingInformationsRepository
+            .createQueryBuilder('movingInfo')
+            .where('movingInfo.id = :id', { id: movingInfoId })
+            .andWhere('movingInfo.picked_business_person', { businessPersonId })
+            .andWhere('movingInfo.user_done IS TRUE')
+            .getOne();
+        console.log('checkedUserDone:::', checkedUserDone);
+
+        // 유저 + 기사님 완료 체크시 기사님 이사완료 카운트 +1, movingInfo 상태 PICK -> DONE
+        await this.checkMovingToDone(checkedUserDone, businessPersonId, movingInfoId);
+
+        return { 'message' : '기사님 이사완료 확인', 'status' : 201 }
+    }
 }

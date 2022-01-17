@@ -91,4 +91,29 @@ export class TasksController {
         return this.taskService.pickEestimate(movingInfoId, businessPersonId);
     }
 
+    @ApiOperation({ summary: '유저 이사완료 체크'})
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('JWT-Auth')
+    @UseGuards(UserJwtAuthGuard)
+    @Post('movingInfo/:id/user-done/counterpart/:businesspersonId')
+    makeMovingToDoneByUser(
+        @Param('id', ParseIntPipe) movingInfoId: number,
+        @Param('businesspersonId', ParseIntPipe) businessPersonId: number
+        ) {
+        return this.taskService.makeMovingToDoneByUser(movingInfoId, businessPersonId);
+    }
+
+    @ApiOperation({ summary: '기사님 이사완료 체크'})
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('JWT-Auth')
+    @UseGuards(BusinessPersonJwtAuthGuard)
+    @Post('movingInfo/:id/businessperson-done')
+    makeMovingToDoneByBusinessPerson(
+        @Param('id', ParseIntPipe) movingInfoId: number,
+        @GetMyInfo() businessPerson: BPWithoutPasswordDto
+        ) {
+        return this.taskService.makeMovingToDoneByBusinessPerson(movingInfoId, businessPerson.id);
+    }
 }
