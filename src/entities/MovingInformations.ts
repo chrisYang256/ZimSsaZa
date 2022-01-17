@@ -58,7 +58,7 @@ export class MovingInformations {
     @IsNumber()
     @ApiProperty({ example: '5', description: '유저에게 선택된 기사님 id'})
     @Column('int', { name: 'chosen_bp', nullable: true })
-    chosen_bp: Number | null;
+    chosen_bp: number | null;
 
     @IsNumber()
     @IsNotEmpty()
@@ -79,10 +79,10 @@ export class MovingInformations {
     updatedAt: Date;
 
     @Column('int', { name: 'UserId'})
-    UserId: Number;
+    UserId: number;
 
     @Column('int', { name: 'MovingStatusId'})
-    MovingStatusId: Number;
+    MovingStatusId: number;
 
     @OneToOne(() => MovingGoods, movinggoods => movinggoods.MovingInformation)
     MovingGoods: MovingGoods;

@@ -25,7 +25,7 @@ export class Negotiations {
     @IsNotEmpty()
     @ApiProperty({ example: '300000', description: '이사 비용 견적'})
     @Column('int', { name: 'cost', width: 10, nullable: true })
-    cost: Number | null;
+    cost: number | null;
 
     @CreateDateColumn()
     createdAt: Date;
@@ -34,10 +34,10 @@ export class Negotiations {
     updatedAt: Date;
 
     @Column('int', { name: 'MovingInformationId'})
-    MovingInformationId: Number;
+    MovingInformationId: number;
 
     @Column('int', { name: 'BusinessPersonId', nullable: true })
-    BusinessPersonId: Number | null;
+    BusinessPersonId: number | null;
 
     @ManyToOne(() => MovingInformations, moveinformations => moveinformations.Negotiations, {
         onUpdate: 'CASCADE',

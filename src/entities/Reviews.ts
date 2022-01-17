@@ -30,9 +30,9 @@ export class Reviews {
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: '', description: ''})
+    @ApiProperty({ example: '5', description: '평점'})
     @Column('int', { name: 'star', width: 5 })
-    star: Number;
+    star: number;
 
     @CreateDateColumn()
     createdAt: Date;
@@ -41,10 +41,10 @@ export class Reviews {
     updatedAt: Date;
 
     @Column('int', { name: 'UserId', nullable: true })
-    UserId: Number | null;
+    UserId: number | null;
 
     @Column('int', { name: 'BusinessPersonId', nullable: true })
-    BusinessPersonId: Number | null;
+    BusinessPersonId: number | null;
 
     @ManyToOne(() => Users, users => users.Reviews, { 
         onUpdate: 'CASCADE', 
@@ -59,4 +59,5 @@ export class Reviews {
     })
     @JoinColumn([{ name: 'BusinessPersonId', referencedColumnName: 'id' }])
     BusinessPerson: BusinessPersons;
+    length: number;
 }

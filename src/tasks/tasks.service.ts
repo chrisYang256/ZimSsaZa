@@ -12,6 +12,7 @@ import { Negotiations } from 'src/entities/Negotiations';
 import { Users } from 'src/entities/Users';
 import { Connection, Repository } from 'typeorm';
 import { NegoCostDto } from './dto/nego-cost.dto';
+const util = require('util')
 
 @Injectable()
 export class TasksService {
@@ -33,22 +34,11 @@ export class TasksService {
         private connection: Connection,
     ) {}
 
-    async countNegoByBusinessPersons(movingInfoId): Promise<number> {
-        const countNegoByBps = await this.negotiationsRepository
-        .createQueryBuilder('nego')
-        .select('COUNT(nego.cost)', 'count')
-        .where('nego.MovingInformationId = :id', { id: movingInfoId })
-        .andWhere('nego.cost IS NOT NULL')
-        .getRawOne();
-
-        return +countNegoByBps.count;
-    }
-
-    async submitMovingInfo(myId: number) {
+    async submitMovingInfo(userId: number) {
         try {
             const isNegoing = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
-                .where('movingInfo.UserId = :id', { id: myId })
+                .where('movingInfo.UserId = :id', { id: userId })
                 .getMany();
             console.log('isNegoing:::', isNegoing)
     
@@ -58,7 +48,7 @@ export class TasksService {
 
             const movingInfoToNego = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
-                .where('movingInfo.UserId = :id', { id: myId })
+                .where('movingInfo.UserId = :id', { id: userId })
                 .orderBy('movingInfo.createdAt', 'DESC')
                 .getOne();
             console.log('movingInfoToNego:::', movingInfoToNego)
@@ -91,12 +81,12 @@ export class TasksService {
 
     async getMovingInfoList(
         pagenation: PagenationDto,
-        bp: BPWithoutPasswordDto
+        businessPerson: BPWithoutPasswordDto
     ) { 
         // NEGO 중인 submitMovingInfo 중에서 기사님 관심 area_code들과 일치하는 결과만 리턴
         try {
             const { perPage, page } = pagenation;
-            const bpAreaCodes = bp.AreaCodes.map((v) => v);
+            const bpAreaCodes = businessPerson.AreaCodes.map((v) => v);
             console.log('bpAreaCodes:::', bpAreaCodes);
 
             const movingInfoList = await this.movingInformationsRepository
@@ -187,33 +177,45 @@ export class TasksService {
 
     async submitNegoCost(
         movingInfoId: number, 
-        bp: BPWithoutPasswordDto,
+        businessPersonId: number,
         cost: NegoCostDto
         ) {
         // 동일한 견적요청에 대해 1번만 견적을 제출할 수 있도록 체크
         const isDuplication = await this.negotiationsRepository
             .createQueryBuilder('nego')
             .where('nego.MovingInformationId = :movingInfoId', { movingInfoId })
-            .andWhere('nego.BusinessPersonId = :id', { id: bp.id })
+            .andWhere('nego.BusinessPersonId = :businessPersonId', { businessPersonId })
             .getOne();
         console.log('isDuplication:::', isDuplication);
 
         if (isDuplication) {
-            throw new ForbiddenException('이미 해당 견적요청에 응답하셨습니다.')
+            throw new ForbiddenException('이미 해당 견적요청에 응답하셨습니다.');
+        }
+
+        const countNegoByBusinessPersons = async (movingInfoId): Promise<number> => {
+            const countNegoByBps = await this.negotiationsRepository
+            .createQueryBuilder('nego')
+            .select('COUNT(nego.cost)', 'count')
+            .where('nego.MovingInformationId = :movingInfoId', { movingInfoId })
+            .andWhere('nego.cost IS NOT NULL')
+            .getRawOne();
+    
+            return +countNegoByBps.count;
         }
 
         // 기존 제출된 견적서 10개 여부 확인(기사님들 견적서 10개 이상 제출 방지)
-        const checkBeforeSubmitCost = await this.countNegoByBusinessPersons(movingInfoId);
+        const checkBeforeSubmitCost = await countNegoByBusinessPersons(movingInfoId);
         console.log('checkBeforeSubmitCost:::', checkBeforeSubmitCost);
 
+
         if (checkBeforeSubmitCost >= 10) {
-            throw new ForbiddenException('이미 10건의 견적서 제출이 완료되었습니다')
+            throw new ForbiddenException('이미 10건의 견적서 제출이 완료되었습니다');
         }
 
         // nego 테이블에서 견적받을 row 조회
         const findNego = await this.negotiationsRepository
             .createQueryBuilder('nego')
-            .where('nego.MovingInformationId = :id', { id: movingInfoId })
+            .where('nego.MovingInformationId = :movingInfoId', { movingInfoId })
             .andWhere('nego.BusinessPersonId IS NULL')
             .andWhere('nego.cost IS NULL')
             .getOne();
@@ -227,12 +229,12 @@ export class TasksService {
             .values({
                 cost,
                 MovingInformationId: movingInfoId,
-                BusinessPersonId: bp.id,
+                BusinessPersonId: businessPersonId,
             })
             .execute();
 
         // 현재 제출된 견적서 추가 합계 10개 여부 확인, 10개 도달 시 유저에게 알림
-        const checkAfterSubmitCost = await this.countNegoByBusinessPersons(movingInfoId);
+        const checkAfterSubmitCost = await countNegoByBusinessPersons(movingInfoId);
         console.log('checkAfterSubmitCost:::', checkAfterSubmitCost);
 
         if (checkAfterSubmitCost >= 10) {
@@ -241,7 +243,54 @@ export class TasksService {
         }
     }
 
-    // 받은 견적 리스트 보기(낮은 가격순으로 5개만 보여주기)
+    async checkEestimateList(movingInfoId: number) {
+        // 받은 견적 리스트 10개 중 낮은 가격순으로 5개만 return
+        const estimateList = await this.negotiationsRepository
+            .createQueryBuilder('nego')
+            .innerJoin('nego.BusinessPerson', 'businessPerson')
+            .innerJoin('businessPerson.Reviews', 'reviews')
+            .innerJoin('reviews.User', 'reviewer')
+            .select([
+                'nego.id',
+                'nego.cost'
+            ])
+            .addSelect([
+                'businessPerson.id',
+                'businessPerson.name',
+                'businessPerson.finish_count',
+            ])
+            .addSelect([
+                'reviews.id',
+                'reviews.star',
+                'reviews.content', 
+                'reviews.createdAt',
+            ])
+            .addSelect(['reviewer.name'])
+            .where('nego.MovingInformationId = :id', { id: movingInfoId })
+            .andWhere('nego.cost IS NOT NULL')
+            .orderBy('reviews.createdAt', 'DESC')
+            .addOrderBy('nego.cost', 'ASC')
+            .take(5)
+            .getMany();
+
+        //  기사님 각각의 리뷰 별점 평균 포함시키기
+        for (let i = 0; i < estimateList.length; i++) {
+            let stars = 0;
+            for (let j = 0; j < estimateList[i].BusinessPerson.Reviews.length; j++) {
+                stars += estimateList[i].BusinessPerson.Reviews[j].star
+            }
+            let AVGstars =  stars / estimateList[i].BusinessPerson.Reviews.length
+            estimateList[i].BusinessPerson['averageOfStarsCount'] = Math.round(AVGstars * 10) / 10;
+        }
+
+        console.log(
+            'estimateList:::', util.inspect(estimateList, { depth: null }), 
+            'length:::', estimateList.length
+        );
+
+        return estimateList;
+    }
+
 
     // 견적서 pick하기(NEGO -> PICK)
 
