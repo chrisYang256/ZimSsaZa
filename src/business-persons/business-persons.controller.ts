@@ -1,8 +1,7 @@
 import { Body, Controller, Get, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
-import { BPJwtAuthGuard } from 'src/auth/bp-jwt-auth.guard';
-import { BPLocalAuthGuard } from 'src/auth/bp-local-auth.guard';
+import { BusinessPersonJwtAuthGuard } from 'src/auth/businessPerson-jwt-auth.guard';
 import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
 import { LoginDto } from 'src/common/dto/login.dto';
 import { BusinessPersons } from 'src/entities/BusinessPersons';
@@ -22,7 +21,7 @@ export class BusinessPersonsController {
     @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
     @ApiBearerAuth('JWT-Auth')
-    @UseGuards(BPJwtAuthGuard)
+    @UseGuards(BusinessPersonJwtAuthGuard)
     @Get()
     myInfo(@GetMyInfo() bp: BPWithoutPasswordDto) {
         return bp;
@@ -40,10 +39,12 @@ export class BusinessPersonsController {
     @ApiResponse({ status: 201, description: '인증 성공'})
     @ApiResponse({ status: 401, description: '인증 실패' })
     @ApiBody({ type: LoginDto })
-    @UseGuards(BPLocalAuthGuard)
+    @UseGuards(BusinessPersonJwtAuthGuard)
     @Post('login')
     async signIn(@GetMyInfo() bp: BusinessPersons) {
         console.log('bp:::', bp)
         return await this.authService.login(bp);
     }
+
+    // 이사 예정인 목록 조회(pick받은 기사님은 pick한 유저 정보 조회 가능)
 }

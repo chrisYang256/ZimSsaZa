@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { BPJwtAuthGuard } from 'src/auth/bp-jwt-auth.guard';
+import { BusinessPersonJwtAuthGuard } from 'src/auth/businessPerson-jwt-auth.guard';
 import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
 import { BPWithoutPasswordDto } from 'src/business-persons/dto/bp-without-password.dto';
 import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
@@ -25,30 +25,30 @@ export class TasksController {
     submitMovingInfo(
         @GetMyInfo() user: UserWithoutPasswordDto,
         ) {
-        return this.taskService.submitMovingInfo(user.id)
+        return this.taskService.submitMovingInfo(user.id);
     }
 
     @ApiOperation({ summary: '기사님 관할 견적요청 목록 조회'})
     @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
     @ApiBearerAuth('JWT-Auth')
-    @UseGuards(BPJwtAuthGuard)
+    @UseGuards(BusinessPersonJwtAuthGuard)
     @Get('movingInfo/board')
     getMovingInfoList(
         @Query() pagenation: PagenationDto,
         @GetMyInfo() businessPerson: BPWithoutPasswordDto
         ) {
-        return this.taskService.getMovingInfoList(pagenation, businessPerson)
+        return this.taskService.getMovingInfoList(pagenation, businessPerson);
     }    
 
     @ApiOperation({ summary: '견적요청 상세 조회'})
     @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 404, description: '게시물이 존재하지 않습니다.' })
     @ApiBearerAuth('JWT-Auth')
-    @UseGuards(BPJwtAuthGuard)
+    @UseGuards(BusinessPersonJwtAuthGuard)
     @Get('movingInfo/:id')
     getMovingInfo(@Param('id') movingInfoId: number) {
-        return this.taskService.getMovingInfo(movingInfoId)
+        return this.taskService.getMovingInfo(movingInfoId);
     }
 
     @ApiOperation({ summary: '기사님이 견적 금액 제출' })
@@ -56,7 +56,7 @@ export class TasksController {
     @ApiResponse({ status: 401, description: 'response 실패' })
     @ApiBody({ description: '이사 견적 금액', type: NegoCostDto })
     @ApiBearerAuth('JWT-Auth')
-    @UseGuards(BPJwtAuthGuard)
+    @UseGuards(BusinessPersonJwtAuthGuard)
     @Post('movingInfo/:id/cost')
     submitNegoCost(
         @Param('id') movingInfoId: number,
@@ -71,10 +71,24 @@ export class TasksController {
     @ApiResponse({ status: 401, description: 'response 실패' })
     @ApiBearerAuth('JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
-    @Post('movingInfo/:id/estimates')
+    @Get('movingInfo/estimates/list')
     checkEestimateList(
-        @Param('id', ParseIntPipe) movingInfoId: number,
+        @GetMyInfo() user: UserWithoutPasswordDto,
         ) {
-        return this.taskService.checkEestimateList(movingInfoId)
+        return this.taskService.checkEestimateList(user.id);
     }
+
+    @ApiOperation({ summary: '견적서 선택(이사 담당 기사님 선택)'})
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('JWT-Auth')
+    @UseGuards(UserJwtAuthGuard)
+    @Post('movingInfo/:id/estimates/pick/:businessperson')
+    pickEestimate(
+        @Param('id', ParseIntPipe) movingInfoId: number,
+        @Param('businessperson', ParseIntPipe)  businessPersonId: number
+        ) {
+        return this.taskService.pickEestimate(movingInfoId, businessPersonId);
+    }
+
 }

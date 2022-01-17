@@ -5,8 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BusinessPersons } from 'src/entities/BusinessPersons';
 import { Users } from 'src/entities/Users';
 import { AuthService } from './auth.service';
-import { BPJwtStrategy } from './bp-jwt.strategy';
-import { BPLocalStrategy } from './bp-local.strategy';
+import { BusinessPersonJwtStrategy } from './businessPerson-jwt.strategy';
+import { BusinessPersonLocalStrategy } from './businessPerson-local.strategy';
 import { UserJwtStrategy } from './user-jwt.strategy';
 import { UserLocalStrategy } from './user-local.strategy';
 
@@ -15,8 +15,8 @@ import { UserLocalStrategy } from './user-local.strategy';
     AuthService, 
     UserLocalStrategy, 
     UserJwtStrategy, 
-    BPLocalStrategy,
-    BPJwtStrategy,
+    BusinessPersonLocalStrategy,
+    BusinessPersonJwtStrategy,
   ],
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),

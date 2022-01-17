@@ -9,7 +9,7 @@ import { BusinessPersons } from 'src/entities/BusinessPersons';
 dotenv.config();
 
 @Injectable()
-export class BPJwtStrategy extends PassportStrategy(Strategy, 'bp-jwt') {
+export class BusinessPersonJwtStrategy extends PassportStrategy(Strategy, 'businessPerson-jwt') {
     constructor(
         @InjectRepository(BusinessPersons)
         private businessPersons: Repository<BusinessPersons>,

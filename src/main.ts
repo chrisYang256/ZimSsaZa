@@ -13,7 +13,6 @@ async function bootstrap() {
   
   const config = new DocumentBuilder()
     .addBearerAuth({ 
-      // name: '',
       type: 'http', 
       scheme: 'bearer', 
       bearerFormat: 'JWT',
