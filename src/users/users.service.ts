@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/Users';
-import { Connection, Repository } from 'typeorm';
+import { Connection, createQueryBuilder, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import bcrypt from 'bcrypt';
 import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
@@ -82,8 +82,22 @@ export class UsersService {
     async makePackForMoving(
         createMovingGoodsDto: CreateMovingGoodsDto, 
         files: Array<Express.Multer.File>, 
-        myId: number,
+        userId: number,
     ) {
+        // 이미 등록된 이삿짐이 있고 + 그 이삿짐이 이사완료가 되지 않은 상태라면 재등록 못하도록
+        const checkExPackInProgress = await this.movingInformationsRepository 
+            .createQueryBuilder('movingInfo')
+            .where('movingInfo.UserId = :userId', { userId })
+            .andWhere('movingInfo.MovingStatusId != :MovingStatusId', { 
+                MovingStatusId: MovingStatusEnum.DONE
+            })
+            .getOne();
+        console.log('checkExPackInProgress:::', checkExPackInProgress)
+
+        if (checkExPackInProgress) {
+            throw new ForbiddenException('이사 진행중이거나 만들어진 이삿짐이 존재합니다.')
+        }
+
         const {  
             start_point,  
             destination,
@@ -107,7 +121,7 @@ export class UsersService {
         try {
             const user = await this.usersRepository
                 .createQueryBuilder('user')
-                .where('user.id = :id', { id: myId })
+                .where('user.id = :id', { id: userId })
                 .getOne();
 
             if (!user) {
@@ -127,7 +141,7 @@ export class UsersService {
                     UserId: user.id,
                 })
                 .execute();
-            // console.log('movingInfo::;', movingInfo)
+            console.log('movingInfo:::', movingInfo)
     
             await this.areaCodesRepository
                 .createQueryBuilder('area_codes', queryRunner)
@@ -154,19 +168,24 @@ export class UsersService {
                     MovingInformationId: movingInfo.identifiers[0].id,
                 })
                 .execute()
-            // console.log('MovingGoods::;', MovingGoods)
+            console.log('MovingGoods::;', MovingGoods)
             
-            for (let i = 0; i < files.length; i++) { // for문 별도로 빼기
-                await this.loadImageRepository
-                    .createQueryBuilder('load_images', queryRunner)
-                    .insert()
-                    .into('load_images')
-                    .values({
-                        img_path: files[i].path,
-                        MovingGoodsId: MovingGoods.identifiers[0].id,
-                    })
-                    .execute();
+            let results = [];
+            for (let i = 0; i < files.length; i++) {
+                const result = { 
+                    img_path: files[i].path,
+                    MovingGoodsId: MovingGoods.identifiers[0].id,
+                }
+                results.push(result)
             }
+            console.log('valuse:::', results);
+
+            await this.loadImageRepository
+            .createQueryBuilder('load_images', queryRunner)
+            .insert()
+            .into('load_images')
+            .values(results)
+            .execute();
 
             await queryRunner.commitTransaction();
             console.log('isTransactionActive-3:::', queryRunner.isTransactionActive);
@@ -181,5 +200,31 @@ export class UsersService {
         }
     }
 
+    async removePack(userId, packId) {
+        // 이삿짐 삭제는 NEGO 이상 진행중이지 않은 경우만 가능
+        const checkMovingStatus = await this.movingInformationsRepository
+            .createQueryBuilder('movingInfo')
+            .where('id = :packId', { packId })
+            .andWhere('MovingStatusId IN (:...ids)', { ids: [
+                MovingStatusEnum.NEGO,
+                MovingStatusEnum.PICK,
+                MovingStatusEnum.DONE,
+            ]})
+            .getOne();
+        console.log('checkMovingStatus:::', checkMovingStatus);
 
+        if (checkMovingStatus) {
+            throw new ForbiddenException('견적받기 이상 진행 중인 이삿짐 정보는 삭제할 수 없습니다.');
+        }
+
+        await this.movingInformationsRepository
+            .createQueryBuilder()
+            .delete()
+            .from('MovingInformations')
+            .where('id = :packId', { packId })
+            .andWhere('UserId = :userId', { userId})
+            .execute();
+        
+        return { 'message' : '삭제 성공!', 'status' : 201 }
+    }
 }

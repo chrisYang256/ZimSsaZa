@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
@@ -80,7 +80,7 @@ export class UsersController {
     }))
     @ApiBearerAuth('JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
-    @Post('loads')
+    @Post('pack')
     async makePackForMoving(
         @GetMyInfo() user: Users,
         @Body() createMovingGoodsDto: CreateMovingGoodsDto,
@@ -89,6 +89,19 @@ export class UsersController {
         console.log('makePackForMoving - multer files:::', files);
         console.log('makePackForMoving - movingGoodsInfoDto:::', createMovingGoodsDto);
         return this.usersService.makePackForMoving(createMovingGoodsDto, files, user.id);
+    }
+
+    @ApiOperation({ summary: '이삿짐 삭제' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('JWT-Auth')
+    @UseGuards(UserJwtAuthGuard)
+    @Delete('pack/:packId')
+    removePack(
+        @GetMyInfo() user: UserWithoutPasswordDto,
+        @Param('packId', ParseIntPipe) packId: number
+    ) {
+        return this.usersService.removePack(user.id, packId);
     }
     
     // nego 이상 진행중인 movingInfo관련 조회(pick한 기사님의 정보 조회 가능)
