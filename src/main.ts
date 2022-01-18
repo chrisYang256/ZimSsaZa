@@ -16,7 +16,12 @@ async function bootstrap() {
       type: 'http', 
       scheme: 'bearer', 
       bearerFormat: 'JWT',
-    }, 'JWT-Auth')
+    }, 'User-JWT-Auth')
+    .addBearerAuth({ 
+      type: 'http', 
+      scheme: 'bearer', 
+      bearerFormat: 'JWT',
+    }, 'BusinessPerson-JWT-Auth')
     .setTitle('ZimSsaZa')
     .setDescription(`짐싸자 이사 어플 APIs\n 
       유저 testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQyMzQwNzgzLCJleHAiOjE2NzM4NzY3ODN9.FDuK-fR6rLLFa4Tmb9uNZdPHeRRaohCPNDrd__O-DZU

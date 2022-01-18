@@ -1,7 +1,7 @@
 import { ApiProperty, PickType } from "@nestjs/swagger";
 import { BusinessPersons } from "src/entities/BusinessPersons";
 
-export class BPWithoutPasswordDto extends PickType(BusinessPersons, [
+export class BusinessPersonWithoutPasswordDto extends PickType(BusinessPersons, [
     'id', 
     'name', 
     'email', 

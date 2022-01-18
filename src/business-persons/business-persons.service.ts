@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BusinessPersons } from 'src/entities/BusinessPersons';
-import { CreateBPDto } from './dto/create-bp.dto';
+import { CreateBusinessPersonDto } from './dto/create-businessPerson.dto';
 import { Connection, Repository } from 'typeorm';
 import bcrypt from 'bcrypt';
 import { AreaCodes } from 'src/entities/AreaCodes';
@@ -16,8 +16,8 @@ export class BusinessPersonsService {
         private connection: Connection,
     ) {}
 
-    async signUp(createBPDto: CreateBPDto) {
-        const { name, email, password, phone_number, business_license, code } = createBPDto;
+    async signUp(createBusinessPersonDto: CreateBusinessPersonDto) {
+        const { name, email, password, phone_number, business_license, code } = createBusinessPersonDto;
         const passwordRegex = /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
         const phoneNumberRegex = /^010-\d{3,4}-\d{4}$/;
 

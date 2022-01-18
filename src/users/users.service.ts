@@ -200,21 +200,31 @@ export class UsersService {
         }
     }
 
-    async removePack(userId, packId) {
-        // 이삿짐 삭제는 NEGO 이상 진행중이지 않은 경우만 가능
+    async removePack(userId: number, packId: number) {
+        const findMovingInfo = await this.movingInformationsRepository
+            .createQueryBuilder('movingInfo')
+            .where('id = :packId', { packId })
+            .andWhere('UserId = :userId', { userId})
+            .getOne();
+        console.log('findMovingInfo:::', findMovingInfo);
+        
+        if (!findMovingInfo) {
+            throw new ForbiddenException('이삿짐 정보를 찾을 수 없습니다.')
+        }
+
+        // 이삿짐 정보 삭제는 movingStatus가 STAY(견적 제출 전), DONE(이사 완료)인 경우만 가능
         const checkMovingStatus = await this.movingInformationsRepository
             .createQueryBuilder('movingInfo')
             .where('id = :packId', { packId })
             .andWhere('MovingStatusId IN (:...ids)', { ids: [
                 MovingStatusEnum.NEGO,
                 MovingStatusEnum.PICK,
-                MovingStatusEnum.DONE,
             ]})
             .getOne();
         console.log('checkMovingStatus:::', checkMovingStatus);
 
         if (checkMovingStatus) {
-            throw new ForbiddenException('견적받기 이상 진행 중인 이삿짐 정보는 삭제할 수 없습니다.');
+            throw new ForbiddenException('견적을 받는 중이거나 이사중인 경우 삭제할 수 없습니다.');
         }
 
         await this.movingInformationsRepository
