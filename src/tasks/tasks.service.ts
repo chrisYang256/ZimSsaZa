@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BPWithoutPasswordDto } from 'src/business-persons/dto/bp-without-password.dto';
+import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
 import { BusinessPersons } from 'src/entities/BusinessPersons';
@@ -105,7 +105,7 @@ export class TasksService {
 
     async getMovingInfoList(
         pagenation: PagenationDto,
-        businessPerson: BPWithoutPasswordDto
+        businessPerson: BusinessPersonWithoutPasswordDto
     ) { 
         // NEGO 중인 submitMovingInfo 중에서 기사님 관심 area_code들과 일치하는 결과만 리턴
         try {
@@ -140,7 +140,7 @@ export class TasksService {
 
     async getMovingInfo(movingInfoId: number) {
         try {
-            // 특정 견적요청 게시물 버튼을 눌렀을 때의 게시물 상태 확인
+            // 특정 견적요청 게시물을 클릭 때의 게시물 상태 확인
             const isNotNegoing = await this.movingInformationsRepository
             .createQueryBuilder('movingInfo')
             .where('movingInfo.id = :id', { id: movingInfoId })
@@ -156,7 +156,7 @@ export class TasksService {
                 throw new ForbiddenException('견적 요청 완료/취소된 게시물입니다.');
             }
 
-            const results = await this.movingInformationsRepository
+            const result = await this.movingInformationsRepository
             .createQueryBuilder('movingInfo')
             .innerJoin('movingInfo.AreaCode', 'areacode')
             .innerJoin('movingInfo.MovingGoods', 'goods')
@@ -185,13 +185,13 @@ export class TasksService {
             )
             .where('movingInfo.id = :id', { id: movingInfoId })
             .getOne();
-            console.log('results:::', results)
+            console.log('result:::', result)
 
-            if (results === undefined) {
-                return new NotFoundException('게시물이 존재하지 않습니다.')
+            if (!result) {
+                throw new NotFoundException('게시물이 존재하지 않습니다.')
             }
 
-            return { "results" : results, 'status' : 200 }
+            return { "results" : result, 'status' : 200 }
         } catch (error) {
             console.log(error);
             throw error;

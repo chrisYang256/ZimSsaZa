@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class CreateBPDto {
+export class CreateBusinessPersonDto {
     @ApiProperty({ example: '바티스타', description: '사업자 이름'})
     name: string;
 

@@ -32,17 +32,17 @@ export class UsersController {
         private authService: AuthService,
     ) {}
 
-    @ApiOperation({ summary: 'user 내 정보 조회' })
+    @ApiOperation({ summary: '내 정보 조회' })
     @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
-    @ApiBearerAuth('JWT-Auth')
+    @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
     @Get()
     myInfo(@GetMyInfo() user: UserWithoutPasswordDto) {
         return user;
     }
 
-    @ApiOperation({ summary: 'user 회원 가입' })
+    @ApiOperation({ summary: '회원 가입' })
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 409, description: 'response 실패' })
     @Post('signup')
@@ -50,7 +50,7 @@ export class UsersController {
         return this.usersService.signUp(createUserDto);
     }
     
-    @ApiOperation({ summary: 'user 로그인' })
+    @ApiOperation({ summary: '로그인' })
     @ApiResponse({ status: 200, description: '인증 성공' })
     @ApiResponse({ status: 401, description: '인증 실패' })
     @ApiBody({ type: LoginDto })
@@ -78,7 +78,7 @@ export class UsersController {
         }),
         limits: { fileSize: 10 * 1024 * 1024 } // 10Mb
     }))
-    @ApiBearerAuth('JWT-Auth')
+    @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
     @Post('pack')
     async makePackForMoving(
@@ -94,7 +94,7 @@ export class UsersController {
     @ApiOperation({ summary: '이삿짐 삭제' })
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
-    @ApiBearerAuth('JWT-Auth')
+    @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
     @Delete('pack/:packId')
     removePack(
