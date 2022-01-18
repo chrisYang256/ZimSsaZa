@@ -101,19 +101,19 @@ export class UsersService {
         const queryRunner = this.connection.createQueryRunner();
         await queryRunner.connect();
 
-        const user = await this.usersRepository
-            .createQueryBuilder('user')
-            .where('user.id = :id', { id: myId })
-            .getOne();
-
-        if (!user) {
-            throw new ForbiddenException('회원 정보를 찾을 수 없습니다.')
-        }
-
         console.log('isTransactionActive-1:::', queryRunner.isTransactionActive);
         await queryRunner.startTransaction();
         console.log('isTransactionActive-2:::', queryRunner.isTransactionActive);
         try {
+            const user = await this.usersRepository
+                .createQueryBuilder('user')
+                .where('user.id = :id', { id: myId })
+                .getOne();
+
+            if (!user) {
+                throw new ForbiddenException('회원 정보를 찾을 수 없습니다.')
+            }
+
             const movingInfo = await this.movingInformationsRepository
                 .createQueryBuilder('moving_informations', queryRunner)
                 .insert()
@@ -156,7 +156,7 @@ export class UsersService {
                 .execute()
             // console.log('MovingGoods::;', MovingGoods)
             
-            for (let i = 0; i < files.length; i++) {
+            for (let i = 0; i < files.length; i++) { // for문 별도로 빼기
                 await this.loadImageRepository
                     .createQueryBuilder('load_images', queryRunner)
                     .insert()
