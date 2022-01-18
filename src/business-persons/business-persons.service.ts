@@ -79,17 +79,22 @@ export class BusinessPersonsService {
                 .execute();
             console.log('create bp:::', bp);
 
+            let results = [];
             for (let i = 0; i < code.length; i++) {
-                await this.areaCodesRepository
-                    .createQueryBuilder('area_codes', queryRunner)
-                    .insert()
-                    .into('area_codes')
-                    .values({
-                        BusinessPersonId: bp.identifiers[0].id,
-                        code: code[i]
-                    })
-                    .execute();
-            } // [1, 2, "string"] 의 경우 rollback 실행 확인 
+                const result = {
+                    code: code[i],
+                    BusinessPersonId: bp.identifiers[0].id,
+                }
+                results.push(result);
+            } // [1, 2, 'string'] 의 경우 rollback 실행 확인 
+            console.log('results:::', results);
+
+            await this.areaCodesRepository
+            .createQueryBuilder('area_codes', queryRunner)
+            .insert()
+            .into('area_codes')
+            .values(results)
+            .execute();
 
             await queryRunner.commitTransaction();
             console.log('isTransactionActive-3:::', queryRunner.isTransactionActive);

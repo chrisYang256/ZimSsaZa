@@ -106,7 +106,7 @@ export class TasksService {
     async getMovingInfoList(
         pagenation: PagenationDto,
         businessPerson: BPWithoutPasswordDto
-        ) { 
+    ) { 
         // NEGO 중인 submitMovingInfo 중에서 기사님 관심 area_code들과 일치하는 결과만 리턴
         try {
             const { perPage, page } = pagenation;
@@ -202,7 +202,7 @@ export class TasksService {
         movingInfoId: number, 
         businessPersonId: number,
         cost: NegoCostDto
-        ) {
+    ) {
         try {
             const isDuplication = await this.negotiationsRepository
                 .createQueryBuilder('nego')
@@ -341,7 +341,7 @@ export class TasksService {
     async pickEestimate(
         movingInfoId: number, 
         businessPersonId: number
-        ) {
+    ) {
         try {
             const checkBusinessPerson = await this.businessPersonsRepository
                 .createQueryBuilder('businessPerson')
@@ -384,7 +384,7 @@ export class TasksService {
     async makeMovingToDoneByUser(
         movingInfoId: number, 
         businessPersonId: number
-       ) {
+    ) {
         const queryRunner = this.connection.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
@@ -426,7 +426,7 @@ export class TasksService {
     async makeMovingToDoneByBusinessPerson(
         movingInfoId: number, 
         businessPersonId: number,
-        ) {
+    ) {
         const queryRunner = this.connection.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();      
