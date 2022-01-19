@@ -8,6 +8,7 @@ import { MovingGoods } from 'src/entities/MovingGoods';
 import { MovingInformations } from 'src/entities/MovingInformations';
 import { Negotiations } from 'src/entities/Negotiations';
 import { Users } from 'src/entities/Users';
+import { EventsModule } from 'src/events/events.module';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 
@@ -25,6 +26,7 @@ import { TasksService } from './tasks.service';
       AreaCodes
     ]),
     AuthModule,
+    EventsModule,
   ]
 })
 export class TasksModule {}
