@@ -9,6 +9,8 @@ import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { BusinessPersonsModule } from './business-persons/business-persons.module';
 import { TasksModule } from './tasks/tasks.module';
+import { EventsGateway } from './events/events.gateway';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { TasksModule } from './tasks/tasks.module';
     UsersModule,
     BusinessPersonsModule,
     TasksModule,
+    EventsModule,
   ],
   providers: [
     {

@@ -6,6 +6,7 @@ import { MovingStatusEnum } from 'src/common/movingStatus.enum';
 import { BusinessPersons } from 'src/entities/BusinessPersons';
 import { MovingInformations } from 'src/entities/MovingInformations';
 import { Negotiations } from 'src/entities/Negotiations';
+import { EventsGateway } from 'src/events/events.gateway';
 import { Connection, Repository } from 'typeorm';
 import { NegoCostDto } from './dto/nego-cost.dto';
 const util = require('util')
@@ -20,6 +21,7 @@ export class TasksService {
         @InjectRepository(MovingInformations)
         private movingInformationsRepository: Repository<MovingInformations>,
         private connection: Connection,
+        private eventsGateway: EventsGateway,
     ) {}
 
     async checkMovingToDone(checkDone, businessPersonId, movingInfoId, queryRunner) {
@@ -56,6 +58,7 @@ export class TasksService {
         const queryRunner = this.connection.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
+        this.eventsGateway.server.emit('ping', '받았니?') // socket test
         try {
             const isNegoing = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
@@ -94,6 +97,7 @@ export class TasksService {
 
             await queryRunner.commitTransaction();
             // scheduler로 24시간 경과(nego table createAt으로) 확인로직 추가하기!!
+            
         } catch (error) {
             await queryRunner.rollbackTransaction();
             console.log(error);
@@ -230,7 +234,6 @@ export class TasksService {
             const checkBeforeSubmitCost = await countNegoByBusinessPersons(movingInfoId);
             console.log('checkBeforeSubmitCost:::', checkBeforeSubmitCost);
     
-    
             if (checkBeforeSubmitCost >= 10) {
                 throw new ForbiddenException('이미 10건의 견적서 제출이 완료되었습니다');
             }
@@ -321,8 +324,8 @@ export class TasksService {
                 for (let j = 0; j < estimateList[i].BusinessPerson.Reviews.length; j++) {
                     stars += estimateList[i].BusinessPerson.Reviews[j].star;
                 }
-                let AVGstars = stars / estimateList[i].BusinessPerson.Reviews.length;
-                estimateList[i].BusinessPerson['averageOfStarsCount'] = Math.round(AVGstars * 10) / 10;
+                let averageOfStars = stars / estimateList[i].BusinessPerson.Reviews.length;
+                estimateList[i].BusinessPerson['averageOfStarsCount'] = Math.round(averageOfStars * 10) / 10;
             }
     
             console.log(
