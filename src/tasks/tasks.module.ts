@@ -7,6 +7,7 @@ import { LoadImages } from 'src/entities/LoadImages';
 import { MovingGoods } from 'src/entities/MovingGoods';
 import { MovingInformations } from 'src/entities/MovingInformations';
 import { Negotiations } from 'src/entities/Negotiations';
+import { SystemMessages } from 'src/entities/SystemMessages';
 import { Users } from 'src/entities/Users';
 import { EventsModule } from 'src/events/events.module';
 import { TasksController } from './tasks.controller';
@@ -23,7 +24,8 @@ import { TasksService } from './tasks.service';
       MovingInformations,
       MovingGoods,
       LoadImages,
-      AreaCodes
+      AreaCodes,
+      SystemMessages,
     ]),
     AuthModule,
     EventsModule,

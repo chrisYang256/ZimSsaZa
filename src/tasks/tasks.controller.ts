@@ -46,7 +46,7 @@ export class TasksController {
     @ApiResponse({ status: 404, description: '게시물이 존재하지 않습니다.' })
     @ApiBearerAuth('BusinessPerson-JWT-Auth')
     @UseGuards(BusinessPersonJwtAuthGuard)
-    @Get('movingInfo/:movinginfoId')
+    @Get('movingInfo/:movingInfoId')
     getMovingInfo(@Param('movinginfoId') movingInfoId: number) {
         return this.taskService.getMovingInfo(movingInfoId);
     }
@@ -59,7 +59,7 @@ export class TasksController {
     @UseGuards(BusinessPersonJwtAuthGuard)
     @Post('movingInfo/:movinginfoId/cost')
     submitNegoCost(
-        @Param('movinginfoId') movingInfoId: number,
+        @Param('movingInfoId') movingInfoId: number,
         @Body('cost') cost: NegoCostDto,
         @GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto
     ) {
@@ -83,9 +83,9 @@ export class TasksController {
     @ApiResponse({ status: 401, description: 'response 실패' })
     @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
-    @Patch('movingInfo/:movinginfoId/estimates/pick/:businessperson')
+    @Patch('movingInfo/:movingInfoId/estimates/pick/:businessperson')
     pickEestimate(
-        @Param('movinginfoId', ParseIntPipe) movingInfoId: number,
+        @Param('movingInfoId', ParseIntPipe) movingInfoId: number,
         @Param('businessperson', ParseIntPipe)  businessPersonId: number
         ) {
         return this.taskService.pickEestimate(movingInfoId, businessPersonId);
@@ -96,12 +96,13 @@ export class TasksController {
     @ApiResponse({ status: 401, description: 'response 실패' })
     @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
-    @Patch('movingInfo/:movinginfoId/user-done/counterpart/:businesspersonId')
+    @Patch('movingInfo/:movingInfoId/user-done/counterpart/:businesspersonId')
     makeMovingToDoneByUser(
-        @Param('movinginfoId', ParseIntPipe) movingInfoId: number,
+        @GetMyInfo() user: UserWithoutPasswordDto,
+        @Param('movingInfoId', ParseIntPipe) movingInfoId: number,
         @Param('businesspersonId', ParseIntPipe) businessPersonId: number
         ) {
-        return this.taskService.makeMovingToDoneByUser(movingInfoId, businessPersonId);
+        return this.taskService.makeMovingToDoneByUser(movingInfoId, businessPersonId, user);
     }
 
     @ApiOperation({ summary: 'Business Person: 기사님 이사완료 체크'})
@@ -109,9 +110,9 @@ export class TasksController {
     @ApiResponse({ status: 401, description: 'response 실패' })
     @ApiBearerAuth('BusinessPerson-JWT-Auth')
     @UseGuards(BusinessPersonJwtAuthGuard)
-    @Patch('movingInfo/:movinginfoId/businessperson-done')
+    @Patch('movingInfo/:movingInfoId/businessperson-done')
     makeMovingToDoneByBusinessPerson(
-        @Param('movinginfoId', ParseIntPipe) movingInfoId: number,
+        @Param('movingInfoId', ParseIntPipe) movingInfoId: number,
         @GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto
         ) {
         return this.taskService.makeMovingToDoneByBusinessPerson(movingInfoId, businessPerson.id);

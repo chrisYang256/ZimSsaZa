@@ -12,6 +12,7 @@ import { IsEmail, IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { AreaCodes } from "./AreaCodes";
 import { Negotiations } from "./Negotiations";
 import { Reviews } from "./Reviews";
+import { SystemMessages } from "./SystemMessages";
 
 @Index('email', ['email'], { unique: true })
 @Entity({ schema: 'ZimSsaZa', name: 'business_persons' })
@@ -73,4 +74,7 @@ export class BusinessPersons {
     @OneToMany(() => Reviews, reviews => reviews.BusinessPerson)
     Reviews: Reviews[];
     Avgstar: number;
+
+    @OneToMany(() => SystemMessages, systemMessages => systemMessages.BusinessPerson)
+    SystemMessages: SystemMessages[];
 }

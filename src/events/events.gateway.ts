@@ -10,7 +10,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io'
 
-@WebSocketGateway({ namespace: 'dingdong'})
+
+@WebSocketGateway({ namespace: 'dingdong', transports: ['websocket'] })
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
@@ -19,32 +20,35 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket
   ): string {
-    client.emit('pong', 'pong')
+    client.emit('pong', data)
     console.log('web socket - data:::', data);
-    // console.log('web socket - client:::', client);
+    console.log('web socket - client:::', client.id);
     return data;
   }
 
-  @SubscribeMessage('enter')
-  handleEnter(
-    @MessageBody() data: string,
+  @SubscribeMessage('login')
+  handleLogin(
+    @MessageBody() data: { email: string, id: number },
     @ConnectedSocket() client: Socket
   ) {
-    console.log('entered enter room:::', data);
-    console.log()
-    client.join(data);
+    // const nameSpace = client.nsp;
+    // console.log('login:::', data);
+    // const something = socketDB[nameSpace.name][client.id] = data.email;
+    // nameSpace.emit('onlineList', Object.values(socketDB[nameSpace.name]))
+    client.join(data.email)
+    client.emit('ping', { msg: "holla" })
     // return data;
   }
 
   afterInit(server: Server) {
-    console.log('socket-init', server);
+    // console.log('socket-init:::', server);
   }
 
   handleConnection(@ConnectedSocket() client: Socket) {
-    console.log('connecte-socket:::', client.id);
+    console.log('connected-socket:::', client.id);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    console.log('dsconnecte-socket:::', client.id);
+    console.log('dsconnected-socket:::', client.id);
   }
 }

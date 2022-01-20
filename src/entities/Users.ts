@@ -11,6 +11,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 import { Reviews } from "./Reviews";
 import { MovingInformations } from "./MovingInformations";
+import { SystemMessages } from "./SystemMessages";
 
 @Index('email', ['email'], { unique: true })
 @Entity({ schema: 'ZimSsaZa', name: 'users' })
@@ -53,6 +54,9 @@ export class Users {
 
     @OneToMany(() => MovingInformations, movinginformations => movinginformations.User)
     MovingInformations: MovingInformations[]; 
+
+    @OneToMany(() => SystemMessages, systemMessages => systemMessages.User)
+    SystemMessages: SystemMessages[];
 
     @OneToMany(() => Reviews, reviews => reviews.User)
     Reviews: Reviews[];

@@ -9,6 +9,7 @@ import { LoadImages } from './entities/LoadImages';
 import { BusinessPersons } from './entities/BusinessPersons';
 import { AreaCodes } from './entities/AreaCodes';
 import { Negotiations } from './entities/Negotiations';
+import { SystemMessages } from './entities/SystemMessages';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ const config: TypeOrmModuleOptions = {
         MovingGoods,
         MovingStatuses,
         MovingInformations,
+        SystemMessages,
     ],
     synchronize: false,
     logging: true,
