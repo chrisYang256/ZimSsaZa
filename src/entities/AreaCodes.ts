@@ -5,8 +5,7 @@ import {
     OneToOne, 
     ManyToOne, 
     JoinColumn, 
-    CreateDateColumn, 
-    UpdateDateColumn,
+    CreateDateColumn,
     PrimaryGeneratedColumn, 
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
@@ -31,9 +30,6 @@ export class AreaCodes {
     @CreateDateColumn()
     createdAt: Date;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
-
     @Column('int', { name: 'BusinessPersonId', nullable: true })
     BusinessPersonId: number | null;
 
@@ -41,14 +37,12 @@ export class AreaCodes {
     MovingInformationId: number | null;
 
     @OneToOne(() => MovingInformations, movingformations => movingformations.AreaCode, {
-        onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     })
     @JoinColumn([{ name: 'MovingInformationId', referencedColumnName: 'id' }])
     MovingInformation: MovingInformations;
 
     @ManyToOne(() => BusinessPersons, businesspersons => businesspersons.AreaCodes, {
-        onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     })
     @JoinColumn([{ name: 'BusinessPersonId', referencedColumnName: 'id' }])

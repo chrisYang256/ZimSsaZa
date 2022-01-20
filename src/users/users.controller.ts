@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserWithoutPasswordDto } from './dto/user-without-password.dto';
 import { UsersService } from './users.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { NotLoggedInGuard } from 'src/auth/not-logged-in.guard';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -45,6 +46,7 @@ export class UsersController {
     @ApiOperation({ summary: '회원 가입' })
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 409, description: 'response 실패' })
+    @UseGuards(NotLoggedInGuard)
     @Post('signup')
     signUp(@Body() createUserDto: CreateUserDto,) {
         return this.usersService.signUp(createUserDto);

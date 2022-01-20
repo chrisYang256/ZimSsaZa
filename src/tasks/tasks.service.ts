@@ -3,10 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
+import { SendSystemMessage } from 'src/common/send-systemMessages';
 import { BusinessPersons } from 'src/entities/BusinessPersons';
 import { MovingInformations } from 'src/entities/MovingInformations';
 import { Negotiations } from 'src/entities/Negotiations';
+import { SystemMessages } from 'src/entities/SystemMessages';
 import { EventsGateway } from 'src/events/events.gateway';
+import { UserWithoutPasswordDto } from 'src/users/dto/user-without-password.dto';
 import { Connection, Repository } from 'typeorm';
 import { NegoCostDto } from './dto/nego-cost.dto';
 const util = require('util')
@@ -20,6 +23,8 @@ export class TasksService {
         private negotiationsRepository: Repository<Negotiations>,
         @InjectRepository(MovingInformations)
         private movingInformationsRepository: Repository<MovingInformations>,
+        @InjectRepository(SystemMessages)
+        private systemMessages: Repository<MovingInformations>,
         private connection: Connection,
         private eventsGateway: EventsGateway,
     ) {}
@@ -58,7 +63,6 @@ export class TasksService {
         const queryRunner = this.connection.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
-        this.eventsGateway.server.emit('ping', '받았니?') // socket test
         try {
             const isNegoing = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
@@ -208,6 +212,18 @@ export class TasksService {
         cost: NegoCostDto
     ) {
         try {
+            const findMovingInfo = await this.negotiationsRepository
+                .createQueryBuilder('nego')
+                .where('nego.MovingInformationId = :movingInfoId', { movingInfoId })
+                .andWhere('nego.BusinessPersonId IS NULL')
+                .andWhere('nego.cost IS NULL')
+                .getOne();
+            console.log('findMovingInfo:::', findMovingInfo);
+
+            if (!findMovingInfo) {
+                throw new NotFoundException('해당 견적요청이 존재하지 않습니다.');
+            }
+
             const isDuplication = await this.negotiationsRepository
                 .createQueryBuilder('nego')
                 .where('nego.MovingInformationId = :movingInfoId', { movingInfoId })
@@ -220,32 +236,23 @@ export class TasksService {
             }
     
             const countNegoByBusinessPersons = async (movingInfoId): Promise<number> => {
-                const countNegoByBps = await this.negotiationsRepository
+                const result = await this.negotiationsRepository
                 .createQueryBuilder('nego')
                 .select('COUNT(nego.cost)', 'count')
                 .where('nego.MovingInformationId = :movingInfoId', { movingInfoId })
                 .andWhere('nego.cost IS NOT NULL')
                 .getRawOne();
         
-                return +countNegoByBps.count;
+                return +result.count;
             }
     
             // 기존 제출된 견적서 10개 여부 확인(기사님들 견적서 10개 이상 제출 방지)
-            const checkBeforeSubmitCost = await countNegoByBusinessPersons(movingInfoId);
-            console.log('checkBeforeSubmitCost:::', checkBeforeSubmitCost);
+            const checkBeforeSubmitCount = await countNegoByBusinessPersons(movingInfoId);
+            console.log('checkBeforeSubmitCount:::', checkBeforeSubmitCount);
     
-            if (checkBeforeSubmitCost >= 10) {
+            if (checkBeforeSubmitCount >= 10) {
                 throw new ForbiddenException('이미 10건의 견적서 제출이 완료되었습니다');
             }
-    
-            // nego 테이블에서 견적받을 row 조회
-            const findNego = await this.negotiationsRepository
-                .createQueryBuilder('nego')
-                .where('nego.MovingInformationId = :movingInfoId', { movingInfoId })
-                .andWhere('nego.BusinessPersonId IS NULL')
-                .andWhere('nego.cost IS NULL')
-                .getOne();
-            console.log('findNego:::', findNego);
     
             // 견적금액 적어서 제출
             await this.negotiationsRepository
@@ -258,19 +265,46 @@ export class TasksService {
                     BusinessPersonId: businessPersonId,
                 })
                 .execute();
-    
+
             // 현재 제출된 견적서 추가 합계 10개 여부 확인, 10개 도달 시 유저에게 알림
-            const checkAfterSubmitCost = await countNegoByBusinessPersons(movingInfoId);
-            console.log('checkAfterSubmitCost:::', checkAfterSubmitCost);
+            const checkAfterSubmitCount = await countNegoByBusinessPersons(movingInfoId);
+            console.log('checkAfterSubmitCount:::', checkAfterSubmitCount);
     
-            if (checkAfterSubmitCost >= 10) {
-                // 10개 완료시 유저에게 알림 로직 추가하기!!(웹소켓)
-                return { 'message' : '견적 신청이 완료되었습니다. 확인해주세요!' } // after 10개 체크 test
+            const owner = await this.movingInformationsRepository
+                .createQueryBuilder('movingInfo')
+                .innerJoin('movingInfo.User', 'user')
+                .addSelect(['user.id', 'user.name', 'user.email'])
+                .where('movinginfo.id = :movingInfoId', { movingInfoId })
+                .getOne();
+            console.log('owner:::', owner);
+
+            if (checkAfterSubmitCount > 10) {
+                // 웹소켓으로 접속중인 견적요청한 유저에게 실시간 견적서 제출 현황 알려주기
+                this.eventsGateway.server.emit('login', { email: owner.User.email }); // 유저와 같은 room 입장
+                this.eventsGateway.server.to(owner.User.email)
+                    .emit('message', { data: `현재 ${checkAfterSubmitCount}건의 견적을 받으셨습니다! `
+                })
+                this.eventsGateway.server.disconnectSockets(); // 같은 room에 접속한 다른 기사님 견적제출 알림 받지 않기위해 소켓 연결 해제
             }
+    
+            // 10개 완료시 유저에게 system 메시지 발송
+            if (checkAfterSubmitCount === 10) {
+                const senfSystemMessage = await this.systemMessages
+                    .createQueryBuilder()
+                    .insert()
+                    .into('system_messages')
+                    .values({
+                        UserId: owner.User.id,
+                        message: SendSystemMessage.GET_FINISHED_NEGO(owner.User.name),
+                    })
+                    .execute();
+                console.log('senfSystemMessage:::', senfSystemMessage);
+            }
+            return { 'message' : '견적서 제출 완료!', 'status' : 201}
         } catch (error) {
             console.log(error);
             throw error;
-        }
+        } 
     }
 
     async checkEestimateList(userId: number) {
@@ -345,6 +379,9 @@ export class TasksService {
         movingInfoId: number, 
         businessPersonId: number
     ) {
+        const queryRunner = this.connection.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
         try {
             const checkBusinessPerson = await this.businessPersonsRepository
                 .createQueryBuilder('businessPerson')
@@ -361,12 +398,14 @@ export class TasksService {
                 .getOne()
     
             if (checkAleadyPicked.picked_business_person !== null) {
-                throw new ForbiddenException(`이미 '${checkBusinessPerson.name}'기사님의 견적서를 선택하셨습니다.`);
+                throw new ForbiddenException(
+                    `이미 '${checkBusinessPerson.name}'기사님의 견적서를 선택하셨습니다.`
+                );
             }
     
             // 선택된 기사님 id 입력, 현재 진행상태 변경(NEGO -> PICK)
             await this.movingInformationsRepository
-                .createQueryBuilder()
+                .createQueryBuilder('MovingInformations', queryRunner)
                 .update('MovingInformations')
                 .set({ 
                     picked_business_person: businessPersonId,
@@ -375,18 +414,32 @@ export class TasksService {
                 .where('id = :id', { id: movingInfoId })
                 .execute();
             
-            // 해당 기사님에게 알림 주기(웹소켓)
+            // 선택된 기사님에게 알림 주기
+            await this.systemMessages
+                .createQueryBuilder('system_messages', queryRunner)
+                .insert()
+                .into('system_messages')
+                .values({
+                    BusinessPersonId: businessPersonId,
+                    message: SendSystemMessage.GET_USER_PICK,
+                })
+                .execute();
     
+            await queryRunner.commitTransaction();
             return { 'message' : '기사님 선택 완료!', 'status' : 201 }
         } catch (error) {
+            await queryRunner.rollbackTransaction();
             console.log(error);
             throw error;
+        } finally {
+            await queryRunner.release();
         }
     }
 
     async makeMovingToDoneByUser(
         movingInfoId: number, 
-        businessPersonId: number
+        businessPersonId: number,
+        user: UserWithoutPasswordDto
     ) {
         const queryRunner = this.connection.createQueryRunner();
         await queryRunner.connect();
@@ -410,6 +463,18 @@ export class TasksService {
                 .andWhere('movingInfo.business_person_done IS TRUE')
                 .getOne();
             console.log('checkBusinessPersonDone:::', checkedBusinessPersonDone);
+
+            if (!checkedBusinessPersonDone) {
+                this.systemMessages
+                    .createQueryBuilder()
+                    .insert()
+                    .into('system_message')
+                    .values({
+                        BusinessPersonId: businessPersonId,
+                        message: SendSystemMessage.FINISH_MOVING(user.phone_number),
+                    })
+                    .execute();
+            }
     
             // 유저 + 기사님 완료 체크시 기사님 이사완료 카운트 +1, movingInfo 상태 PICK -> DONE
             await this.checkMovingToDone(checkedBusinessPersonDone, businessPersonId, movingInfoId, queryRunner);
