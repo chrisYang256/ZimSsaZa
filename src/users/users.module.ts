@@ -5,6 +5,7 @@ import { AreaCodes } from 'src/entities/AreaCodes';
 import { LoadImages } from 'src/entities/LoadImages';
 import { MovingGoods } from 'src/entities/MovingGoods';
 import { MovingInformations } from 'src/entities/MovingInformations';
+import { SystemMessages } from 'src/entities/SystemMessages';
 import { Users } from 'src/entities/Users';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
@@ -19,6 +20,7 @@ import { UsersService } from './users.service';
       MovingGoods,
       LoadImages,
       AreaCodes,
+      SystemMessages,
     ]),
     AuthModule,
   ]

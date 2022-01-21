@@ -98,11 +98,10 @@ export class TasksController {
     @UseGuards(UserJwtAuthGuard)
     @Patch('movingInfo/:movingInfoId/user-done/counterpart/:businesspersonId')
     makeMovingToDoneByUser(
-        @GetMyInfo() user: UserWithoutPasswordDto,
         @Param('movingInfoId', ParseIntPipe) movingInfoId: number,
         @Param('businesspersonId', ParseIntPipe) businessPersonId: number
         ) {
-        return this.taskService.makeMovingToDoneByUser(movingInfoId, businessPersonId, user);
+        return this.taskService.makeMovingToDoneByUser(movingInfoId, businessPersonId);
     }
 
     @ApiOperation({ summary: 'Business Person: 기사님 이사완료 체크'})

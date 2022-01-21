@@ -9,7 +9,6 @@ import { MovingInformations } from 'src/entities/MovingInformations';
 import { Negotiations } from 'src/entities/Negotiations';
 import { SystemMessages } from 'src/entities/SystemMessages';
 import { EventsGateway } from 'src/events/events.gateway';
-import { UserWithoutPasswordDto } from 'src/users/dto/user-without-password.dto';
 import { Connection, Repository } from 'typeorm';
 import { NegoCostDto } from './dto/nego-cost.dto';
 const util = require('util')
@@ -31,7 +30,8 @@ export class TasksService {
 
     async checkMovingToDone(checkDone, businessPersonId, movingInfoId, queryRunner) {
         // 이사완료 연타로 인한 기사님 finish_count 중복 덧셈 방지
-        if (checkDone.MovingStatusId === MovingStatusEnum.DONE) {
+        console.log('checkDone:::', checkDone);
+        if (checkDone?.MovingStatusId === MovingStatusEnum.DONE) {
             throw new ForbiddenException('이미 완료된 이사건입니다.')
         }
 
@@ -289,7 +289,7 @@ export class TasksService {
     
             // 10개 완료시 유저에게 system 메시지 발송
             if (checkAfterSubmitCount === 10) {
-                const senfSystemMessage = await this.systemMessages
+                const sendSystemMessage = await this.systemMessages
                     .createQueryBuilder()
                     .insert()
                     .into('system_messages')
@@ -298,7 +298,7 @@ export class TasksService {
                         message: SendSystemMessage.GET_FINISHED_NEGO(owner.User.name),
                     })
                     .execute();
-                console.log('senfSystemMessage:::', senfSystemMessage);
+                console.log('sendSystemMessage:::', sendSystemMessage);
             }
             return { 'message' : '견적서 제출 완료!', 'status' : 201}
         } catch (error) {
@@ -348,7 +348,7 @@ export class TasksService {
                 .take(5)
                 .getMany();
     
-            if (estimateList.length === 0) {
+            if (estimateList.length === 0) { ////////////////////// 크론!!!
                 return { 'message' : '받은 견적이 "0"건입니다.'}
             }
     
@@ -439,12 +439,21 @@ export class TasksService {
     async makeMovingToDoneByUser(
         movingInfoId: number, 
         businessPersonId: number,
-        user: UserWithoutPasswordDto
     ) {
         const queryRunner = this.connection.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
+            const checkAlreadyDone = await this.movingInformationsRepository
+                .createQueryBuilder('movingInfo', queryRunner)
+                .where('movingInfo.id = :id', { id: movingInfoId })
+                .getOne();
+            console.log('checkAlreadyDone:::', checkAlreadyDone);
+
+            if (checkAlreadyDone.user_done === (1 || true)) {
+                throw new ForbiddenException('이미 완료 확인을 하셨습니다.');
+            }
+
             await this.movingInformationsRepository
                 .createQueryBuilder('MovingInformations', queryRunner)
                 .update('MovingInformations')
@@ -455,7 +464,7 @@ export class TasksService {
                 .andWhere('picked_business_person = :businessPersonId', { businessPersonId })
                 .execute();
     
-            // 기사님 완료 체크여부 확인
+            // 기사님 이사완료 체크여부 확인
             const checkedBusinessPersonDone = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
                 .where('movingInfo.id = :id', { id: movingInfoId })
@@ -464,23 +473,24 @@ export class TasksService {
                 .getOne();
             console.log('checkBusinessPersonDone:::', checkedBusinessPersonDone);
 
+            // 상대방이 이사완료 체크를 안했다면 알림 가도록
             if (!checkedBusinessPersonDone) {
-                this.systemMessages
-                    .createQueryBuilder()
-                    .insert()
-                    .into('system_message')
-                    .values({
-                        BusinessPersonId: businessPersonId,
-                        message: SendSystemMessage.FINISH_MOVING(user.phone_number),
-                    })
-                    .execute();
+                await this.systemMessages
+                .createQueryBuilder('system_messages', queryRunner)
+                .insert()
+                .into('system_messages')
+                .values({
+                    BusinessPersonId: businessPersonId,
+                    message: SendSystemMessage.FINISH_MOVING,
+                })
+                .execute();
             }
     
-            // 유저 + 기사님 완료 체크시 기사님 이사완료 카운트 +1, movingInfo 상태 PICK -> DONE
+            // 유저 + 기사님 완료의 경우 -> 기사님 이사완료 카운트 +1, movingInfo 상태 PICK -> DONE
             await this.checkMovingToDone(checkedBusinessPersonDone, businessPersonId, movingInfoId, queryRunner);
-    
-            await queryRunner.commitTransaction();
 
+            await queryRunner.commitTransaction();
+    
             return { 'message' : '유저 이사완료 확인', 'status' : 201 }
         } catch (error) {
             await queryRunner.rollbackTransaction();
@@ -498,9 +508,19 @@ export class TasksService {
         const queryRunner = this.connection.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();      
-        try {      
+        try {
+            const checkAlreadyDone = await this.movingInformationsRepository
+                .createQueryBuilder('movingInfo', queryRunner)
+                .where('movingInfo.id = :id', { id: movingInfoId })
+                .getOne();
+            console.log('checkAlreadyDone:::', checkAlreadyDone);
+
+            if (checkAlreadyDone.business_person_done === (1 || true)) {
+                throw new ForbiddenException('이미 완료 확인을 하셨습니다.');
+            }      
+
             await this.movingInformationsRepository
-                .createQueryBuilder()
+                .createQueryBuilder('MovingInformations', queryRunner)
                 .update('MovingInformations')
                 .set({ 
                     business_person_done: true, 
@@ -517,8 +537,25 @@ export class TasksService {
                 .andWhere('movingInfo.user_done IS TRUE')
                 .getOne();
             console.log('checkedUserDone:::', checkedUserDone);
+
+            if (!checkedUserDone) {
+                await this.systemMessages
+                .createQueryBuilder('system_messages', queryRunner)
+                .insert()
+                .into('system_messages')
+                .values({
+                    UserId: checkAlreadyDone.UserId,
+                    message: SendSystemMessage.FINISH_MOVING,
+                })
+                .execute();
+            }
     
-            await this.checkMovingToDone(checkedUserDone, businessPersonId, movingInfoId, queryRunner);
+            await this.checkMovingToDone(
+                checkedUserDone, 
+                businessPersonId, 
+                movingInfoId, 
+                queryRunner
+            );
 
             await queryRunner.commitTransaction();
     
