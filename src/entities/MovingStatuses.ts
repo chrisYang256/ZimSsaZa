@@ -18,7 +18,7 @@ export class MovingStatuses {
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: 'nego', description: '이사 진행 상태', enum: ['STAY', 'NEGO', 'PICK', 'DONE'] })
+    @ApiProperty({ example: 'NEGO', description: '이사 진행 상태', enum: ['STAY', 'NEGO', 'PICK', 'DONE'] })
     @Column('enum', { name: 'status', enum: ['STAY', 'NEGO', 'PICK', 'DONE'] })
     status: MovingStatusEnum;
 

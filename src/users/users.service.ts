@@ -1,15 +1,17 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import bcrypt from 'bcrypt';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/Users';
-import { Connection, createQueryBuilder, Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import bcrypt from 'bcrypt';
 import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
 import { MovingInformations } from 'src/entities/MovingInformations';
 import { MovingGoods } from 'src/entities/MovingGoods';
 import { LoadImages } from 'src/entities/LoadImages';
 import { AreaCodes } from 'src/entities/AreaCodes';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
+import { SystemMessages } from 'src/entities/SystemMessages';
+import { PagenationDto } from 'src/common/dto/pagenation.dto';
 
 @Injectable()
 export class UsersService {
@@ -24,6 +26,8 @@ export class UsersService {
         private loadImageRepository: Repository<LoadImages>,
         @InjectRepository(AreaCodes)
         private areaCodesRepository: Repository<AreaCodes>,
+        @InjectRepository(SystemMessages)
+        private systemMessages: Repository<SystemMessages>,
         private connection: Connection,
     ) {}
 
@@ -236,5 +240,62 @@ export class UsersService {
             .execute();
         
         return { 'message' : '삭제 성공!', 'status' : 201 }
+    }
+
+    async readMessage(
+        userId: number,
+        pagenation: PagenationDto
+    ) {
+        const { perPage, page } = pagenation;
+
+        const messages = await this.systemMessages
+            .createQueryBuilder('message')
+            .select(['message.message', 'message.createdAt'])
+            .where('message.UserId = :userId', { userId })
+            .orderBy('message.createdAt', 'DESC')
+            .take(perPage)
+            .skip(perPage * (page - 1))
+            .getMany();
+        console.log('my messages:::', messages.length);
+
+        // unread 카운팅을 위한 기준점 생성
+        // 메시지가 있고 page가 1인 경우만 업데이트 시간 변경
+        // page 2 이상의 메시지 리스트를 확인할 시점에 들어온 새로운 메시지는 
+        // 클라이언트가 사실상 메시지를 확인한 상태가 아니기 때문
+        if ((messages.length <= 1) && (+page === 1)) {
+            await this.systemMessages
+                .createQueryBuilder()
+                .update('system_messages')
+                .set({
+                    updatedAt: new Date()
+                })
+                .where('UserId = :userId', { userId })
+                .orderBy('updatedAt', 'DESC')
+                .limit(1)
+                .execute();
+        }
+
+        return { 'message' : messages, 'status:' : 200 }
+    }
+
+    async unreadCount(userId: number) {
+        const checkLastDate = await this.systemMessages
+            .createQueryBuilder('message')
+            .select('MAX(CONVERT_TZ(message.updatedAt, "+0:00", "+9:00"))', 'lastReadAt')
+            .where('message.UserId = :userId', { userId })
+            .getRawOne();
+        console.log('lastcheckDate:::', checkLastDate.lastReadAt);
+        
+        // readMessage에서 입력한 시점을 기준으로 이후 받은 메시지만 출력
+        const count = await this.systemMessages
+            .createQueryBuilder('message')
+            .where('message.UserId = :userId', { userId })
+            .andWhere('message.createdAt > :lastReadAt', { 
+                lastReadAt: checkLastDate.lastReadAt
+            })
+            .getCount();
+        console.log('count:::', count);
+
+        return { 'count' : count, 'status:' : 200 }
     }
 }

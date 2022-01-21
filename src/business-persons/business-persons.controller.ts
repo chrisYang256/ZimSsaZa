@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { BusinessPersonJwtAuthGuard } from 'src/auth/businessPerson-jwt-auth.guard';
+import { NotLoggedInGuard } from 'src/auth/not-logged-in.guard';
 import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
 import { LoginDto } from 'src/common/dto/login.dto';
-import { BusinessPersons } from 'src/entities/BusinessPersons';
+import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { BusinessPersonsService } from './business-persons.service';
 import { BusinessPersonWithoutPasswordDto } from './dto/businessPerson-without-password.dto';
 import { CreateBusinessPersonDto } from './dto/create-businessPerson.dto';
@@ -30,6 +31,7 @@ export class BusinessPersonsController {
     @ApiOperation({ summary: '회원 가입' })
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 409, description: 'response 실패' })
+    @UseGuards(NotLoggedInGuard)
     @Post('signup')
     signUp(@Body() createBusinessPersonDto: CreateBusinessPersonDto,) {
         return this.businessPersonService.signUp(createBusinessPersonDto);
@@ -47,4 +49,29 @@ export class BusinessPersonsController {
     }
 
     // 이사 예정인 목록 조회(pick받은 기사님은 pick한 유저 정보 조회 가능)
+
+    @ApiOperation({ summary: '시스템 메시지 보기' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('BusinessPerson-JWT-Auth')
+    @UseGuards(BusinessPersonJwtAuthGuard)
+    @Get('messages')
+    readMessage(
+        @Query() pagenation: PagenationDto,
+        @GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto,
+    ) {
+        return this.businessPersonService.readMessage(businessPerson.id, pagenation);
+    }
+
+    @ApiOperation({ summary: '읽지않은 시스템 메시지 카운팅' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('BusinessPerson-JWT-Auth')
+    @UseGuards(BusinessPersonJwtAuthGuard)
+    @Get('messages/unreads')
+    unreadCount(
+        @GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto,
+    ) {
+        return this.businessPersonService.unreadCount(businessPerson.id);
+    }
 }

@@ -13,6 +13,7 @@ import { UserWithoutPasswordDto } from './dto/user-without-password.dto';
 import { UsersService } from './users.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { NotLoggedInGuard } from 'src/auth/not-logged-in.guard';
+import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -108,4 +109,28 @@ export class UsersController {
     
     // nego 이상 진행중인 movingInfo관련 조회(pick한 기사님의 정보 조회 가능)
 
+    @ApiOperation({ summary: '시스템 메시지 보기' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('User-JWT-Auth')
+    @UseGuards(UserJwtAuthGuard)
+    @Get('messages')
+    readMessage(
+        @Query() pagenation: PagenationDto,
+        @GetMyInfo() user: UserWithoutPasswordDto,
+    ) {
+        return this.usersService.readMessage(user.id, pagenation);
+    }
+
+    @ApiOperation({ summary: '읽지않은 시스템 메시지 카운팅' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('User-JWT-Auth')
+    @UseGuards(UserJwtAuthGuard)
+    @Get('messages/unreads')
+    unreadCount(
+        @GetMyInfo() user: UserWithoutPasswordDto,
+    ) {
+        return this.usersService.unreadCount(user.id);
+    }
 }

@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { BusinessPersons } from "./BusinessPersons";
 import { Users } from "./Users";
 
@@ -18,7 +18,10 @@ export class SystemMessages {
     message: string;
 
     @CreateDateColumn()
-    CreatedAt: Date;
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 
     @Column('int', { name: 'UserId', nullable: true })
     UserId: number | null;

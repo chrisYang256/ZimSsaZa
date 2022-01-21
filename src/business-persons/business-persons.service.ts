@@ -5,6 +5,8 @@ import { CreateBusinessPersonDto } from './dto/create-businessPerson.dto';
 import { Connection, Repository } from 'typeorm';
 import bcrypt from 'bcrypt';
 import { AreaCodes } from 'src/entities/AreaCodes';
+import { SystemMessages } from 'src/entities/SystemMessages';
+import { PagenationDto } from 'src/common/dto/pagenation.dto';
 
 @Injectable()
 export class BusinessPersonsService {
@@ -13,6 +15,8 @@ export class BusinessPersonsService {
         private businessPersonsRepository: Repository<BusinessPersons>,
         @InjectRepository(AreaCodes)
         private areaCodesRepository: Repository<AreaCodes>,
+        @InjectRepository(SystemMessages)
+        private systemMessages: Repository<SystemMessages>,
         private connection: Connection,
     ) {}
 
@@ -107,5 +111,57 @@ export class BusinessPersonsService {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    async readMessage(
+        businessPersonId: number,
+        pagenation: PagenationDto
+    ) {
+        const { perPage, page } = pagenation;
+
+        const messages = await this.systemMessages
+            .createQueryBuilder('message')
+            .select(['message.message', 'message.createdAt'])
+            .where('message.BusinessPersonId = :businessPersonId', { 
+                businessPersonId 
+            })
+            .orderBy('message.createdAt', 'DESC')
+            .take(perPage)
+            .skip(perPage * (page - 1))
+            .getMany();
+        console.log('my messages:::', messages.length);
+
+        if ((messages.length <= 1) && (+page === 1)) {
+            await this.systemMessages
+                .createQueryBuilder()
+                .update('system_messages')
+                .set({ updatedAt: new Date() })
+                .where('UserId = :BusinessPersonId', { businessPersonId })
+                .orderBy('updatedAt', 'DESC')
+                .limit(1)
+                .execute();
+        }
+
+        return { 'message' : messages, 'status:' : 200 }
+    }
+
+    async unreadCount(businessPersonId: number) {
+        const checkLastDate = await this.systemMessages
+            .createQueryBuilder('message')
+            .select('MAX(CONVERT_TZ(message.updatedAt, "+0:00", "+9:00"))', 'lastReadAt')
+            .where('message.BusinessPersonId = :businessPersonId', { businessPersonId })
+            .getRawOne();
+        console.log('lastcheckDate:::', checkLastDate.lastReadAt);
+        
+        const count = await this.systemMessages
+            .createQueryBuilder('message')
+            .where('message.BusinessPersonId = :businessPersonId', { businessPersonId })
+            .andWhere('message.createdAt > :lastReadAt', { 
+                lastReadAt: checkLastDate.lastReadAt
+            })
+            .getCount();
+        console.log('count:::', count);
+
+        return { 'count' : count, 'status:' : 200 }
     }
 }
