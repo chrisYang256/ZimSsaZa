@@ -16,7 +16,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   @WebSocketServer() server: Server;
 
   @SubscribeMessage('ping')
-  handleMessage(
+  handleTest(
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket
   ): string {
@@ -28,16 +28,31 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   @SubscribeMessage('login')
   handleLogin(
-    @MessageBody() data: { email: string, id: number },
+    @MessageBody() data: { email: string },
     @ConnectedSocket() client: Socket
   ) {
-    // const nameSpace = client.nsp;
-    // console.log('login:::', data);
-    // const something = socketDB[nameSpace.name][client.id] = data.email;
-    // nameSpace.emit('onlineList', Object.values(socketDB[nameSpace.name]))
-    client.join(data.email)
-    client.emit('ping', { msg: "holla" })
-    // return data;
+    client.join(data.email);
+    console.log('login:::', data.email);
+  }
+
+  @SubscribeMessage('logout')
+  handleLogout(
+    @MessageBody() data: { email: string },
+    @ConnectedSocket() client: Socket
+  ) {
+    client.leave(data.email);
+    client.emit('logout', data);
+
+    console.log('logout:::', data.email);
+  }
+
+  @SubscribeMessage('message')
+  handleMessage(
+    @MessageBody() data: string,
+    @ConnectedSocket() client: Socket
+  ) {
+    client.emit('catch', data);
+    console.log('message:::', data);
   }
 
   afterInit(server: Server) {

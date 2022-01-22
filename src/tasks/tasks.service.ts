@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Cron, CronExpression, SchedulerRegistry, Timeout } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
@@ -38,6 +38,7 @@ export class TasksService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
+            // 견적 제출 후 24시간 경과 여부 조회
             const timeoutFilter = await this.negotiationsRepository
                 .createQueryBuilder('nego')
                 .innerJoin('nego.MovingInformation', 'movingInfo')
@@ -285,6 +286,7 @@ export class TasksService {
                 .createQueryBuilder('nego')
                 .where('nego.MovingInformationId = :movingInfoId', { movingInfoId })
                 .andWhere('nego.BusinessPersonId IS NULL')
+                .andWhere('nego.timeout IS FALSE')
                 .andWhere('nego.cost IS NULL')
                 .getOne();
             console.log('findMovingInfo:::', findMovingInfo);
@@ -335,7 +337,7 @@ export class TasksService {
                 })
                 .execute();
 
-            // 현재 제출된 견적서 추가 합계 10개 여부 확인, 10개 도달 시 유저에게 알림
+            // 현재 제출된 견적서 추가 합계 확인
             const checkAfterSubmitCount = await countNegoByBusinessPersons(movingInfoId);
             console.log('checkAfterSubmitCount:::', checkAfterSubmitCount);
     
@@ -347,16 +349,18 @@ export class TasksService {
                 .getOne();
             console.log('owner:::', owner);
 
-            if (checkAfterSubmitCount > 10) {
+            if (checkAfterSubmitCount < 10) { // 9번만
                 // 웹소켓으로 접속중인 견적요청한 유저에게 실시간 견적서 제출 현황 알려주기
+                // 시나리오: Front에서 유저 email로 이름을 가진 room 생성해 놓은 상태 -> 서버에서 유저 email로 room 입장 -> room에 메지시 발송/room 퇴장
+                // ** Front에서 sockeId를 보내주면 room 없이 to()만으로 가능하지만 학습을 위해 사용.
                 this.eventsGateway.server.emit('login', { email: owner.User.email }); // 유저와 같은 room 입장
                 this.eventsGateway.server.to(owner.User.email)
-                    .emit('message', { data: `현재 ${checkAfterSubmitCount}건의 견적을 받으셨습니다! `
+                    .emit('message', { data: `현재 ${checkAfterSubmitCount}건의 견적을 받으셨습니다!`
                 })
-                this.eventsGateway.server.disconnectSockets(); // 같은 room에 접속한 다른 기사님 견적제출 알림 받지 않기위해 소켓 연결 해제
+                this.eventsGateway.server.emit('logout', { email: owner.User.email }); // 같은 room에 접속한 다른 기사님 견적제출 알림 받지 않기위해 소켓 연결 해제
             }
     
-            // 10개 완료시 유저에게 system 메시지 발송
+            // 받은 견적서 10개 도달시 유저에게 system 메시지 발송
             if (checkAfterSubmitCount === 10) {
                 const sendSystemMessage = await this.systemMessages
                     .createQueryBuilder()
@@ -432,7 +436,8 @@ export class TasksService {
                     stars += estimateList[i].BusinessPerson.Reviews[j].star;
                 }
                 let averageOfStars = stars / estimateList[i].BusinessPerson.Reviews.length;
-                estimateList[i].BusinessPerson['averageOfStarsCount'] = Math.round(averageOfStars * 10) / 10;
+                estimateList[i].BusinessPerson['averageOfStarsCount'] = 
+                    Math.round(averageOfStars * 10) / 10;
             }
     
             console.log(
@@ -534,7 +539,9 @@ export class TasksService {
                     user_done: true, 
                 })
                 .where('id = :movingInfoId', { movingInfoId })
-                .andWhere('picked_business_person = :businessPersonId', { businessPersonId })
+                .andWhere('picked_business_person = :businessPersonId', { 
+                    businessPersonId 
+                })
                 .execute();
     
             // 기사님 이사완료 체크여부 확인
@@ -560,7 +567,12 @@ export class TasksService {
             }
     
             // 유저 + 기사님 완료의 경우 -> 기사님 이사완료 카운트 +1, movingInfo 상태 PICK -> DONE
-            await this.checkMovingToDone(checkedBusinessPersonDone, businessPersonId, movingInfoId, queryRunner);
+            await this.checkMovingToDone(
+                checkedBusinessPersonDone, 
+                businessPersonId, 
+                movingInfoId, 
+                queryRunner
+            );
 
             await queryRunner.commitTransaction();
     
@@ -599,7 +611,9 @@ export class TasksService {
                     business_person_done: true, 
                 })
                 .where('id = :movingInfoId', { movingInfoId })
-                .andWhere('picked_business_person = :businessPersonId', { businessPersonId })
+                .andWhere('picked_business_person = :businessPersonId', { 
+                    businessPersonId 
+                })
                 .execute();
     
             // 유저 완료 체크여부 확인

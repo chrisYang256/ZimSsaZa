@@ -57,7 +57,7 @@ export class TasksController {
     @ApiBody({ description: '이사 견적 금액', type: NegoCostDto })
     @ApiBearerAuth('BusinessPerson-JWT-Auth')
     @UseGuards(BusinessPersonJwtAuthGuard)
-    @Post('movingInfo/:movinginfoId/cost')
+    @Post('movingInfo/:movingInfoId/cost')
     submitNegoCost(
         @Param('movingInfoId') movingInfoId: number,
         @Body('cost') cost: NegoCostDto,
