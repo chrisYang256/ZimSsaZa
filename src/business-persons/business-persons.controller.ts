@@ -39,7 +39,7 @@ export class BusinessPersonsController {
 
     @ApiOperation({ summary: '로그인' })
     @ApiResponse({ status: 201, description: '인증 성공'})
-    @ApiResponse({ status: 401, description: '인증 실패' })
+    @ApiResponse({ status: 401, description: '인증 실패'})
     @ApiBody({ type: LoginDto })
     @UseGuards(BusinessPersonJwtAuthGuard)
     @Post('login')

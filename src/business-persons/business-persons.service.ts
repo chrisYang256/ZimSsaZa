@@ -131,12 +131,12 @@ export class BusinessPersonsService {
             .getMany();
         console.log('my messages:::', messages.length);
 
-        if ((messages.length <= 1) && (+page === 1)) {
+        if ((messages.length >= 1) && (+page === 1)) {
             await this.systemMessages
                 .createQueryBuilder()
                 .update('system_messages')
                 .set({ updatedAt: new Date() })
-                .where('UserId = :BusinessPersonId', { businessPersonId })
+                .where('BusinessPersonId = :businessPersonId', { businessPersonId })
                 .orderBy('updatedAt', 'DESC')
                 .limit(1)
                 .execute();
@@ -148,10 +148,12 @@ export class BusinessPersonsService {
     async unreadCount(businessPersonId: number) {
         const checkLastDate = await this.systemMessages
             .createQueryBuilder('message')
-            .select('MAX(CONVERT_TZ(message.updatedAt, "+0:00", "+9:00"))', 'lastReadAt')
+            .select('MAX(message.updatedAt)', 'lastReadAt')
             .where('message.BusinessPersonId = :businessPersonId', { businessPersonId })
             .getRawOne();
-        console.log('lastcheckDate:::', checkLastDate.lastReadAt);
+        console.log('lastcheckDate:::', checkLastDate.lastReadAt.toLocaleString("ko-KR", {
+            timeZone: "Asia/Seoul"
+        }));
         
         const count = await this.systemMessages
             .createQueryBuilder('message')

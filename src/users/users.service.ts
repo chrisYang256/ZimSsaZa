@@ -262,7 +262,7 @@ export class UsersService {
         // 메시지가 있고 page가 1인 경우만 업데이트 시간 변경
         // page 2 이상의 메시지 리스트를 확인할 시점에 들어온 새로운 메시지는 
         // 클라이언트가 사실상 메시지를 확인한 상태가 아니기 때문
-        if ((messages.length <= 1) && (+page === 1)) {
+        if ((messages.length >= 1) && (+page === 1)) {
             await this.systemMessages
                 .createQueryBuilder()
                 .update('system_messages')
@@ -284,7 +284,9 @@ export class UsersService {
             .select('MAX(CONVERT_TZ(message.updatedAt, "+0:00", "+9:00"))', 'lastReadAt')
             .where('message.UserId = :userId', { userId })
             .getRawOne();
-        console.log('lastcheckDate:::', checkLastDate.lastReadAt);
+        console.log('lastcheckDate:::', checkLastDate.lastReadAt.toLocaleString("ko-KR", {
+            timeZone: "Asia/Seoul"
+        }));
         
         // readMessage에서 입력한 시점을 기준으로 이후 받은 메시지만 출력
         const count = await this.systemMessages

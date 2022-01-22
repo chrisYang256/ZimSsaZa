@@ -72,10 +72,10 @@ export class TasksController {
     @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
     @Get('movingInfo/estimates/list')
-    checkEestimateList(
+    checkEstimateList(
         @GetMyInfo() user: UserWithoutPasswordDto,
         ) {
-        return this.taskService.checkEestimateList(user.id);
+        return this.taskService.checkEstimateList(user.id);
     }
 
     @ApiOperation({ summary: 'User: 견적서 선택(이사 담당 기사님 선택)'})

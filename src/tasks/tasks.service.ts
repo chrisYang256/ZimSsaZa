@@ -1,4 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Cron, CronExpression, SchedulerRegistry, Timeout } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
@@ -27,6 +28,72 @@ export class TasksService {
         private connection: Connection,
         private eventsGateway: EventsGateway,
     ) {}
+
+    // NEGO테이블을 확인하여 견적서 요청 시점에서 24시간이 경과된 경우 알림메시지 발송
+    // router에 요청이 들어올 때마다 예약하는 경우 서버다운이 발생하면 예약작업이 사라지므로 이 방법을 선택
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async checkNegoTimout() {
+        console.log('Cron is alive at:::', Date.now());
+        const queryRunner = this.connection.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+        try {
+            const timeoutFilter = await this.negotiationsRepository
+                .createQueryBuilder('nego')
+                .innerJoin('nego.MovingInformation', 'movingInfo')
+                .select('movingInfo.UserId', 'userId')
+                .where('DATE_ADD(nego.createdAt, INTERVAL 1 DAY) < NOW()')
+                .andWhere('nego.timeout IS FALSE')
+                .andWhere('nego.cost IS NULL')
+                .execute();
+            console.log('timeoutFilter:::', timeoutFilter);
+    
+            if (timeoutFilter.length === 0) {
+                return;
+            }
+    
+            let values = [];
+            for (let i = 0; i < timeoutFilter.length; i++) {
+                const value = {
+                    UserId: timeoutFilter[i].userId,
+                    message: SendSystemMessage.TIMEOUT_NEGO,
+                }
+                values.push(value);
+            }
+            console.log('valuses:::', values)
+    
+            await this.systemMessages
+                .createQueryBuilder('system_messages', queryRunner)
+                .insert()
+                .into('system_messages')
+                .values(values)
+                .execute()
+    
+            const timeoutList = timeoutFilter.map((v) => v.userId)
+            console.log('timeoutList:::', timeoutList)
+    
+            await this.negotiationsRepository
+                .createQueryBuilder('Negotiations', queryRunner)
+                .leftJoin(
+                    'Negotiations.MovingInformation', 
+                    'movingInfo', 
+                    'movingInfo.UserId = :ids', { 
+                        ids: timeoutList 
+                })
+                .update('Negotiations')
+                .set({ timeout: true })
+                .where('Negotiations.cost IS NULL')
+                .execute();
+    
+            await queryRunner.commitTransaction();
+            } catch (error) {
+                await queryRunner.rollbackTransaction();
+                console.log(error);
+                throw error;
+            } finally {
+                await queryRunner.release();
+            }
+    }
 
     async checkMovingToDone(checkDone, businessPersonId, movingInfoId, queryRunner) {
         // 이사완료 연타로 인한 기사님 finish_count 중복 덧셈 방지
@@ -70,7 +137,10 @@ export class TasksService {
                 .getMany();
             console.log('isNegoing:::', isNegoing)
     
-            if (isNegoing.find((v) => v.MovingStatusId === (MovingStatusEnum.NEGO || MovingStatusEnum.PICK))) { // 견적 장난질 방지
+            if (isNegoing.find((v) => v.MovingStatusId === (
+                MovingStatusEnum.NEGO || 
+                MovingStatusEnum.PICK
+            ))) { // 견적 장난질 방지
                 throw new ForbiddenException('이미 진행 중인 이사정보가 존재합니다.')
             }
 
@@ -100,8 +170,7 @@ export class TasksService {
                 .execute();
 
             await queryRunner.commitTransaction();
-            // scheduler로 24시간 경과(nego table createAt으로) 확인로직 추가하기!!
-            
+        
         } catch (error) {
             await queryRunner.rollbackTransaction();
             console.log(error);
@@ -295,7 +364,7 @@ export class TasksService {
                     .into('system_messages')
                     .values({
                         UserId: owner.User.id,
-                        message: SendSystemMessage.GET_FINISHED_NEGO(owner.User.name),
+                        message: SendSystemMessage.FINISH_NEGO(owner.User.name),
                     })
                     .execute();
                 console.log('sendSystemMessage:::', sendSystemMessage);
@@ -307,7 +376,7 @@ export class TasksService {
         } 
     }
 
-    async checkEestimateList(userId: number) {
+    async checkEstimateList(userId: number) {
         try {
             const myMovingInfo = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
@@ -316,6 +385,10 @@ export class TasksService {
                 .orderBy('movingInfo.createdAt', "DESC")
                 .getOne();
             console.log('myMovingInfo:::', myMovingInfo)
+
+            if (!myMovingInfo) {
+                throw new NotFoundException('견적요청 중인 이삿짐 정보가 없습니다.')
+            }
     
             // 받은 견적 리스트 10개 중 낮은 가격순으로 5개만 return
             const estimateList = await this.negotiationsRepository
@@ -348,8 +421,8 @@ export class TasksService {
                 .take(5)
                 .getMany();
     
-            if (estimateList.length === 0) { ////////////////////// 크론!!!
-                return { 'message' : '받은 견적이 "0"건입니다.'}
+            if (estimateList.length === 0) {
+                return { 'message' : '받은 견적 내역이 없습니다.', 'status' : 200}
             }
     
             //  기사님 각각의 리뷰 별점 평균 포함시키기
@@ -421,7 +494,7 @@ export class TasksService {
                 .into('system_messages')
                 .values({
                     BusinessPersonId: businessPersonId,
-                    message: SendSystemMessage.GET_USER_PICK,
+                    message: SendSystemMessage.PICKED_NEGO,
                 })
                 .execute();
     
@@ -450,7 +523,7 @@ export class TasksService {
                 .getOne();
             console.log('checkAlreadyDone:::', checkAlreadyDone);
 
-            if (checkAlreadyDone.user_done === (1 || true)) {
+            if (checkAlreadyDone.user_done) {
                 throw new ForbiddenException('이미 완료 확인을 하셨습니다.');
             }
 
@@ -515,7 +588,7 @@ export class TasksService {
                 .getOne();
             console.log('checkAlreadyDone:::', checkAlreadyDone);
 
-            if (checkAlreadyDone.business_person_done === (1 || true)) {
+            if (checkAlreadyDone.business_person_done) {
                 throw new ForbiddenException('이미 완료 확인을 하셨습니다.');
             }      
 
