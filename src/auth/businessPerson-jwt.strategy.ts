@@ -22,17 +22,18 @@ export class BusinessPersonJwtStrategy extends PassportStrategy(Strategy, 'busin
     }
 
     async validate(payload) {
-        const bp: BusinessPersons = await this.businessPersons
+        const businessPerson: BusinessPersons = await this.businessPersons
             .createQueryBuilder('businessPersons')
+            .addSelect('businessPersons.business_license')
             .leftJoin('businessPersons.AreaCodes', 'areacodes')
             .addSelect('areacodes.code')
             .where('businessPersons.id = :id', { id: payload.id })
             .getOne();
 
-        if (!bp) {
+        if (!businessPerson) {
             throw new UnauthorizedException('유효하지 않은 토큰입니다.');
         }
         
-        return bp;
+        return businessPerson;
     }
 }

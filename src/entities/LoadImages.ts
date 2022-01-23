@@ -34,7 +34,7 @@ export class LoadImages {
     @Column('int', { name: 'MovingGoodsId'})
     MovingGoodsId: number;
 
-    @ManyToOne(() => MovingGoods, movinggoods => movinggoods.LoadImags, {
+    @ManyToOne(() => MovingGoods, movinggoods => movinggoods.LoadImages, {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     })

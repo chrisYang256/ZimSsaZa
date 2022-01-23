@@ -10,9 +10,9 @@ export class BusinessPersonLocalStrategy extends PassportStrategy(Strategy, 'bus
   }
 
   async validate(email: string, password: string): Promise<any> {
-    const bp = await this.authService.validateBP(email, password);
-    // console.log('business-person:::', bp);
+    const BusinessPersonWithoutPassword = 
+      await this.authService.validateBusinessPerson(email, password);
     
-    return bp;
+    return BusinessPersonWithoutPassword;
   }
 }

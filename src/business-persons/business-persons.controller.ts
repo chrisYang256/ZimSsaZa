@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { BusinessPersonJwtAuthGuard } from 'src/auth/businessPerson-jwt-auth.guard';
@@ -25,7 +25,7 @@ export class BusinessPersonsController {
     @UseGuards(BusinessPersonJwtAuthGuard)
     @Get()
     myInfo(@GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto) {
-        return businessPerson;
+        return this.businessPersonService.businessPersonInfo(businessPerson);
     }
 
     @ApiOperation({ summary: '회원 가입' })
@@ -45,10 +45,32 @@ export class BusinessPersonsController {
     @Post('login')
     async signIn(@GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto) {
         console.log('businessPerson:::', businessPerson)
-        return await this.authService.login(businessPerson);
+        return this.authService.login(businessPerson);
     }
 
-    // 이사 예정인 목록 조회(pick받은 기사님은 pick한 유저 정보 조회 가능)
+    @ApiOperation({ summary: '예약된 이사 목록 보기' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('BusinessPerson-JWT-Auth')
+    @UseGuards(BusinessPersonJwtAuthGuard)
+    @Get('contract/undone/list')
+    getScheduleList(
+        @GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto,
+    ) {
+        return this.businessPersonService.getScheduleList(businessPerson.id);
+    }
+
+    @ApiOperation({ summary: '예약된 이사 상세 보기' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('BusinessPerson-JWT-Auth')
+    @UseGuards(BusinessPersonJwtAuthGuard)
+    @Get('contract/undone/detail/:movingInfoId')
+    getScheduleDetail(
+        @Param('movingInfoId', ParseIntPipe) movingInfoId: number
+    ) {
+        return this.businessPersonService.getScheduleDetail(movingInfoId);
+    }
 
     @ApiOperation({ summary: '시스템 메시지 보기' })
     @ApiResponse({ status: 201, description: 'response 성공' })

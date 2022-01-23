@@ -7,10 +7,10 @@ export class CreateBusinessPersonDto {
     @ApiProperty({ example: 'ssazim@google.com', description: '사업자 이메일'})
     email: string;
 
-    @ApiProperty({ example: '1234abcd!(알파벳+숫자+특수문자 8~15자리)', description: '사업자 비밀번호'})
+    @ApiProperty({ example: '1234abcd!', description: '사업자 비밀번호(알파벳+숫자+특수문자 8~15자리)'})
     password: string;
     
-    @ApiProperty({ example: '010-0000-0000(010-숫자 3~4자리-숫자 4자리)', description: '사업자 휴대폰 번호'})
+    @ApiProperty({ example: '010-0000-0000', description: '사업자 휴대폰 번호(010-숫자 3~4자리-숫자 4자리)'})
     phone_number: string;
 
     @ApiProperty({ example: '123-45-67890', description: '사업자 번호'})

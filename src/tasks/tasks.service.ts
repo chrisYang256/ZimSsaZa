@@ -152,6 +152,10 @@ export class TasksService {
                 .getOne();
             console.log('movingInfoToNego:::', movingInfoToNego);
 
+            if (!movingInfoToNego) {
+                throw new NotFoundException('이삿짐 정보가 존재하지 않습니다.')
+            }
+
             // 견적요청은 자동으로 가장 최근에 만든 이사정보로 보내지도록
             await this.negotiationsRepository
                 .createQueryBuilder('negotiations', queryRunner)
@@ -188,8 +192,8 @@ export class TasksService {
         // NEGO 중인 submitMovingInfo 중에서 기사님 관심 area_code들과 일치하는 결과만 리턴
         try {
             const { perPage, page } = pagenation;
-            const bpAreaCodes = businessPerson.AreaCodes.map((v) => v);
-            console.log('bpAreaCodes:::', bpAreaCodes);
+            const businessPersonAreaCodes = businessPerson.AreaCodes.map((v) => v);
+            console.log('businessPersonAreaCodes:::', businessPersonAreaCodes);
 
             const movingInfoList = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
@@ -198,16 +202,22 @@ export class TasksService {
                     'movingInfo.id',
                     'movingInfo.start_point', 
                     'movingInfo.destination',
-                    'movingInfo.createAt',
+                    'movingInfo.createdAt',
                 ])
                 .where('movingInfo.MovingStatusId = :id', { 
                     id: MovingStatusEnum.NEGO 
                 })
-                .andWhere('AC.code In (:...codes)', { codes: bpAreaCodes })
+                .andWhere('AC.code In (:...codes)', { codes: 
+                    businessPersonAreaCodes 
+                })
                 .take(perPage)
                 .skip(perPage * (page - 1))
                 .getMany();
             console.log('results:::', movingInfoList)
+
+            if (movingInfoList.length === 0) {
+                throw new NotFoundException('현재 담당 지역에서 견적 요청이 존재하지 않습니다..')
+            }
     
             return { 'movingInfoList': movingInfoList, 'status': 200 }
         } catch (error) {
@@ -216,7 +226,7 @@ export class TasksService {
         }
     }
 
-    async getMovingInfo(movingInfoId: number) {
+    async getMovingInfoDetail(movingInfoId: number) {
         try {
             // 특정 견적요청 게시물을 클릭 때의 게시물 상태 확인
             const isNotNegoing = await this.movingInformationsRepository
@@ -238,7 +248,7 @@ export class TasksService {
             .createQueryBuilder('movingInfo')
             .innerJoin('movingInfo.AreaCode', 'areacode')
             .innerJoin('movingInfo.MovingGoods', 'goods')
-            .leftJoin('goods.LoadImags', 'images')
+            .leftJoin('goods.LoadImages', 'images')
             .select([
                 'movingInfo.id',
                 'movingInfo.start_point',
@@ -413,6 +423,7 @@ export class TasksService {
                 .addSelect([
                     'reviews.id',
                     'reviews.star',
+                    'reviews.writer',
                     'reviews.content', 
                     'reviews.createdAt',
                 ])
@@ -435,9 +446,9 @@ export class TasksService {
                 for (let j = 0; j < estimateList[i].BusinessPerson.Reviews.length; j++) {
                     stars += estimateList[i].BusinessPerson.Reviews[j].star;
                 }
-                let averageOfStars = stars / estimateList[i].BusinessPerson.Reviews.length;
-                estimateList[i].BusinessPerson['averageOfStarsCount'] = 
-                    Math.round(averageOfStars * 10) / 10;
+                let starAvg = stars / estimateList[i].BusinessPerson.Reviews.length;
+                estimateList[i].BusinessPerson['starsAvg'] = 
+                    Math.round(starAvg * 10) / 10;
             }
     
             console.log(
