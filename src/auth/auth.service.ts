@@ -43,27 +43,27 @@ export class AuthService {
         throw new ForbiddenException(`비밀번호가 일치하지 않습니다.`)
     }
 
-    async validateBP(email: string, password: string) {
-        const bp = await this.businessPersons
-            .createQueryBuilder('bp')
+    async validateBusinessPerson(email: string, password: string) {
+        const businessPerson = await this.businessPersons
+            .createQueryBuilder('businessPerson')
             .select([
-                'bp.id', 
-                'bp.email', 
-                'bp.password', 
+                'businessPerson.id', 
+                'businessPerson.email', 
+                'businessPerson.password', 
             ])
-            .where('bp.email = :email', { email })
+            .where('businessPerson.email = :email', { email })
             .getOne()
-        // console.log('auth service bp:::', bp);
+        // console.log('auth service businessPerson:::', businessPerson);
         
-        if (!bp) {
+        if (!businessPerson) {
             throw new ForbiddenException(`'${email}' 회원을 찾을 수 없습니다.`)
         }
 
-        const result = await bcrypt.compare(password, bp.password);
+        const result = await bcrypt.compare(password, businessPerson.password);
 
         if (result) {
-            const { password, ...BPInfoWithoutPassword } = bp;
-            return BPInfoWithoutPassword;
+            const { password, ...BusinessPersonInfoWithoutPassword } = businessPerson;
+            return BusinessPersonInfoWithoutPassword;
         }
 
         throw new ForbiddenException(`비밀번호가 일치하지 않습니다.`)

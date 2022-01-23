@@ -33,7 +33,7 @@ export class TasksController {
     @ApiResponse({ status: 401, description: 'response 실패' })
     @ApiBearerAuth('BusinessPerson-JWT-Auth')
     @UseGuards(BusinessPersonJwtAuthGuard)
-    @Get('movingInfo/board')
+    @Get('movingInfo/list')
     getMovingInfoList(
         @Query() pagenation: PagenationDto,
         @GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto
@@ -46,9 +46,9 @@ export class TasksController {
     @ApiResponse({ status: 404, description: '게시물이 존재하지 않습니다.' })
     @ApiBearerAuth('BusinessPerson-JWT-Auth')
     @UseGuards(BusinessPersonJwtAuthGuard)
-    @Get('movingInfo/:movingInfoId')
-    getMovingInfo(@Param('movinginfoId') movingInfoId: number) {
-        return this.taskService.getMovingInfo(movingInfoId);
+    @Get('movingInfo/detail/:movingInfoId')
+    getMovingInfoDetail(@Param('movingInfoId') movingInfoId: number) {
+        return this.taskService.getMovingInfoDetail(movingInfoId);
     }
 
     @ApiOperation({ summary: 'Business Person: 견적 금액 제출' })

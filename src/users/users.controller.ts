@@ -14,6 +14,7 @@ import { UsersService } from './users.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { NotLoggedInGuard } from 'src/auth/not-logged-in.guard';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
+import { CreateReviewDto } from './dto/create-review.dto';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -85,7 +86,7 @@ export class UsersController {
     @UseGuards(UserJwtAuthGuard)
     @Post('pack')
     async makePackForMoving(
-        @GetMyInfo() user: Users,
+        @GetMyInfo() user: UserWithoutPasswordDto,
         @Body() createMovingGoodsDto: CreateMovingGoodsDto,
         @UploadedFiles() files: Array<Express.Multer.File>,
     ) {
@@ -117,6 +118,26 @@ export class UsersController {
         @GetMyInfo() user: UserWithoutPasswordDto,
     ) {
         return this.usersService.getContract(user.id);
+    }
+
+    @ApiOperation({ summary: '이사 완료시 파트너 기사님에게 리뷰 작성' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 400, description: 'response 실패' })
+    @ApiBearerAuth('User-JWT-Auth')
+    @UseGuards(UserJwtAuthGuard)
+    @Post('review')
+    async writeReview(
+        @GetMyInfo() user: UserWithoutPasswordDto,
+        @Body() data: CreateReviewDto ,
+        @Query('businessPersonId', ParseIntPipe) businessPersonId: number,
+        @Query('movingInformationId', ParseIntPipe) movingInformationId: number 
+    ) {
+        return this.usersService.writeReview(
+            user, 
+            businessPersonId, 
+            movingInformationId, 
+            data
+        );
     }
 
     @ApiOperation({ summary: '시스템 메시지 보기' })

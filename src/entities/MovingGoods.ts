@@ -69,5 +69,5 @@ export class MovingGoods {
     MovingInformation: MovingInformations;
 
     @OneToMany(() => LoadImages, loadimages => loadimages.MovingGoods)
-    LoadImags: LoadImages[];
+    LoadImages: LoadImages[];
 }

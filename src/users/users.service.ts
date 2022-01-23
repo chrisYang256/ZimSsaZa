@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ConsoleLogger, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/Users';
-import { Connection, createQueryBuilder, Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
 import { MovingInformations } from 'src/entities/MovingInformations';
@@ -13,6 +13,9 @@ import { MovingStatusEnum } from 'src/common/movingStatus.enum';
 import { SystemMessages } from 'src/entities/SystemMessages';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { Negotiations } from 'src/entities/Negotiations';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { Reviews } from 'src/entities/Reviews';
+import { UserWithoutPasswordDto } from './dto/user-without-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -31,6 +34,8 @@ export class UsersService {
         private systemMessagesRepository: Repository<SystemMessages>,
         @InjectRepository(Negotiations)
         private negotiationsRepository: Repository<Negotiations>,
+        @InjectRepository(Reviews)
+        private reviewsRepository: Repository<Reviews>,
         private connection: Connection,
     ) {}
 
@@ -208,153 +213,230 @@ export class UsersService {
     }
 
     async removePack(userId: number, packId: number) {
-        const findMovingInfo = await this.movingInformationsRepository
-            .createQueryBuilder('movingInfo')
-            .where('id = :packId', { packId })
-            .andWhere('UserId = :userId', { userId})
-            .getOne();
-        console.log('findMovingInfo:::', findMovingInfo);
-        
-        if (!findMovingInfo) {
-            throw new ForbiddenException('이삿짐 정보를 찾을 수 없습니다.')
+        try {
+            const findMovingInfo = await this.movingInformationsRepository
+                .createQueryBuilder('movingInfo')
+                .where('id = :packId', { packId })
+                .andWhere('UserId = :userId', { userId})
+                .getOne();
+            console.log('findMovingInfo:::', findMovingInfo);
+            
+            if (!findMovingInfo) {
+                throw new ForbiddenException('이삿짐 정보를 찾을 수 없습니다.')
+            }
+    
+            // 이삿짐 정보 삭제는 movingStatus가 STAY(견적 제출 전), DONE(이사 완료)인 경우만 가능
+            const checkMovingStatus = await this.movingInformationsRepository
+                .createQueryBuilder('movingInfo')
+                .where('id = :packId', { packId })
+                .andWhere('MovingStatusId IN (:...ids)', { ids: [
+                    MovingStatusEnum.NEGO,
+                    MovingStatusEnum.PICK,
+                ]})
+                .getOne();
+            console.log('checkMovingStatus:::', checkMovingStatus);
+    
+            if (checkMovingStatus) {
+                throw new ForbiddenException('견적을 받는 중이거나 이사중인 경우 삭제할 수 없습니다.');
+            }
+    
+            await this.movingInformationsRepository
+                .createQueryBuilder()
+                .delete()
+                .from('MovingInformations')
+                .where('id = :packId', { packId })
+                .andWhere('UserId = :userId', { userId})
+                .execute();
+            
+            return { 'message' : '삭제 성공!', 'status' : 201 }
+        } catch(error) {
+            console.log(error);
+            throw error;
         }
-
-        // 이삿짐 정보 삭제는 movingStatus가 STAY(견적 제출 전), DONE(이사 완료)인 경우만 가능
-        const checkMovingStatus = await this.movingInformationsRepository
-            .createQueryBuilder('movingInfo')
-            .where('id = :packId', { packId })
-            .andWhere('MovingStatusId IN (:...ids)', { ids: [
-                MovingStatusEnum.NEGO,
-                MovingStatusEnum.PICK,
-            ]})
-            .getOne();
-        console.log('checkMovingStatus:::', checkMovingStatus);
-
-        if (checkMovingStatus) {
-            throw new ForbiddenException('견적을 받는 중이거나 이사중인 경우 삭제할 수 없습니다.');
-        }
-
-        await this.movingInformationsRepository
-            .createQueryBuilder()
-            .delete()
-            .from('MovingInformations')
-            .where('id = :packId', { packId })
-            .andWhere('UserId = :userId', { userId})
-            .execute();
-        
-        return { 'message' : '삭제 성공!', 'status' : 201 }
     }
 
-    async getContract(userId) {
-        const myMovingInfo = await this.movingInformationsRepository
-            .createQueryBuilder('movingInfo')
-            .select([
-                'movingInfo.id',
-                'movingInfo.destination', 
-                'movingInfo.start_point', 
-                'movingInfo.move_date', 
-                'movingInfo.move_time',
-                'movingInfo.picked_business_person',
-            ])
-            .where('movingInfo.UserId = :userId', { userId })
-            .andWhere('movingInfo.MovingStatusId = :MovingStatusId', { 
-                MovingStatusId: MovingStatusEnum.PICK 
-            })
-            .getOne();
-        console.log('myMovingInfo:::', myMovingInfo);
+    async getContract(userId: number) {
+        try {
+            const myMovingInfo = await this.movingInformationsRepository
+                .createQueryBuilder('movingInfo')
+                .select([
+                    'movingInfo.id',
+                    'movingInfo.destination', 
+                    'movingInfo.start_point', 
+                    'movingInfo.move_date', 
+                    'movingInfo.move_time',
+                    'movingInfo.picked_business_person',
+                ])
+                .where('movingInfo.UserId = :userId', { userId })
+                .andWhere('movingInfo.MovingStatusId IN (:...ids)', { ids: [
+                    MovingStatusEnum.PICK,
+                    MovingStatusEnum.DONE,
+                ]})
+                .getOne();
+            console.log('myMovingInfo:::', myMovingInfo);
+    
+            const myMovingPartner = await this.negotiationsRepository
+                .createQueryBuilder('nego')
+                .innerJoin(
+                    'nego.BusinessPerson',
+                    'businessPerson',
+                )
+                .innerJoin(
+                    'businessPerson.Reviews',
+                    'reviews'
+                )
+                .select('nego.cost')
+                .addSelect([
+                    'businessPerson.id',
+                    'businessPerson.name', 
+                    'businessPerson.phone_number', 
+                ])
+                .addSelect([
+                    'reviews.star',
+                    'reviews.writer',
+                    'reviews.content',
+                ])
+                .where('nego.MovingInformationId = :movingInfoId', { 
+                    movingInfoId: myMovingInfo.id 
+                })
+                .andWhere('nego.BusinessPersonId = :id', { 
+                    id: myMovingInfo.picked_business_person  
+                })
+                .getOne();
+            console.log('myMovingPartner:::', myMovingPartner);
+    
+            if (!myMovingPartner) {
+                throw new NotFoundException('해당 기사님이 존재하지 않습니다')
+            }
+    
+            let stars = 0;
+            for (let i = 0; i < myMovingPartner.BusinessPerson.Reviews.length; i++) {
+                const star = myMovingPartner.BusinessPerson.Reviews[i].star;
+                console.log('star', star)
+                stars += star;
+            }
+            myMovingInfo['starsAvg'] = Math.round(
+                stars / myMovingPartner.BusinessPerson.Reviews.length * 10) / 10;
+    
+            const results = Object.assign(myMovingInfo, myMovingPartner);
+            delete results.id;
+            delete results.picked_business_person;
+            console.log('results:::', results)
+    
+            return { 'results' : results, 'status': 200 }
+        } catch(error) {
+            console.log(error);
+            throw error;
+        }
+    }
 
-        const myMovingPartner = await this.negotiationsRepository
-            .createQueryBuilder('nego')
-            .innerJoin(
-                'nego.BusinessPerson',
-                'businessPerson',
-            )
-            .innerJoin(
-                'businessPerson.Reviews',
-                'reviews'
-            )
-            .select('nego.cost')
-            .addSelect([
-                'businessPerson.name', 
-                'businessPerson.phone_number', 
-            ])
-            .addSelect([
-                'reviews.content',
-                'reviews.star',
-            ])
-            .where('nego.MovingInformationId = :movingInfoId', { 
-                movingInfoId: myMovingInfo.id 
-            })
-            .andWhere('nego.BusinessPersonId = :id', { 
-                id: myMovingInfo.picked_business_person  
-            })
-            .getOne();
-        console.log('myMovingPartner:::', myMovingPartner);
+    async writeReview(
+        user: UserWithoutPasswordDto, 
+        businessPersonId: number, 
+        movingInformationId: number,
+        data: CreateReviewDto
+    ) {
+        const { content, star } = data
+        try {
+            // 리뷰는 이사 1건당 1개로 제한
+            const beWritten = await this.reviewsRepository
+                .createQueryBuilder('review')
+                .where('moving_information_id = :MIId', { 
+                    MIId: movingInformationId 
+                })
+                .andWhere('UserId = :userId', { userId: user.id })
+                .getOne();
+            console.log('beWritten:::', beWritten);
 
-        const results = Object.assign(myMovingInfo, myMovingPartner);
-        delete results.id;
-        delete results.picked_business_person;
-        console.log('results:::', results)
+            if (beWritten) {
+                throw new ForbiddenException('이미 리뷰를 작성하셨습니다.');
+            }
 
-        return results;
+            await this.reviewsRepository
+                .createQueryBuilder()
+                .insert()
+                .into('Reviews')
+                .values({
+                    writer: user.name,
+                    content: content,
+                    star: star,
+                    moving_information_id: movingInformationId,
+                    UserId: user.id,
+                    BusinessPersonId: businessPersonId,
+                })
+                .execute()
+        } catch(error) {
+            console.log(error);
+            throw error;
+        }
     }
 
     async readMessage(
         userId: number,
         pagenation: PagenationDto
     ) {
-        const { perPage, page } = pagenation;
-
-        const messages = await this.systemMessagesRepository
-            .createQueryBuilder('message')
-            .select(['message.message', 'message.createdAt'])
-            .where('message.UserId = :userId', { userId })
-            .orderBy('message.createdAt', 'DESC')
-            .take(perPage)
-            .skip(perPage * (page - 1))
-            .getMany();
-        console.log('my messages:::', messages.length);
-
-        // unread 카운팅을 위한 기준점 생성
-        // 메시지가 있고 page가 1인 경우만 업데이트 시간 변경
-        // page 2 이상의 메시지 리스트를 확인할 시점에 들어온 새로운 메시지는 
-        // 클라이언트가 사실상 메시지를 확인한 상태가 아니기 때문
-        if ((messages.length >= 1) && (+page === 1)) {
-            await this.systemMessagesRepository
-                .createQueryBuilder()
-                .update('system_messages')
-                .set({
-                    updatedAt: new Date()
-                })
-                .where('UserId = :userId', { userId })
-                .orderBy('updatedAt', 'DESC')
-                .limit(1)
-                .execute();
+        try {
+            const { perPage, page } = pagenation;
+    
+            const messages = await this.systemMessagesRepository
+                .createQueryBuilder('message')
+                .select(['message.message', 'message.createdAt'])
+                .where('message.UserId = :userId', { userId })
+                .orderBy('message.createdAt', 'DESC')
+                .take(perPage)
+                .skip(perPage * (page - 1))
+                .getMany();
+            console.log('my messages:::', messages.length);
+    
+            // unread 카운팅을 위한 기준점 생성
+            // 메시지가 있고 page가 1인 경우만 업데이트 시간 변경
+            // page 2 이상의 메시지 리스트를 확인할 시점에 들어온 새로운 메시지는 
+            // 클라이언트가 사실상 메시지를 확인한 상태가 아니기 때문
+            if ((messages.length >= 1) && (+page === 1)) {
+                await this.systemMessagesRepository
+                    .createQueryBuilder()
+                    .update('system_messages')
+                    .set({
+                        updatedAt: new Date()
+                    })
+                    .where('UserId = :userId', { userId })
+                    .orderBy('updatedAt', 'DESC')
+                    .limit(1)
+                    .execute();
+            }
+    
+            return { 'message' : messages, 'status:' : 200 }
+        } catch(error) {
+            console.log(error);
+            throw error;
         }
-
-        return { 'message' : messages, 'status:' : 200 }
     }
 
     async unreadCount(userId: number) {
-        const checkLastDate = await this.systemMessagesRepository
-            .createQueryBuilder('message')
-            .select('MAX(CONVERT_TZ(message.updatedAt, "+0:00", "+9:00"))', 'lastReadAt')
-            .where('message.UserId = :userId', { userId })
-            .getRawOne();
-        console.log('lastcheckDate:::', checkLastDate.lastReadAt.toLocaleString("ko-KR", {
-            timeZone: "Asia/Seoul"
-        }));
-        
-        // readMessage에서 입력한 시점을 기준으로 이후 받은 메시지만 출력
-        const count = await this.systemMessagesRepository
-            .createQueryBuilder('message')
-            .where('message.UserId = :userId', { userId })
-            .andWhere('message.createdAt > :lastReadAt', { 
-                lastReadAt: checkLastDate.lastReadAt
-            })
-            .getCount();
-        console.log('count:::', count);
-
-        return { 'count' : count, 'status:' : 200 }
+        try {
+            const checkLastDate = await this.systemMessagesRepository
+                .createQueryBuilder('message')
+                .select('MAX(CONVERT_TZ(message.updatedAt, "+0:00", "+9:00"))', 'lastReadAt')
+                .where('message.UserId = :userId', { userId })
+                .getRawOne();
+            console.log('lastcheckDate:::', checkLastDate.lastReadAt.toLocaleString("ko-KR", {
+                timeZone: "Asia/Seoul"
+            }));
+            
+            // readMessage에서 입력한 시점을 기준으로 이후 받은 메시지만 출력
+            const count = await this.systemMessagesRepository
+                .createQueryBuilder('message')
+                .where('message.UserId = :userId', { userId })
+                .andWhere('message.createdAt > :lastReadAt', { 
+                    lastReadAt: checkLastDate.lastReadAt
+                })
+                .getCount();
+            console.log('count:::', count);
+    
+            return { 'count' : count, 'status:' : 200 }
+        } catch(error) {
+            console.log(error);
+            throw error;
+        }
     }
 }

@@ -24,6 +24,12 @@ export class Reviews {
 
     @IsString()
     @IsNotEmpty()
+    @ApiProperty({ example: '김치킨', description: '작성자 이름'})
+    @Column('varchar', { name: 'writer' })
+    writer: string;
+
+    @IsString()
+    @IsNotEmpty()
     @ApiProperty({ example: '너무 친절하신 기사님이에요!', description: '유저 리뷰'})
     @Column('text', { name: 'content' })
     content: string;
@@ -34,6 +40,9 @@ export class Reviews {
     @Column('int', { name: 'star', width: 5 })
     star: number;
 
+    @Column('int', { name: 'moving_information_id', nullable: true })
+    moving_information_id: number | null;
+
     @CreateDateColumn()
     createdAt: Date;
 
@@ -41,10 +50,10 @@ export class Reviews {
     updatedAt: Date;
 
     @Column('int', { name: 'UserId', nullable: true })
-    UserId: number | null;
+    UserId: number | null; // onDelete: 'SET NULL'
 
-    @Column('int', { name: 'BusinessPersonId', nullable: true })
-    BusinessPersonId: number | null;
+    @Column('int', { name: 'BusinessPersonId' })
+    BusinessPersonId: number;
 
     @ManyToOne(() => Users, users => users.Reviews, { 
         onUpdate: 'CASCADE', 
