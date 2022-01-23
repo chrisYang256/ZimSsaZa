@@ -351,8 +351,8 @@ export class TasksService {
 
             if (checkAfterSubmitCount < 10) { // 9번만
                 // 웹소켓으로 접속중인 견적요청한 유저에게 실시간 견적서 제출 현황 알려주기
-                // 시나리오: Front에서 유저 email로 이름을 가진 room 생성해 놓은 상태 -> 서버에서 유저 email로 room 입장 -> room에 메지시 발송/room 퇴장
-                // ** Front에서 sockeId를 보내주면 room 없이 to()만으로 가능하지만 학습을 위해 사용.
+                // 시나리오: Front에서 유저 email로 이름을 가진 room 생성(join)/message 구독해 놓은 상태 -> 서버에서 유저 email로 room 입장 -> room에 메지시 발송/room 퇴장
+                // ** Front에서 sockeId를 보내주면 room 없이 to()만으로 가능하지만 학습을 위해 이와 같이 사용.
                 this.eventsGateway.server.emit('login', { email: owner.User.email }); // 유저와 같은 room 입장
                 this.eventsGateway.server.to(owner.User.email)
                     .emit('message', { data: `현재 ${checkAfterSubmitCount}건의 견적을 받으셨습니다!`
@@ -453,7 +453,7 @@ export class TasksService {
     }
 
     // 견적서 pick하기(NEGO -> PICK)
-    async pickEestimate(
+    async pickEstimate(
         movingInfoId: number, 
         businessPersonId: number
     ) {

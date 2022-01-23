@@ -84,11 +84,11 @@ export class TasksController {
     @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
     @Patch('movingInfo/:movingInfoId/estimates/pick/:businessperson')
-    pickEestimate(
+    pickEstimate(
         @Param('movingInfoId', ParseIntPipe) movingInfoId: number,
         @Param('businessperson', ParseIntPipe)  businessPersonId: number
         ) {
-        return this.taskService.pickEestimate(movingInfoId, businessPersonId);
+        return this.taskService.pickEstimate(movingInfoId, businessPersonId);
     }
 
     @ApiOperation({ summary: 'User: 유저 이사완료 체크'})

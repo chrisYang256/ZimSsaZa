@@ -41,8 +41,6 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @ConnectedSocket() client: Socket
   ) {
     client.leave(data.email);
-    client.emit('logout', data);
-
     console.log('logout:::', data.email);
   }
 
@@ -51,7 +49,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @MessageBody() data: string,
     @ConnectedSocket() client: Socket
   ) {
-    client.emit('catch', data);
+    client.emit('receive message', 'receive message');
     console.log('message:::', data);
   }
 
