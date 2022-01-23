@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/Users';
-import { Connection, Repository } from 'typeorm';
+import { Connection, createQueryBuilder, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
 import { MovingInformations } from 'src/entities/MovingInformations';
@@ -12,6 +12,7 @@ import { AreaCodes } from 'src/entities/AreaCodes';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
 import { SystemMessages } from 'src/entities/SystemMessages';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
+import { Negotiations } from 'src/entities/Negotiations';
 
 @Injectable()
 export class UsersService {
@@ -27,7 +28,9 @@ export class UsersService {
         @InjectRepository(AreaCodes)
         private areaCodesRepository: Repository<AreaCodes>,
         @InjectRepository(SystemMessages)
-        private systemMessages: Repository<SystemMessages>,
+        private systemMessagesRepository: Repository<SystemMessages>,
+        @InjectRepository(Negotiations)
+        private negotiationsRepository: Repository<Negotiations>,
         private connection: Connection,
     ) {}
 
@@ -242,13 +245,67 @@ export class UsersService {
         return { 'message' : '삭제 성공!', 'status' : 201 }
     }
 
+    async getContract(userId) {
+        const myMovingInfo = await this.movingInformationsRepository
+            .createQueryBuilder('movingInfo')
+            .select([
+                'movingInfo.id',
+                'movingInfo.destination', 
+                'movingInfo.start_point', 
+                'movingInfo.move_date', 
+                'movingInfo.move_time',
+                'movingInfo.picked_business_person',
+            ])
+            .where('movingInfo.UserId = :userId', { userId })
+            .andWhere('movingInfo.MovingStatusId = :MovingStatusId', { 
+                MovingStatusId: MovingStatusEnum.PICK 
+            })
+            .getOne();
+        console.log('myMovingInfo:::', myMovingInfo);
+
+        const myMovingPartner = await this.negotiationsRepository
+            .createQueryBuilder('nego')
+            .innerJoin(
+                'nego.BusinessPerson',
+                'businessPerson',
+            )
+            .innerJoin(
+                'businessPerson.Reviews',
+                'reviews'
+            )
+            .select('nego.cost')
+            .addSelect([
+                'businessPerson.name', 
+                'businessPerson.phone_number', 
+            ])
+            .addSelect([
+                'reviews.content',
+                'reviews.star',
+            ])
+            .where('nego.MovingInformationId = :movingInfoId', { 
+                movingInfoId: myMovingInfo.id 
+            })
+            .andWhere('nego.BusinessPersonId = :id', { 
+                id: myMovingInfo.picked_business_person  
+            })
+            .getOne();
+        console.log('myMovingPartner:::', myMovingPartner);
+
+        const results = Object.assign(myMovingInfo, myMovingPartner);
+        delete results.id;
+        delete results.picked_business_person;
+        console.log('results:::', results)
+
+        return results;
+    }
+
     async readMessage(
         userId: number,
         pagenation: PagenationDto
     ) {
         const { perPage, page } = pagenation;
 
-        const messages = await this.systemMessages
+        const messages = await this.systemMessagesRepository
             .createQueryBuilder('message')
             .select(['message.message', 'message.createdAt'])
             .where('message.UserId = :userId', { userId })
@@ -263,7 +320,7 @@ export class UsersService {
         // page 2 이상의 메시지 리스트를 확인할 시점에 들어온 새로운 메시지는 
         // 클라이언트가 사실상 메시지를 확인한 상태가 아니기 때문
         if ((messages.length >= 1) && (+page === 1)) {
-            await this.systemMessages
+            await this.systemMessagesRepository
                 .createQueryBuilder()
                 .update('system_messages')
                 .set({
@@ -279,7 +336,7 @@ export class UsersService {
     }
 
     async unreadCount(userId: number) {
-        const checkLastDate = await this.systemMessages
+        const checkLastDate = await this.systemMessagesRepository
             .createQueryBuilder('message')
             .select('MAX(CONVERT_TZ(message.updatedAt, "+0:00", "+9:00"))', 'lastReadAt')
             .where('message.UserId = :userId', { userId })
@@ -289,7 +346,7 @@ export class UsersService {
         }));
         
         // readMessage에서 입력한 시점을 기준으로 이후 받은 메시지만 출력
-        const count = await this.systemMessages
+        const count = await this.systemMessagesRepository
             .createQueryBuilder('message')
             .where('message.UserId = :userId', { userId })
             .andWhere('message.createdAt > :lastReadAt', { 

@@ -107,7 +107,17 @@ export class UsersController {
         return this.usersService.removePack(user.id, packId);
     }
     
-    // nego 이상 진행중인 movingInfo관련 조회(pick한 기사님의 정보 조회 가능)
+    @ApiOperation({ summary: '계약 후 이사정보 조회하기(기사님 정보 등)' })
+    @ApiResponse({ status: 201, description: 'response 성공' })
+    @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiBearerAuth('User-JWT-Auth')
+    @UseGuards(UserJwtAuthGuard)
+    @Get('contract')
+    getContract(
+        @GetMyInfo() user: UserWithoutPasswordDto,
+    ) {
+        return this.usersService.getContract(user.id);
+    }
 
     @ApiOperation({ summary: '시스템 메시지 보기' })
     @ApiResponse({ status: 201, description: 'response 성공' })
