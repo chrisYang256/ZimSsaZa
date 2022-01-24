@@ -1,10 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateBusinessPersonDto {
-    @ApiProperty({ example: '바티스타', description: '사업자 이름'})
+    @ApiProperty({ example: '정의의 기사님', description: '사업자 이름'})
     name: string;
 
-    @ApiProperty({ example: 'ssazim@google.com', description: '사업자 이메일'})
+    @ApiProperty({ example: 'zimssaza@gmail.com', description: '사업자 이메일'})
     email: string;
 
     @ApiProperty({ example: '1234abcd!', description: '사업자 비밀번호(알파벳+숫자+특수문자 8~15자리)'})

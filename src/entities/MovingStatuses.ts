@@ -6,7 +6,6 @@ import {
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
-import { MovingStatusEnum } from "src/common/movingStatus.enum";
 import { MovingInformations } from "./MovingInformations";
 
 @Entity({ schema: 'ZimSsaZa', name: 'moving_statuses' })
@@ -18,9 +17,9 @@ export class MovingStatuses {
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: 'NEGO', description: '이사 진행 상태', enum: ['STAY', 'NEGO', 'PICK', 'DONE'] })
-    @Column('enum', { name: 'status', enum: ['STAY', 'NEGO', 'PICK', 'DONE'] })
-    status: MovingStatusEnum;
+    @ApiProperty({ example: 'NEGO', description: '이사 진행 상태' })
+    @Column('varchar', { name: 'status', length: 10 })
+    status: string;
 
     @OneToMany(() => MovingInformations, movinginformations => movinginformations.MovingStatus)
     MovingInformations: MovingInformations[];

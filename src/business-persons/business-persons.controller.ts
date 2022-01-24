@@ -1,7 +1,23 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { 
+    Get, 
+    Body, 
+    Post, 
+    Query, 
+    Param, 
+    UseGuards, 
+    Controller, 
+    ParseIntPipe, 
+} from '@nestjs/common';
+import { 
+    ApiTags, 
+    ApiBody, 
+    ApiResponse, 
+    ApiOperation, 
+    ApiBearerAuth, 
+} from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { BusinessPersonJwtAuthGuard } from 'src/auth/businessPerson-jwt-auth.guard';
+import { BusinessPersonLocalAuthGuard } from 'src/auth/businessPerson-local-auth.guard';
 import { NotLoggedInGuard } from 'src/auth/not-logged-in.guard';
 import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
 import { LoginDto } from 'src/common/dto/login.dto';
@@ -41,7 +57,7 @@ export class BusinessPersonsController {
     @ApiResponse({ status: 201, description: '인증 성공'})
     @ApiResponse({ status: 401, description: '인증 실패'})
     @ApiBody({ type: LoginDto })
-    @UseGuards(BusinessPersonJwtAuthGuard)
+    @UseGuards(BusinessPersonLocalAuthGuard)
     @Post('login')
     async signIn(@GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto) {
         console.log('businessPerson:::', businessPerson)

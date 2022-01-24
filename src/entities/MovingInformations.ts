@@ -10,13 +10,13 @@ import {
     UpdateDateColumn,
     PrimaryGeneratedColumn,
 } from "typeorm";
-import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { Negotiations } from "./Negotiations";
 import { Users } from "./Users";
 import { AreaCodes } from "./AreaCodes";
-import { MovingStatuses } from "./MovingStatuses";
 import { MovingGoods } from "./MovingGoods";
+import { Negotiations } from "./Negotiations";
+import { ApiProperty } from "@nestjs/swagger";
+import { MovingStatuses } from "./MovingStatuses";
+import { IsDateString, IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 @Index('UserId', ['UserId'], {})
 @Entity({ schema: 'ZimSsaZa', name: 'moving_informations' })

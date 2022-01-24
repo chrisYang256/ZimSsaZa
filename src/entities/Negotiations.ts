@@ -9,8 +9,8 @@ import {
     PrimaryGeneratedColumn,
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber } from "class-validator";
 import { BusinessPersons } from "./BusinessPersons";
+import { IsNotEmpty, IsNumber } from "class-validator";
 import { MovingInformations } from "./MovingInformations";
 
 @Index('BusinessPersonId', ['BusinessPersonId'], {})

@@ -8,9 +8,9 @@ import {
     UpdateDateColumn,
     PrimaryGeneratedColumn, 
 } from "typeorm";
-import { ApiProperty } from "@nestjs/swagger";
 import { IsString } from "class-validator";
 import { MovingGoods } from "./MovingGoods";
+import { ApiProperty } from "@nestjs/swagger";
 
 @Index('MovingGoodsId', ['MovingGoodsId'], {})
 @Entity({ schema: 'ZimSsaZa', name: 'load_images' })

@@ -8,10 +8,10 @@ import {
     UpdateDateColumn,
     PrimaryGeneratedColumn, 
 } from "typeorm";
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
-import { BusinessPersons } from "./BusinessPersons";
 import { Users } from "./Users";
+import { ApiProperty } from "@nestjs/swagger";
+import { BusinessPersons } from "./BusinessPersons";
+import { IsNotEmpty, IsString } from "class-validator";
 
 @Index('UserId', ['UserId'], {})
 @Index('BusinessPersonId', ['BusinessPersonId'], {})

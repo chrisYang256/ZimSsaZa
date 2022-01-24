@@ -1,5 +1,21 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { 
+    Get, 
+    Body, 
+    Post, 
+    Query, 
+    Patch, 
+    Param, 
+    UseGuards, 
+    Controller, 
+    ParseIntPipe, 
+} from '@nestjs/common';
+import { 
+    ApiTags, 
+    ApiBody, 
+    ApiResponse, 
+    ApiOperation, 
+    ApiBearerAuth, 
+} from '@nestjs/swagger';
 import { BusinessPersonJwtAuthGuard } from 'src/auth/businessPerson-jwt-auth.guard';
 import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
 import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
