@@ -9,9 +9,9 @@ import {
     UpdateDateColumn,
     PrimaryGeneratedColumn,
 } from "typeorm";
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber } from "class-validator";
 import { LoadImages } from "./LoadImages";
+import { IsNumber } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 import { MovingInformations } from "./MovingInformations";
 
 @Index('MovingInformationId', ['MovingInformationId'], {})

@@ -24,8 +24,8 @@ async function bootstrap() {
     }, 'BusinessPerson-JWT-Auth')
     .setTitle('ZimSsaZa')
     .setDescription(`짐싸자 이사 어플 APIs\n 
-      유저 testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQyMzQwNzgzLCJleHAiOjE2NzM4NzY3ODN9.FDuK-fR6rLLFa4Tmb9uNZdPHeRRaohCPNDrd__O-DZU
-      사업자 testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNjQyMDgxMDk1LCJleHAiOjE2NzM2MTcwOTV9.NNAi3TxKTQNLdFvYJHKCP1ornyw2qakG35bsbhI4A7A
+      유저 testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjQzMDQwNjk0LCJleHAiOjE2NzQ1NzY2OTR9.tSS_uJkvgkwstqT6Voj7uJLCEYfZgSfB8pRejAG-39o
+      사업자 testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTAsImlhdCI6MTY0MzA0MDczNSwiZXhwIjoxNjc0NTc2NzM1fQ.RXoAa2iaElz-qR5g9ed0iM2HEiuugrmcBmKxzEDLwnc
     `)
     .setVersion('1.0')
     .build();

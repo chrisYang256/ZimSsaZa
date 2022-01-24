@@ -1,15 +1,15 @@
 import dotenv from 'dotenv';
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
-import { Users } from "./entities/Users";
-import { Reviews } from './entities/Reviews';
-import { MovingInformations } from './entities/MovingInformations';
-import { MovingStatuses } from './entities/MovingStatuses';
-import { MovingGoods } from './entities/MovingGoods';
-import { LoadImages } from './entities/LoadImages';
-import { BusinessPersons } from './entities/BusinessPersons';
-import { AreaCodes } from './entities/AreaCodes';
-import { Negotiations } from './entities/Negotiations';
-import { SystemMessages } from './entities/SystemMessages';
+import { Users } from "./src/entities/Users";
+import { Reviews } from './src/entities/Reviews';
+import { MovingInformations } from './src/entities/MovingInformations';
+import { MovingStatuses } from './src/entities/MovingStatuses';
+import { MovingGoods } from './src/entities/MovingGoods';
+import { LoadImages } from './src/entities/LoadImages';
+import { BusinessPersons } from './src/entities/BusinessPersons';
+import { AreaCodes } from './src/entities/AreaCodes';
+import { Negotiations } from './src/entities/Negotiations';
+import { SystemMessages } from './src/entities/SystemMessages';
 
 dotenv.config();
 

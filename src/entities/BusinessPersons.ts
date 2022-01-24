@@ -7,12 +7,12 @@ import {
     UpdateDateColumn,
     PrimaryGeneratedColumn,
 } from "typeorm";
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { AreaCodes } from "./AreaCodes";
-import { Negotiations } from "./Negotiations";
 import { Reviews } from "./Reviews";
+import { AreaCodes } from "./AreaCodes";
+import { ApiProperty } from "@nestjs/swagger";
+import { Negotiations } from "./Negotiations";
 import { SystemMessages } from "./SystemMessages";
+import { IsEmail, IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 @Index('email', ['email'], { unique: true })
 @Entity({ schema: 'ZimSsaZa', name: 'business_persons' })
@@ -25,13 +25,13 @@ export class BusinessPersons {
     @IsEmail()
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: 'ssazim-knight@google.com', description: '사업자 이메일'})
+    @ApiProperty({ example: 'zimssaza@gmail.com', description: '사업자 이메일'})
     @Column('varchar', { name: 'email', unique: true, length: 30 })
     email: string;
 
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: '로다주', description: '사업자 이름'})
+    @ApiProperty({ example: '정의의 기사님', description: '사업자 이름'})
     @Column('varchar', { name: 'name', length: 10 })
     name: string;
 

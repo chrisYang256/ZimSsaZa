@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { ConsoleLogger, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from 'src/entities/Users';
 import { Connection, Repository } from 'typeorm';
@@ -42,6 +42,7 @@ export class UsersService {
     async signUp(createUserDto: CreateUserDto) {
         const { name, email, password, phone_number } = createUserDto;
         const passwordRegex = /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
+        const emailRegex = /^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
         const phoneNumberRegex = /^010-\d{3,4}-\d{4}$/;
 
         if (email === '') {
@@ -54,6 +55,10 @@ export class UsersService {
 
         if (!passwordRegex.test(password)) {
             throw new ForbiddenException('비밀번호 형식이 올바르지 않습니다.');
+        }
+
+        if (!emailRegex.test(email)) {
+            throw new ForbiddenException('이메일 형식이 올바르지 않습니다.');
         }
 
         if (!phoneNumberRegex.test(phone_number)) {
@@ -387,6 +392,10 @@ export class UsersService {
                 .skip(perPage * (page - 1))
                 .getMany();
             console.log('my messages:::', messages.length);
+
+            if (messages.length === 0) {
+                return { 'message' : '받은 메시지가 없습니다.', 'status' : 200 }
+            }
     
             // unread 카운팅을 위한 기준점 생성
             // 메시지가 있고 page가 1인 경우만 업데이트 시간 변경

@@ -1,7 +1,5 @@
 import { ApiProperty, PickType } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { MovingInformations } from "src/entities/MovingInformations";
-import { Column } from "typeorm";
 
 export class CreateMovingGoodsDto extends PickType(MovingInformations, [
     'start_point',

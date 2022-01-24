@@ -1,8 +1,16 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { BusinessPersons } from "./BusinessPersons";
+import { 
+    Column, 
+    Entity, 
+    ManyToOne, 
+    JoinColumn, 
+    CreateDateColumn, 
+    UpdateDateColumn,
+    PrimaryGeneratedColumn, 
+} from "typeorm";
 import { Users } from "./Users";
+import { ApiProperty } from "@nestjs/swagger";
+import { BusinessPersons } from "./BusinessPersons";
+import { IsNotEmpty, IsString } from "class-validator";
 
 @Entity({ schema: 'ZimSsaZa', name: 'system_messages' })
 export class SystemMessages {

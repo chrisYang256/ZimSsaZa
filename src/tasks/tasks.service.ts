@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
 import { SendSystemMessage } from 'src/common/send-systemMessages';
@@ -12,7 +12,7 @@ import { SystemMessages } from 'src/entities/SystemMessages';
 import { EventsGateway } from 'src/events/events.gateway';
 import { Connection, Repository } from 'typeorm';
 import { NegoCostDto } from './dto/nego-cost.dto';
-const util = require('util')
+const util = require('util');
 
 @Injectable()
 export class TasksService {
@@ -24,9 +24,9 @@ export class TasksService {
         @InjectRepository(MovingInformations)
         private movingInformationsRepository: Repository<MovingInformations>,
         @InjectRepository(SystemMessages)
-        private systemMessages: Repository<MovingInformations>,
-        private connection: Connection,
+        private systemMessagesRepository: Repository<MovingInformations>,
         private eventsGateway: EventsGateway,
+        private connection: Connection,
     ) {}
 
     // NEGO테이블을 확인하여 견적서 요청 시점에서 24시간이 경과된 경우 알림메시지 발송
@@ -63,7 +63,7 @@ export class TasksService {
             }
             console.log('valuses:::', values)
     
-            await this.systemMessages
+            await this.systemMessagesRepository
                 .createQueryBuilder('system_messages', queryRunner)
                 .insert()
                 .into('system_messages')
@@ -141,8 +141,8 @@ export class TasksService {
             if (isNegoing.find((v) => v.MovingStatusId === (
                 MovingStatusEnum.NEGO || 
                 MovingStatusEnum.PICK
-            ))) { // 견적 장난질 방지
-                throw new ForbiddenException('이미 진행 중인 이사정보가 존재합니다.')
+            ))) { // 견적서 반복제출 방지
+                throw new ForbiddenException('이미 진행 중인 이사정보가 존재합니다.');
             }
 
             const movingInfoToNego = await this.movingInformationsRepository
@@ -153,7 +153,7 @@ export class TasksService {
             console.log('movingInfoToNego:::', movingInfoToNego);
 
             if (!movingInfoToNego) {
-                throw new NotFoundException('이삿짐 정보가 존재하지 않습니다.')
+                throw new NotFoundException('이삿짐 정보가 존재하지 않습니다.');
             }
 
             // 견적요청은 자동으로 가장 최근에 만든 이사정보로 보내지도록
@@ -372,7 +372,7 @@ export class TasksService {
     
             // 받은 견적서 10개 도달시 유저에게 system 메시지 발송
             if (checkAfterSubmitCount === 10) {
-                const sendSystemMessage = await this.systemMessages
+                const sendSystemMessage = await this.systemMessagesRepository
                     .createQueryBuilder()
                     .insert()
                     .into('system_messages')
@@ -504,7 +504,7 @@ export class TasksService {
                 .execute();
             
             // 선택된 기사님에게 알림 주기
-            await this.systemMessages
+            await this.systemMessagesRepository
                 .createQueryBuilder('system_messages', queryRunner)
                 .insert()
                 .into('system_messages')
@@ -566,7 +566,7 @@ export class TasksService {
 
             // 상대방이 이사완료 체크를 안했다면 알림 가도록
             if (!checkedBusinessPersonDone) {
-                await this.systemMessages
+                await this.systemMessagesRepository
                 .createQueryBuilder('system_messages', queryRunner)
                 .insert()
                 .into('system_messages')
@@ -637,7 +637,7 @@ export class TasksService {
             console.log('checkedUserDone:::', checkedUserDone);
 
             if (!checkedUserDone) {
-                await this.systemMessages
+                await this.systemMessagesRepository
                 .createQueryBuilder('system_messages', queryRunner)
                 .insert()
                 .into('system_messages')

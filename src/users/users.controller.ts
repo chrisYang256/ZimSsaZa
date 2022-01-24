@@ -1,5 +1,24 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { 
+    Get, 
+    Post, 
+    Body, 
+    Param, 
+    Query, 
+    Delete, 
+    UseGuards, 
+    Controller, 
+    ParseIntPipe, 
+    UploadedFiles, 
+    UseInterceptors 
+} from '@nestjs/common';
+import { 
+    ApiTags,
+    ApiBody, 
+    ApiConsumes, 
+    ApiResponse, 
+    ApiOperation, 
+    ApiBearerAuth, 
+} from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
 import { UserLocalAuthGuard } from 'src/auth/user-local-auth.guard';

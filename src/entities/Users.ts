@@ -24,7 +24,7 @@ export class Users {
     @IsEmail()
     @IsString()
     @IsNotEmpty()
-    @ApiProperty({ example: 'ssazim@google.com', description: '회원 이메일'})
+    @ApiProperty({ example: 'zimssaza@gmail.com', description: '회원 이메일'})
     @Column('varchar', { name: 'email', unique: true, length: 30 })
     email: string;
 

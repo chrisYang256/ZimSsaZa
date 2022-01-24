@@ -55,7 +55,7 @@ export class BusinessPersonsService {
 
         const finishMovingList = await this.movingInformationsRepository
             .createQueryBuilder('movingInfo')
-            .innerJoin('movingInfo.Negotiations', 'nego')
+            .leftJoin('movingInfo.Negotiations', 'nego')
             .select([
                 'movingInfo.destination',
                 'movingInfo.start_point',
@@ -79,6 +79,7 @@ export class BusinessPersonsService {
     async signUp(createBusinessPersonDto: CreateBusinessPersonDto) {
         const { name, email, password, phone_number, business_license, code } = createBusinessPersonDto;
         const passwordRegex = /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
+        const emailRegex = /^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
         const phoneNumberRegex = /^010-\d{3,4}-\d{4}$/;
 
         const queryRunner = this.connection.createQueryRunner();
@@ -94,6 +95,10 @@ export class BusinessPersonsService {
 
         if (!passwordRegex.test(password)) {
             throw new ForbiddenException('비밀번호 형식이 올바르지 않습니다.');
+        }
+
+        if (!emailRegex.test(email)) {
+            throw new ForbiddenException('이메일 형식이 올바르지 않습니다.');
         }
 
         if (!phoneNumberRegex.test(phone_number)) {
@@ -266,6 +271,10 @@ export class BusinessPersonsService {
                 .skip(perPage * (page - 1))
                 .getMany();
             console.log('my messages:::', messages.length);
+
+            if (messages.length === 0) {
+                return { 'message' : '받은 메시지가 없습니다.', 'status' : 200 }
+            }
     
             if ((messages.length >= 1) && (+page === 1)) {
                 await this.systemMessagesRepository
