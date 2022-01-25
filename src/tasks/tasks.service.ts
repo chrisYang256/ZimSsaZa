@@ -4,7 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
-import { SendSystemMessage } from 'src/common/send-systemMessages';
+import { SendSystemMessage } from '../common/send-systemMessages';
 import { BusinessPersons } from 'src/entities/BusinessPersons';
 import { MovingInformations } from 'src/entities/MovingInformations';
 import { Negotiations } from 'src/entities/Negotiations';
@@ -359,6 +359,10 @@ export class TasksService {
                 .getOne();
             console.log('owner:::', owner);
 
+            if (!owner) { 
+                throw new NotFoundException('견적 요청을 한 유저가 존재하지 않습니다.')
+            }
+
             if (checkAfterSubmitCount < 10) { // 9번만
                 // 웹소켓으로 접속중인 견적요청한 유저에게 실시간 견적서 제출 현황 알려주기
                 // 시나리오: Front에서 유저 email로 이름을 가진 room 생성(join)/message 구독해 놓은 상태 -> 서버에서 유저 email로 room 입장 -> room에 메지시 발송/room 퇴장
@@ -378,12 +382,12 @@ export class TasksService {
                     .into('system_messages')
                     .values({
                         UserId: owner.User.id,
-                        message: SendSystemMessage.FINISH_NEGO(owner.User.name),
+                        message: SendSystemMessage.FINISH_NEGO,
                     })
                     .execute();
                 console.log('sendSystemMessage:::', sendSystemMessage);
             }
-            return { 'message' : '견적서 제출 완료!', 'status' : 201}
+            return { 'message' : '견적서 제출 완료!', 'status' : 201 }
         } catch (error) {
             console.log(error);
             throw error;
