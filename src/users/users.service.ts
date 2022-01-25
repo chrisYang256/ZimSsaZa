@@ -398,10 +398,9 @@ export class UsersService {
             }
     
             // unread 카운팅을 위한 기준점 생성
-            // 메시지가 있고 page가 1인 경우만 업데이트 시간 변경
             // page 2 이상의 메시지 리스트를 확인할 시점에 들어온 새로운 메시지는 
-            // 클라이언트가 사실상 메시지를 확인한 상태가 아니기 때문
-            if ((messages.length >= 1) && (+page === 1)) {
+            // 클라이언트가 사실상 메시지를 확인한 상태가 아니기 때문에 page가 1인 경우만 업데이트 시간 변경
+            if (+page === 1) {
                 await this.systemMessagesRepository
                     .createQueryBuilder()
                     .update('system_messages')

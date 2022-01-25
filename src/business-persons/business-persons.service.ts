@@ -276,7 +276,7 @@ export class BusinessPersonsService {
                 return { 'message' : '받은 메시지가 없습니다.', 'status' : 200 }
             }
     
-            if ((messages.length >= 1) && (+page === 1)) {
+            if (+page === 1) {
                 await this.systemMessagesRepository
                     .createQueryBuilder()
                     .update('system_messages')
