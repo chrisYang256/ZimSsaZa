@@ -14,10 +14,11 @@ import {
 import { 
     ApiTags,
     ApiBody, 
+    ApiParam, 
     ApiConsumes, 
     ApiResponse, 
     ApiOperation, 
-    ApiBearerAuth, 
+    ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
@@ -46,7 +47,7 @@ try {
 }
 
 @UseInterceptors(UndefinedTonNllInterceptor)
-@ApiTags('USER')
+@ApiTags('USERS')
 @Controller('users')
 export class UsersController {
     constructor(
@@ -117,14 +118,15 @@ export class UsersController {
     @ApiOperation({ summary: '이삿짐 삭제' })
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiParam({ name: 'movingInfoId', example: '5' })
     @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
-    @Delete('pack/:packId')
+    @Delete('pack/:movingInfoId')
     removePack(
         @GetMyInfo() user: UserWithoutPasswordDto,
-        @Param('packId', ParseIntPipe) packId: number
+        @Param('movingInfoId', ParseIntPipe) movingInfoId: number
     ) {
-        return this.usersService.removePack(user.id, packId);
+        return this.usersService.removePack(user.id, movingInfoId);
     }
     
     @ApiOperation({ summary: '계약 후 이사정보 조회하기(기사님 정보 등)' })
@@ -142,19 +144,21 @@ export class UsersController {
     @ApiOperation({ summary: '이사 완료시 파트너 기사님에게 리뷰 작성' })
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 400, description: 'response 실패' })
+    @ApiParam({ name: 'movingInfoId', example: '5' })
+    @ApiParam({ name: 'businessPersonId', example: '10' })
     @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
-    @Post('review')
+    @Post('review/:businessPersonId/:movingInfoId')
     async writeReview(
         @GetMyInfo() user: UserWithoutPasswordDto,
         @Body() data: CreateReviewDto ,
-        @Query('businessPersonId', ParseIntPipe) businessPersonId: number,
-        @Query('movingInformationId', ParseIntPipe) movingInformationId: number 
+        @Param('businessPersonId', ParseIntPipe) businessPersonId: number,
+        @Param('movingInfoId', ParseIntPipe) movingInfoId: number 
     ) {
         return this.usersService.writeReview(
             user, 
             businessPersonId, 
-            movingInformationId, 
+            movingInfoId, 
             data
         );
     }

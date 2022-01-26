@@ -508,6 +508,7 @@ export class TasksService {
                 .createQueryBuilder('movingInfo')
                 .where('movingInfo.id = :id', { id: movingInfoId })
                 .getOne()
+            console.log('checkAleadyPicked:::', checkAleadyPicked);
     
             if (checkAleadyPicked.picked_business_person !== null) {
                 throw new ForbiddenException(
@@ -556,14 +557,18 @@ export class TasksService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
-            const checkAlreadyDone = await this.movingInformationsRepository
+            const checkCondition = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo', queryRunner)
                 .where('movingInfo.id = :id', { id: movingInfoId })
                 .getOne();
-            console.log('checkAlreadyDone:::', checkAlreadyDone);
+            console.log('checkCondition:::', checkCondition);
 
-            if (checkAlreadyDone.user_done) {
+            if (checkCondition.user_done) {
                 throw new ForbiddenException('이미 완료 확인을 하셨습니다.');
+            }
+
+            if (checkCondition.MovingStatusId !== MovingStatusEnum.PICK) {
+                throw new ForbiddenException('잘못된 접근입니다.');
             }
 
             await this.movingInformationsRepository
@@ -628,16 +633,20 @@ export class TasksService {
         await queryRunner.connect();
         await queryRunner.startTransaction();      
         try {
-            const checkAlreadyDone = await this.movingInformationsRepository
+            const checkCondition = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo', queryRunner)
                 .where('movingInfo.id = :id', { id: movingInfoId })
                 .getOne();
-            console.log('checkAlreadyDone:::', checkAlreadyDone);
+            console.log('checkCondition:::', checkCondition);
 
-            if (checkAlreadyDone.business_person_done) {
+            if (checkCondition.business_person_done) {
                 throw new ForbiddenException('이미 완료 확인을 하셨습니다.');
             }      
 
+            if (checkCondition.MovingStatusId !== MovingStatusEnum.PICK) {
+                throw new ForbiddenException('잘못된 접근입니다.');
+            }
+            
             await this.movingInformationsRepository
                 .createQueryBuilder('MovingInformations', queryRunner)
                 .update('MovingInformations')
@@ -665,7 +674,7 @@ export class TasksService {
                 .insert()
                 .into('system_messages')
                 .values({
-                    UserId: checkAlreadyDone.UserId,
+                    UserId: checkCondition.UserId,
                     message: SendSystemMessage.FINISH_MOVING,
                 })
                 .execute();

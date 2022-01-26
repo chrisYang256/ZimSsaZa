@@ -217,11 +217,11 @@ export class UsersService {
         }
     }
 
-    async removePack(userId: number, packId: number) {
+    async removePack(userId: number, movingInfoId: number) {
         try {
             const findMovingInfo = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
-                .where('id = :packId', { packId })
+                .where('id = :movingInfoId', { movingInfoId })
                 .andWhere('UserId = :userId', { userId})
                 .getOne();
             console.log('findMovingInfo:::', findMovingInfo);
@@ -233,7 +233,7 @@ export class UsersService {
             // 이삿짐 정보 삭제는 movingStatus가 STAY(견적 제출 전), DONE(이사 완료)인 경우만 가능
             const checkMovingStatus = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
-                .where('id = :packId', { packId })
+                .where('id = :movingInfoId', { movingInfoId })
                 .andWhere('MovingStatusId IN (:...ids)', { ids: [
                     MovingStatusEnum.NEGO,
                     MovingStatusEnum.PICK,
@@ -249,7 +249,7 @@ export class UsersService {
                 .createQueryBuilder()
                 .delete()
                 .from('MovingInformations')
-                .where('id = :packId', { packId })
+                .where('id = :movingInfoId', { movingInfoId })
                 .andWhere('UserId = :userId', { userId})
                 .execute();
             
@@ -337,16 +337,27 @@ export class UsersService {
     async writeReview(
         user: UserWithoutPasswordDto, 
         businessPersonId: number, 
-        movingInformationId: number,
+        movingInfoId: number,
         data: CreateReviewDto
     ) {
         const { content, star } = data
         try {
+            const checkMovingDone = await this.movingInformationsRepository
+                .createQueryBuilder('movingInfo')
+                .where('movingInfo.id = :id', {
+                    id: movingInfoId
+                })
+                .getOne();
+
+            if (checkMovingDone.MovingStatusId !== MovingStatusEnum.DONE) {
+                throw new ForbiddenException('이사가 완료되지 않았습니다.')
+            }
+
             // 리뷰는 이사 1건당 1개로 제한
             const beWritten = await this.reviewsRepository
                 .createQueryBuilder('review')
                 .where('moving_information_id = :MIId', { 
-                    MIId: movingInformationId 
+                    MIId: movingInfoId 
                 })
                 .andWhere('UserId = :userId', { userId: user.id })
                 .getOne();
@@ -364,7 +375,7 @@ export class UsersService {
                     writer: user.name,
                     content: content,
                     star: star,
-                    moving_information_id: movingInformationId,
+                    moving_information_id: movingInfoId,
                     UserId: user.id,
                     BusinessPersonId: businessPersonId,
                 })

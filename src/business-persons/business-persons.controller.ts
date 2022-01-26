@@ -11,9 +11,10 @@ import {
 import { 
     ApiTags, 
     ApiBody, 
+    ApiParam, 
     ApiResponse, 
     ApiOperation, 
-    ApiBearerAuth, 
+    ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { BusinessPersonJwtAuthGuard } from 'src/auth/businessPerson-jwt-auth.guard';
@@ -79,6 +80,7 @@ export class BusinessPersonsController {
     @ApiOperation({ summary: '예약된 이사 상세 보기' })
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiParam({ name: 'movingInfoId', example: '5' })
     @ApiBearerAuth('BusinessPerson-JWT-Auth')
     @UseGuards(BusinessPersonJwtAuthGuard)
     @Get('contract/undone/detail/:movingInfoId')
