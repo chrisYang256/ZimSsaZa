@@ -41,7 +41,7 @@ export class BusinessPersonsService {
                 'reviews.writer',
                 'reviews.content',
             ])
-            .where('reviews.BusinessPersonId = BusinessPersonId', { 
+            .where('reviews.BusinessPersonId = :BusinessPersonId', { 
                 BusinessPersonId: businessPerson.id 
             })
             .getMany();

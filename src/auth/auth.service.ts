@@ -70,7 +70,7 @@ export class AuthService {
     }
 
     async login(user): Promise<{access_token: string}> {
-        const payload = { id: user.id }
+        const payload = { id: user.id, name: user.name }
         const token = this.jwtService.sign(payload);
         // console.log('token:::', token)
 

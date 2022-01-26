@@ -12,9 +12,10 @@ import {
 import { 
     ApiTags, 
     ApiBody, 
+    ApiParam,
     ApiResponse, 
     ApiOperation, 
-    ApiBearerAuth, 
+    ApiBearerAuth,
 } from '@nestjs/swagger';
 import { BusinessPersonJwtAuthGuard } from 'src/auth/businessPerson-jwt-auth.guard';
 import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
@@ -25,7 +26,7 @@ import { UserWithoutPasswordDto } from 'src/users/dto/user-without-password.dto'
 import { NegoCostDto } from './dto/nego-cost.dto';
 import { TasksService } from './tasks.service';
 
-@ApiTags('TASK')
+@ApiTags('TASKS')
 @Controller('tasks')
 export class TasksController {
     constructor(
@@ -60,16 +61,20 @@ export class TasksController {
     @ApiOperation({ summary: 'Business Person: 견적요청 상세 조회'})
     @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 404, description: '게시물이 존재하지 않습니다.' })
+    @ApiParam({ name: 'movingInfoId', example: '5' })
     @ApiBearerAuth('BusinessPerson-JWT-Auth')
     @UseGuards(BusinessPersonJwtAuthGuard)
     @Get('movingInfo/detail/:movingInfoId')
-    getMovingInfoDetail(@Param('movingInfoId') movingInfoId: number) {
+    getMovingInfoDetail(
+        @Param('movingInfoId') movingInfoId: number
+        ) {
         return this.taskService.getMovingInfoDetail(movingInfoId);
     }
 
     @ApiOperation({ summary: 'Business Person: 견적 금액 제출' })
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiParam({ name: 'movingInfoId', example: '5' })
     @ApiBody({ description: '이사 견적 금액', type: NegoCostDto })
     @ApiBearerAuth('BusinessPerson-JWT-Auth')
     @UseGuards(BusinessPersonJwtAuthGuard)
@@ -78,7 +83,7 @@ export class TasksController {
         @Param('movingInfoId') movingInfoId: number,
         @Body('cost') cost: NegoCostDto,
         @GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto
-    ) {
+        ) {
         return this.taskService.submitEstimate(movingInfoId, businessPerson.id, cost);
     }
 
@@ -97,12 +102,14 @@ export class TasksController {
     @ApiOperation({ summary: 'User: 견적서 선택(이사 담당 기사님 선택)'})
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiParam({ name: 'movingInfoId', example: '5' })
+    @ApiParam({ name: 'businessPersonId', example: '10' })
     @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
-    @Patch('movingInfo/:movingInfoId/estimates/pick/:businessperson')
+    @Patch('movingInfo/:movingInfoId/estimates/pick/:businesspersonId')
     pickEstimate(
         @Param('movingInfoId', ParseIntPipe) movingInfoId: number,
-        @Param('businessperson', ParseIntPipe)  businessPersonId: number
+        @Param('businessPersonId', ParseIntPipe)  businessPersonId: number
         ) {
         return this.taskService.pickEstimate(movingInfoId, businessPersonId);
     }
@@ -110,12 +117,14 @@ export class TasksController {
     @ApiOperation({ summary: 'User: 유저 이사완료 체크'})
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiParam({ name: 'movingInfoId', example: '5' })
+    @ApiParam({ name: 'businessPersonId', example: '10' })
     @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
     @Patch('movingInfo/:movingInfoId/user-done/counterpart/:businesspersonId')
     makeMovingToDoneByUser(
         @Param('movingInfoId', ParseIntPipe) movingInfoId: number,
-        @Param('businesspersonId', ParseIntPipe) businessPersonId: number
+        @Param('businessPersonId', ParseIntPipe) businessPersonId: number
         ) {
         return this.taskService.makeMovingToDoneByUser(movingInfoId, businessPersonId);
     }
@@ -123,6 +132,7 @@ export class TasksController {
     @ApiOperation({ summary: 'Business Person: 기사님 이사완료 체크'})
     @ApiResponse({ status: 201, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
+    @ApiParam({ name: 'movingInfoId', example: '5' })
     @ApiBearerAuth('BusinessPerson-JWT-Auth')
     @UseGuards(BusinessPersonJwtAuthGuard)
     @Patch('movingInfo/:movingInfoId/businessperson-done')
