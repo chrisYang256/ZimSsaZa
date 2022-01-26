@@ -197,7 +197,7 @@ export class BusinessPersonsService {
             console.log('schedule:::', schedule);
     
             if (schedule.length === 0) {
-                throw new NotFoundException('예약중인 일정이 앖습니다.')
+                throw new NotFoundException('예약중인 일정이 없습니다.')
             }
             
             return { 'schedule' : schedule, 'status' : 200 }

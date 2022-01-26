@@ -132,19 +132,23 @@ export class TasksService {
         await queryRunner.connect();
         await queryRunner.startTransaction();
         try {
+            // 이삿짐을 만들 때 기존 생성된 이사정보의 상태가 DONE이 아니면 생성되지 않게 하였지만
+            // 오류를 대비하여 전부 조회하도록 함.
             const isNegoing = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
                 .where('movingInfo.UserId = :id', { id: userId })
                 .getMany();
             console.log('isNegoing:::', isNegoing)
     
+            // 견적서 반복제출 방지
             if (isNegoing.find((v) => v.MovingStatusId === (
                 MovingStatusEnum.NEGO || 
                 MovingStatusEnum.PICK
-            ))) { // 견적서 반복제출 방지
+            ))) {
                 throw new ForbiddenException('이미 진행 중인 이사정보가 존재합니다.');
             }
 
+            // 견적요청은 가장 최근 이사정보로 보내지도록
             const movingInfoToNego = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
                 .where('movingInfo.UserId = :id', { id: userId })
@@ -156,7 +160,6 @@ export class TasksService {
                 throw new NotFoundException('이삿짐 정보가 존재하지 않습니다.');
             }
 
-            // 견적요청은 자동으로 가장 최근에 만든 이사정보로 보내지도록
             await this.negotiationsRepository
                 .createQueryBuilder('negotiations', queryRunner)
                 .insert()
@@ -170,7 +173,9 @@ export class TasksService {
             await this.movingInformationsRepository
                 .createQueryBuilder('negotiations', queryRunner)
                 .update('moving_informations')
-                .set({ MovingStatusId: MovingStatusEnum.NEGO })
+                .set({ 
+                    MovingStatusId: MovingStatusEnum.NEGO 
+                })
                 .where('id = :id', { id: movingInfoToNego.id })
                 .execute();
 
@@ -207,6 +212,7 @@ export class TasksService {
                 .where('movingInfo.MovingStatusId = :id', { 
                     id: MovingStatusEnum.NEGO 
                 })
+                .andWhere('movingInfo.timeout IS FALSE')
                 .andWhere('AC.code In (:...codes)', { codes: 
                     businessPersonAreaCodes 
                 })
@@ -286,7 +292,7 @@ export class TasksService {
         }
     }
 
-    async submitNegoCost(
+    async submitEstimate(
         movingInfoId: number, 
         businessPersonId: number,
         cost: NegoCostDto
@@ -363,7 +369,7 @@ export class TasksService {
                 throw new NotFoundException('견적 요청을 한 유저가 존재하지 않습니다.')
             }
 
-            if (checkAfterSubmitCount < 10) { // 9번만
+            if (checkAfterSubmitCount <= 10) {
                 // 웹소켓으로 접속중인 견적요청한 유저에게 실시간 견적서 제출 현황 알려주기
                 // 시나리오: Front에서 유저 email로 이름을 가진 room 생성(join)/message 구독해 놓은 상태 -> 서버에서 유저 email로 room 입장 -> room에 메지시 발송/room 퇴장
                 // ** Front에서 sockeId를 보내주면 room 없이 to()만으로 가능하지만 학습을 위해 이와 같이 사용.
@@ -374,7 +380,7 @@ export class TasksService {
                 this.eventsGateway.server.emit('logout', { email: owner.User.email }); // 같은 room에 접속한 다른 기사님 견적제출 알림 받지 않기위해 소켓 연결 해제
             }
     
-            // 받은 견적서 10개 도달시 유저에게 system 메시지 발송
+            // 받은 견적서 10개 도달시 유저에게 system 메시지 발송 / timeout true
             if (checkAfterSubmitCount === 10) {
                 const sendSystemMessage = await this.systemMessagesRepository
                     .createQueryBuilder()
@@ -386,8 +392,21 @@ export class TasksService {
                     })
                     .execute();
                 console.log('sendSystemMessage:::', sendSystemMessage);
+
+                await this.negotiationsRepository
+                    .createQueryBuilder()
+                    .update('negotiations')
+                    .set({
+                        timeout: true
+                    })
+                    .where('negotiations.MovingInformationId = :id', {
+                        id: movingInfoId
+                    })
+                    .andWhere('negotiations.cost IS NULL')
+                    .execute();
             }
-            return { 'message' : '견적서 제출 완료!', 'status' : 201 }
+
+        return { 'message' : '견적서 제출 완료!', 'status' : 201 }
         } catch (error) {
             console.log(error);
             throw error;
