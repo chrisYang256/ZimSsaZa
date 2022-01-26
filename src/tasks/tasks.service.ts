@@ -202,6 +202,7 @@ export class TasksService {
 
             const movingInfoList = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
+                .innerJoin('movingInfo.Negotiations', 'nego')
                 .innerJoin('movingInfo.AreaCode', 'AC')
                 .select([
                     'movingInfo.id',
@@ -212,7 +213,7 @@ export class TasksService {
                 .where('movingInfo.MovingStatusId = :id', { 
                     id: MovingStatusEnum.NEGO 
                 })
-                .andWhere('movingInfo.timeout IS FALSE')
+                .andWhere('nego.timeout IS FALSE')
                 .andWhere('AC.code In (:...codes)', { codes: 
                     businessPersonAreaCodes 
                 })
@@ -369,7 +370,7 @@ export class TasksService {
                 throw new NotFoundException('견적 요청을 한 유저가 존재하지 않습니다.')
             }
 
-            if (checkAfterSubmitCount <= 10) {
+            if (checkAfterSubmitCount <= 9) {
                 // 웹소켓으로 접속중인 견적요청한 유저에게 실시간 견적서 제출 현황 알려주기
                 // 시나리오: Front에서 유저 email로 이름을 가진 room 생성(join)/message 구독해 놓은 상태 -> 서버에서 유저 email로 room 입장 -> room에 메지시 발송/room 퇴장
                 // ** Front에서 sockeId를 보내주면 room 없이 to()만으로 가능하지만 학습을 위해 이와 같이 사용.
@@ -418,7 +419,9 @@ export class TasksService {
             const myMovingInfo = await this.movingInformationsRepository
                 .createQueryBuilder('movingInfo')
                 .where('movingInfo.UserId = :userId', { userId })
-                .andWhere('movingInfo.MovingStatusId = :id', { id: MovingStatusEnum.NEGO })
+                .andWhere('movingInfo.MovingStatusId = :id', { 
+                    id: MovingStatusEnum.NEGO 
+                })
                 .orderBy('movingInfo.createdAt', "DESC")
                 .getOne();
             console.log('myMovingInfo:::', myMovingInfo)
@@ -430,10 +433,10 @@ export class TasksService {
             // 받은 견적 리스트 10개 중 낮은 가격순으로 5개만 return
             const estimateList = await this.negotiationsRepository
                 .createQueryBuilder('nego')
-                .innerJoin('nego.BusinessPerson', 'businessPerson')
-                .innerJoin('nego.MovingInformation', 'movingInfo')
-                .innerJoin('businessPerson.Reviews', 'reviews')
-                .innerJoin('reviews.User', 'reviewer')
+                .leftJoin('nego.BusinessPerson', 'businessPerson')
+                .leftJoin('nego.MovingInformation', 'movingInfo')
+                .leftJoin('businessPerson.Reviews', 'reviews')
+                .leftJoin('reviews.User', 'reviewer')
                 .select([
                     'nego.id',
                     'nego.cost'
@@ -452,10 +455,12 @@ export class TasksService {
                 ])
                 .addSelect('reviewer.name')
                 .addSelect('movingInfo.id')
-                .where('nego.MovingInformationId = :id', { id: myMovingInfo.id })
+                .where('nego.MovingInformationId = :movingInfoId', { 
+                    movingInfoId: myMovingInfo.id 
+                })
                 .andWhere('nego.cost IS NOT NULL')
-                .orderBy('reviews.createdAt', 'DESC')
-                .addOrderBy('nego.cost', 'ASC')
+                .orderBy('nego.cost', 'ASC')
+                .addOrderBy('reviews.createdAt', 'DESC')
                 .take(5)
                 .getMany();
     
@@ -466,12 +471,16 @@ export class TasksService {
             //  기사님 각각의 리뷰 별점 평균 포함시키기
             for (let i = 0; i < estimateList.length; i++) {
                 let stars = 0;
-                for (let j = 0; j < estimateList[i].BusinessPerson.Reviews.length; j++) {
-                    stars += estimateList[i].BusinessPerson.Reviews[j].star;
+                if (estimateList[i].BusinessPerson.Reviews.length >= 1) {
+                    for (let j = 0; j < estimateList[i].BusinessPerson.Reviews.length; j++) {
+                        stars += estimateList[i].BusinessPerson.Reviews[j].star;
+                    }
+                    let starAvg = stars / estimateList[i].BusinessPerson.Reviews.length;
+                    estimateList[i].BusinessPerson['starsAvg'] = 
+                        Math.round(starAvg * 10) / 10;
+                } else {
+                    estimateList[i].BusinessPerson['starsAvg'] = 0;
                 }
-                let starAvg = stars / estimateList[i].BusinessPerson.Reviews.length;
-                estimateList[i].BusinessPerson['starsAvg'] = 
-                    Math.round(starAvg * 10) / 10;
             }
     
             console.log(

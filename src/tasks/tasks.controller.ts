@@ -106,7 +106,7 @@ export class TasksController {
     @ApiParam({ name: 'businessPersonId', example: '10' })
     @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
-    @Patch('movingInfo/:movingInfoId/estimates/pick/:businesspersonId')
+    @Patch('movingInfo/:movingInfoId/estimates/pick/:businessPersonId')
     pickEstimate(
         @Param('movingInfoId', ParseIntPipe) movingInfoId: number,
         @Param('businessPersonId', ParseIntPipe)  businessPersonId: number
@@ -121,7 +121,7 @@ export class TasksController {
     @ApiParam({ name: 'businessPersonId', example: '10' })
     @ApiBearerAuth('User-JWT-Auth')
     @UseGuards(UserJwtAuthGuard)
-    @Patch('movingInfo/:movingInfoId/user-done/counterpart/:businesspersonId')
+    @Patch('movingInfo/:movingInfoId/user-done/counterpart/:businessPersonId')
     makeMovingToDoneByUser(
         @Param('movingInfoId', ParseIntPipe) movingInfoId: number,
         @Param('businessPersonId', ParseIntPipe) businessPersonId: number
