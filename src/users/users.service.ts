@@ -275,7 +275,6 @@ export class UsersService {
                 .where('movingInfo.UserId = :userId', { userId })
                 .andWhere('movingInfo.MovingStatusId IN (:...ids)', { ids: [
                     MovingStatusEnum.PICK,
-                    MovingStatusEnum.DONE,
                 ]})
                 .getOne();
             console.log('myMovingInfo:::', myMovingInfo);

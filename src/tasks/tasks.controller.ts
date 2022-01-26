@@ -74,12 +74,12 @@ export class TasksController {
     @ApiBearerAuth('BusinessPerson-JWT-Auth')
     @UseGuards(BusinessPersonJwtAuthGuard)
     @Post('movingInfo/:movingInfoId/cost')
-    submitNegoCost(
+    submitEstimate(
         @Param('movingInfoId') movingInfoId: number,
         @Body('cost') cost: NegoCostDto,
         @GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto
     ) {
-        return this.taskService.submitNegoCost(movingInfoId, businessPerson.id, cost);
+        return this.taskService.submitEstimate(movingInfoId, businessPerson.id, cost);
     }
 
     @ApiOperation({ summary: 'User: 받은 견적 리스트 보기'})
