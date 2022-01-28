@@ -33,7 +33,7 @@ export class TasksController {
         private taskService: TasksService,
     ) {}
 
-    @ApiOperation({ summary: 'User: 견적을 받기 위한 이사정보 제출'})
+    @ApiOperation({ summary: 'User: 견적요청'})
     @ApiResponse({ status: 200, description: 'response 성공' })
     @ApiResponse({ status: 401, description: 'response 실패' })
     @ApiBearerAuth('User-JWT-Auth')

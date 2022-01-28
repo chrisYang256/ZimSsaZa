@@ -150,7 +150,7 @@
 
 ### ▶︎ 실시간 견적요청서 접수 알림
 - 웹소켓을 이용해 견적서가 접수될 때마다 실시간 알림을 받도록 설정하였습니다.
-- 해당 프로젝트에 존재하는 메시지 기능으로도 대체하여도 되지만 개인적인 학습을 위해 포함한 부분입니다.
+- 해당 프로젝트에 존재하는 메시지 기능으로도 대체하여도 되지만 개인적인 학습을 위해 포함하였으며 room 기능을 사용해보고 싶어서 FE에서 socketId를 받는 방식이 아닌 room 접속 기능으로 구현해 보았습니다.
 - 프론트에서 고객이 접속하여 emaile로 room을 만들어놓았다는 가정 하에 기사가 견적서를 제출하면서 고객 이메일로 동일한 room에 입장하여 메시지를 날리고 바로 room에서 logout하는 방식입니다.
 
 <br/>
@@ -263,11 +263,87 @@ http://localhost:3000/api/
 
 <br/>
 
-### 🧳 공통사항
-
-Mock data을 통해 회원가입 정보까지 입력해 놓은 상태이기 때문에 http://localhost:3000/api/ 에서 login api를 선택하시고 다음 과정을 따라와 주시면 됩니다.
+http://localhost:3000/api/ 로 Swagger 문서에 접속하셔서 다음 과정을 참고해 주시기 바랍니다.
 
 <br/>
+<br/>
+
+### 🧳 고객 견적요청 테스트 준비하기
+
+Mock data로 상호작용 위주의 테스트 기반을 만들어둔 상태이기 때문에 이전 단계인 '견적요청'까지는 별도의 과정으로 분리해 두었습니다.
+
+Swagger문서의 Users api에서 다음과 같은 과정으로 회원가입 / 로그인을 한 후 '이삿짐 생성' / '이삿짐 삭제', '견적요청' api를 테스트하시면 됩니다.
+
+<br/>
+
+#### ✔️ 회원 가입
+
+<img width="1422" alt="2222 11" src="https://user-images.githubusercontent.com/89192083/151519610-c84fcf17-7e4a-4e47-b27e-9c631ca32a2e.png">
+
+'회원가입' api를 클릭하고 'Try it out' 버튼을 클릭합니다.
+
+<br/>
+
+<img width="1422" alt="29393" src="https://user-images.githubusercontent.com/89192083/151519886-afcb528c-3d5c-4ef4-8034-c06b5ee2802c.png">
+'email' 부분을 원하는 이메일로 바꿔줍니다.
+
+다른 데이터들은 원하신다면 선택적으로 바꿔주시면 됩니다.
+그리고 'Execute'버튼을 클릭합니다.
+
+<br/>
+
+<img width="1422" alt="399393" src="https://user-images.githubusercontent.com/89192083/151520530-6ee0ccc1-b193-4b10-a0cd-3cb91194f2c4.png">
+
+정상적으로 회원가입이 된 경우 위와 같은 화면이 출력됩니다.
+
+<br/>
+<br/>
+
+#### ✔️ 로그인 / Token 발급과 적용
+<img width="1422" alt="3243534345" src="https://user-images.githubusercontent.com/89192083/151521501-3701205b-8f94-49fc-9fbf-47af108a6e19.png">
+
+로그인 api에서 회원가입시 본인이 입력한 email과 password로 수정한 후 'Execute' 버튼을 클릭합니다.
+
+<br/>
+
+<img width="1422" alt="333336666" src="https://user-images.githubusercontent.com/89192083/151521888-d127cc2a-a9d9-42d1-a0bb-6052a52db489.png">
+로그인에 성공하면 하단에 위와 같이 'access_token'이 받아지며 따옴료("")를 제외한 부분을 복사합니다.
+
+(Token이 없으면 대부분의 api들을 사용할 수 없습니다.)
+
+<br/>
+
+<img width="1422" alt="45435436" src="https://user-images.githubusercontent.com/89192083/151522405-5067f1ac-4885-489f-9fe7-ebe3c0b405da.png">
+이용하려는 api의 오른쪽 끝에 있는 열린 모양의 회색 자물쇠를 클릭합니다.
+
+<br/>
+
+<img width="677" alt="00928371" src="https://user-images.githubusercontent.com/89192083/151522708-83995027-3c58-43e2-a6e8-7fb34ce626fc.png">
+'Value'의 박스 안에 위에서 복사한 Token을 붙여넣고 'Authorize'버튼을 클릭한 후 close 버튼을 클릭합니다.
+
+<br/>
+
+<img width="1418" alt="82356666" src="https://user-images.githubusercontent.com/89192083/151523213-d16fd40c-cec2-4148-ac7e-73bd68a6d549.png">
+위와 같이 자물쇠가 잠긴 모양이 되고 까맣게 변했다면 성공하셨습니다!
+
+이제부터 까만색으로 변한 api들을 테스트해 보실 수 있습니다^^
+
+
+<br/>
+<br/>
+<br/>
+
+### 🚚 고객-기사 상호작용 테스트 준비하기
+
+Mock data에 고객이 견적을 요청한 후 9건의 견적서가 받아진 상태를 만들어 두었습니다.
+
+입력해야 할 Param이나 Query는 Swagger에 예시로 표시되는 값 그대로 사용하는 경우 요청성공으로 진행되도록 세팅해 놓았습니다.
+
+다음과 같이 Swagger의 샘플 데이터 그대로 로그인하여 Token을 입력하였다면 Tasks api 목록 중 '견적을 받기 위한 이사정보 제출'을 제외하고 위에서 아래로 순서대로 진행하시면 고객과 기사가 주고받는 내용을 테스트하실 수 있습니다.
+
+
+<br/>
+
 
 <img width="1411" alt="sdsd" src="https://user-images.githubusercontent.com/89192083/151191722-95df25a9-d935-4123-b514-b887f45800f3.png">
 
@@ -306,16 +382,7 @@ api 오른쪽 끝에 회색 자물쇠 아이콘을 클릭합니다.
 'User'와 'Business person' 각각 다른 Token으로 인증해야 하기 때문에 동일한 방식으로 진행해 주시면 됩니다.
 
 <br/>
-<br/>
-<br/>
 
-
-### 🚚 상호작용 테스트
-
-Mock data에 고객이 견적을 요청한 후 9건의 견적서가 받아진 상태를 만들어 두었습니다.
-
-입력해야 할 Param이나 Query는 Swagger에 예시로 표시되는 값 그대로 사용하는 경우 요청성공으로 진행되도록 세팅해 놓았습니다.
-
-상단 '공통사항'에서 샘플 데이터 그대로 로그인하여 Token을 입력하였다면 Tasks api 목록 중 '견적을 받기 위한 이사정보 제출'을 제외하고 위에서 아래로 순서대로 진행하시면 유저와 기사가 주고받는 내용을 테스트하실 수 있습니다.
+이제 Tasks api들을 테스트해 보시기 바랍니다.
 
 <img width="1422" alt="4534543" src="https://user-images.githubusercontent.com/89192083/151223045-7bb1d3d7-04d8-4eef-b121-2f53d575999e.png">
