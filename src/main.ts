@@ -1,3 +1,4 @@
+import helmet from 'helmet';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
@@ -10,6 +11,24 @@ declare const module: any;
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const port = process.env.PORT || 3000;
+
+  app.useGlobalFilters(new HttpExceptionFilter());
+
+  if (process.env.NODE_ENV === 'production') {
+    app.use(helmet());
+  }
+  
+  if (process.env.NODE_ENV === 'production') { 
+    app.enableCors({
+      origin: ['https://zimssaza.com'],
+      credentials: true,
+    }); 
+  } else {
+    app.enableCors({
+      origin: true,
+      credentials: true,
+    });
+  }
   
   const config = new DocumentBuilder()
     .addBearerAuth({ 
@@ -31,18 +50,15 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
-  
-  if (module.hot) {
-    module.hot.accept();
-    module.hot.dispose(() => app.close());
-  }
   
   app.useStaticAssets(join(__dirname, '..', 'img-uploads'), {
     prefix: '/img-uploads',
   });
 
-  app.useGlobalFilters(new HttpExceptionFilter());
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
   
   await app.listen(port);
   console.log('listening on port:::', port)
