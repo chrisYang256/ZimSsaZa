@@ -278,6 +278,10 @@ export class UsersService {
                 ]})
                 .getOne();
             console.log('myMovingInfo:::', myMovingInfo);
+
+            if (!myMovingInfo) {
+                throw new NotFoundException('예약중인 이사가 존재하지 않습니다.')
+            }
     
             const myMovingPartner = await this.negotiationsRepository
                 .createQueryBuilder('nego')
