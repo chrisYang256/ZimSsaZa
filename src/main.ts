@@ -8,6 +8,8 @@ import { join } from 'path';
 
 declare const module: any;
 
+console.log('process.env.NODE_ENV:::', process.env.NODE_ENV);
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const port = process.env.PORT || 3000;
