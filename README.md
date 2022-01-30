@@ -197,8 +197,8 @@ $ npm install
 ### 4. Configuration
 
 ```bash
-# 프로젝트 root(최상위)경로에서 dotenv 파일을 생성합니다.
-$ touch .env
+# 프로젝트 root(최상위)경로에 dotenv 파일을 생성합니다.
+$ touch .development.env
 
 # .env파일을 열고 아래 내용을 입력/저장합니다.
 # DB_PASSWORD와 BD_USERNAME는 <>까지 삭제하시고 본인의 것을 사용하시면 됩니다.
@@ -219,6 +219,7 @@ JWT_EXPIRESIN=365d
 
 ```bash
 # !주의사항: 프로젝트 실행 중에 다음 명령어들을 입력하면 오작동의 원인이 됩니다.
+# 테스트 관련 필수 데이터 외에는 대략적인 데이터만 세팅하였습니다.
 
 # 프로젝트 Database를 sync합니다.
 $ npm run schema:sync

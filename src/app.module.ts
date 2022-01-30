@@ -1,4 +1,4 @@
-import * as ormconfig from '../ormconfig';
+import ormconfig from '../ormconfig';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
