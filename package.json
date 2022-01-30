@@ -21,9 +21,12 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed:config": "ts-node ./node_modules/typeorm-seeding/dist/cli.js config",
-    "seed:run": "ts-node ./node_modules/typeorm-seeding/dist/cli.js seed",
-    "schema:sync": "ts-node ./node_modules/typeorm/cli.js schema:sync",
-    "schema:drop": "ts-node ./node_modules/typeorm/cli.js schema:drop"
+    "seed:run": "cross-env NODE_ENV=development ts-node ./node_modules/typeorm-seeding/dist/cli.js seed",
+    "seed:runProd": "cross-env NODE_ENV=production ts-node ./node_modules/typeorm-seeding/dist/cli.js seed",
+    "schema:sync": "cross-env NODE_ENV=development ts-node ./node_modules/typeorm/cli.js schema:sync",
+    "schema:syncProd": "cross-env NODE_ENV=production ts-node ./node_modules/typeorm/cli.js schema:sync",
+    "schema:drop": "cross-env NODE_ENV=development ts-node ./node_modules/typeorm/cli.js schema:drop",
+    "schema:dropProd": "cross-env NODE_ENV=production ts-node ./node_modules/typeorm/cli.js schema:drop"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",

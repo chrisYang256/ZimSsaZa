@@ -1,3 +1,5 @@
+import * as path from 'path';
+import * as dotenv from 'dotenv';
 import helmet from 'helmet';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -7,8 +9,6 @@ import { HttpExceptionFilter } from './http-exception.filter';
 import { join } from 'path';
 
 declare const module: any;
-
-console.log('process.env.NODE_ENV:::', process.env.NODE_ENV);
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);

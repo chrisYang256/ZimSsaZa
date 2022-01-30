@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import * as path from 'path';
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { Users } from "./src/entities/Users";
 import { Reviews } from './src/entities/Reviews';
@@ -11,7 +12,14 @@ import { AreaCodes } from './src/entities/AreaCodes';
 import { Negotiations } from './src/entities/Negotiations';
 import { SystemMessages } from './src/entities/SystemMessages';
 
-dotenv.config();
+dotenv.config({
+    path: path.resolve(
+      (process.env.NODE_ENV === 'production') 
+        ? '.production.env'
+        : '.development.env'
+    )
+  });
+console.log('process.env.NODE_ENV:::', process.env.NODE_ENV);
 
 const config: TypeOrmModuleOptions = {
     type: 'mysql',
@@ -33,7 +41,7 @@ const config: TypeOrmModuleOptions = {
         SystemMessages,
     ],
     synchronize: false,
-    logging: true,
+    logging: process.env.NODE_ENV === 'production' ? false : true,
     migrations: [__dirname + '/src/migrations/*{.ts,.js}'],
     cli: { migrationsDir: 'src/migrations' },
     keepConnectionAlive: true,
