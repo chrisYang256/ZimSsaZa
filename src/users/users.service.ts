@@ -1,21 +1,23 @@
 import bcrypt from 'bcrypt';
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from 'src/entities/Users';
 import { Connection, Repository } from 'typeorm';
+
+import { MovingStatusEnum } from '../common/movingStatus.enum';
 import { CreateUserDto } from './dto/create-user.dto';
-import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
-import { MovingInformations } from 'src/entities/MovingInformations';
-import { MovingGoods } from 'src/entities/MovingGoods';
-import { LoadImages } from 'src/entities/LoadImages';
-import { AreaCodes } from 'src/entities/AreaCodes';
-import { MovingStatusEnum } from 'src/common/movingStatus.enum';
-import { SystemMessages } from 'src/entities/SystemMessages';
-import { PagenationDto } from 'src/common/dto/pagenation.dto';
-import { Negotiations } from 'src/entities/Negotiations';
-import { CreateReviewDto } from './dto/create-review.dto';
-import { Reviews } from 'src/entities/Reviews';
+import { CreateMovingGoodsDto } from '../users/dto/create-movingGoods.dto';
+import { PagenationDto } from '../common/dto/pagenation.dto';
 import { UserWithoutPasswordDto } from './dto/user-without-password.dto';
+import { CreateReviewDto } from './dto/create-review.dto';
+
+import { LoadImages } from '../entities/LoadImages';
+import { MovingInformations } from '../entities/MovingInformations';
+import { MovingGoods } from '../entities/MovingGoods';
+import { AreaCodes } from '../entities/AreaCodes';
+import { Negotiations } from '../entities/Negotiations';
+import { SystemMessages } from '../entities/SystemMessages';
+import { Users } from '../entities/Users';
+import { Reviews } from '../entities/Reviews';
 
 @Injectable()
 export class UsersService {
@@ -27,7 +29,7 @@ export class UsersService {
         @InjectRepository(MovingGoods)
         private movingGoodsRepository: Repository<MovingGoods>,
         @InjectRepository(LoadImages)
-        private loadImageRepository: Repository<LoadImages>,
+        private loadImagesRepository: Repository<LoadImages>,
         @InjectRepository(AreaCodes)
         private areaCodesRepository: Repository<AreaCodes>,
         @InjectRepository(SystemMessages)
@@ -41,6 +43,7 @@ export class UsersService {
 
     async signUp(createUserDto: CreateUserDto) {
         const { name, email, password, phone_number } = createUserDto;
+        console.log('name', name)
         const passwordRegex = /^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
         const emailRegex = /^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
         const phoneNumberRegex = /^010-\d{3,4}-\d{4}$/;
@@ -78,7 +81,7 @@ export class UsersService {
             const salt = await bcrypt.genSalt();
             const hashedPassword = await bcrypt.hash(password, salt);
     
-            await this.usersRepository
+            const createUser = await this.usersRepository
                 .createQueryBuilder()
                 .insert()
                 .into('users')
@@ -89,7 +92,9 @@ export class UsersService {
                     phone_number,
                 })
                 .execute();
-            return { 'message': '회원 가입 성공', 'statusCode': 200 };
+            console.log('createUser:::', createUser);
+            return createUser;
+            // return { 'message': '회원 가입 성공', 'statusCode': 200 };
         } catch (error) {
             console.error(error);
             throw error;
@@ -197,7 +202,7 @@ export class UsersService {
             }
             console.log('valuse:::', results);
 
-            await this.loadImageRepository
+            await this.loadImagesRepository
             .createQueryBuilder('load_images', queryRunner)
             .insert()
             .into('load_images')
