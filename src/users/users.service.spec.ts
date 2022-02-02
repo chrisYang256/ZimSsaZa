@@ -124,21 +124,34 @@ describe('UsersService', () => {
         return this;
       },
       execute() {
-        return { raw: { affectedRows: 1 } }
+        return { raw: { affectedRows: 1 } };
       },
       getOne() {
         return null;
-      }
+      },
     })) as any;
 
     const value = {
-      name: "브래드 피트",
-      email: "zimssaza123@gmail.com",
-      phone_number: "010-0000-0000",
-      password: "1234abcd!",
+      name: '브래드 피트',
+      email: 'zimssaza123@gmail.com',
+      phone_number: '010-0000-0000',
+      password: '1234abcd!',
     };
-    expect(await service.signUp(value))
-      .toStrictEqual({ raw: { affectedRows: 1 } });
+    expect(await service.signUp(value)).toStrictEqual({
+      'message': '회원 가입 성공', 'statusCode': 200,
+    });
+  });
+
+  it('signUp fail by invalid email format', () => {
+    const value = {
+      name: '브래드 피트',
+      email: 'zimssaza123gmail.com',
+      phone_number: '010-0000-0000',
+      password: '1234abcd!',
+    };
+    expect(service.signUp(value)).rejects.toThrow(
+      new ForbiddenException('이메일 형식이 올바르지 않습니다.')
+    );
   });
 
   it('signUp fail by duplicate user email', () => {
@@ -148,54 +161,217 @@ describe('UsersService', () => {
       },
       getOne() {
         return this;
-      }
+      },
     })) as any;
 
     const value = {
-      name: "브래드 피트",
-      email: "zimssaza123@gmail.com",
-      phone_number: "010-0000-0000",
-      password: "1234abcd!",
+      name: '브래드 피트',
+      email: 'zimssaza123@gmail.com',
+      phone_number: '010-0000-0000',
+      password: '1234abcd!',
     };
-    expect(service.signUp(value))
-      .rejects.toThrow(new ForbiddenException(`'${value.email}'는 이미 가입된 이메일입니다.`));
+    expect(service.signUp(value)).rejects.toThrow(
+      new ForbiddenException(`'${value.email}'는 이미 가입된 이메일입니다.`)
+    );
   });
 
-  // it('makePackForMoving success', async () => {
-  //   mockUsersRepository.createQueryBuilder = jest.fn(() => ({
-  //     insert() {
-  //       return this;
-  //     },
-  //     into() {
-  //       return this;
-  //     },
-  //     values() {
-  //       return this;
-  //     },
-  //     execute() {
-  //       return { raw: { affectedRows: 2 } };
-  //     },
-  //   })) as any;
+  it('makePackForMoving success', async () => {
+    mockUsersRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      getOne() {
+        return this;
+      },
+    })) as any;
 
-  //   const values = {
-  //     start_point: '서울 특별시 중구',
-  //     destination: '서울 특별시 동작구',
-  //     move_date: '2021-12-30',
-  //     move_time: '15:30',
-  //     bed: 1,
-  //     closet: 1,
-  //     storage_closet: 1,
-  //     table: 1,
-  //     sofa: 1,
-  //     box: 2,
-  //     code: 1,
-  //     img_path: null,
-  //   };
-  //   // jest.spyOn(queryRunner.manager, 'save').mockResolvedValueOnce(values);
-  //   expect(await service.makePackForMoving(values, [], 1)).toEqual({
-  //     affectedRows: 2,
-  //   });
-  //   expect(mockMovingInformationsRepository.save).toHaveBeenCalledTimes(1);
-  //   expect(mockMovingGoodsRepository.save).toHaveBeenCalledTimes(1);
-  // });
+    const movingInfo = mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      insert() {
+        return this;
+      },
+      into() {
+        return this;
+      },
+      values() {
+        return this;
+      },
+      execute() {
+        return { identifiers: [{ id: 1 }] };
+      },
+      getOne() {
+        return null;
+      },
+    })) as any;
+
+    mockAreaCodesRepository.createQueryBuilder = jest.fn(() => ({
+      insert() {
+        return this;
+      },
+      into() {
+        return this;
+      },
+      values() {
+        return this;
+      },
+      execute() {
+        return { raw: { affectedRows: 1 } };
+      },
+    })) as any;
+
+    mockMovingGoodsRepository.createQueryBuilder = jest.fn(() => ({
+      insert() {
+        return this;
+      },
+      into() {
+        return this;
+      },
+      values() {
+        return this;
+      },
+      execute() {
+        return { raw: { affectedRows: 1 } };
+      },
+    })) as any;
+
+    mockLoadImagesRepository.createQueryBuilder = jest.fn(() => ({
+      insert() {
+        return this;
+      },
+      into() {
+        return this;
+      },
+      values() {
+        return this;
+      },
+      execute() {
+        return { raw: { affectedRows: 0 } };
+      },
+    })) as any;
+
+    const values = {
+      start_point: '서울 특별시 중구',
+      destination: '서울 특별시 동작구',
+      move_date: '2021-12-30',
+      move_time: '15:30',
+      bed: 1,
+      closet: 1,
+      storage_closet: 1,
+      table: 1,
+      sofa: 1,
+      box: 2,
+      code: 1,
+      img_path: null,
+    };
+    expect(await service.makePackForMoving(values, [], 1)).toStrictEqual({
+      message: '짐 싸기 완료!', status: 201,
+    });  
+  });
+
+  it('makePackForMoving fail by exist already packing', () => {
+    mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return {};
+      },
+    })) as any;
+
+    const values = {
+      start_point: '서울 특별시 중구',
+      destination: '서울 특별시 동작구',
+      move_date: '2021-12-30',
+      move_time: '15:30',
+      bed: 1,
+      closet: 1,
+      storage_closet: 1,
+      table: 1,
+      sofa: 1,
+      box: 2,
+      code: 1,
+      img_path: null,
+    }
+    expect(service.makePackForMoving(values, [], 1)).rejects.toThrow(
+      new ForbiddenException(
+        '이사 진행중이거나 만들어진 이삿짐이 존재합니다.'
+      )
+    );  
+  });
+
+  it('makePackForMoving fail by not exist user', () => {
+    mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return null;
+      },
+    })) as any;
+
+    mockUsersRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      getOne() {
+        return null;
+      },
+    })) as any;
+
+    const values = {
+      start_point: '서울 특별시 중구',
+      destination: '서울 특별시 동작구',
+      move_date: '2021-12-30',
+      move_time: '15:30',
+      bed: 1,
+      closet: 1,
+      storage_closet: 1,
+      table: 1,
+      sofa: 1,
+      box: 2,
+      code: 1,
+      img_path: null,
+    }
+    expect(service.makePackForMoving(values, [], 3)).rejects.toThrow(
+      new ForbiddenException('회원 정보를 찾을 수 없습니다.')
+    );  
+  });
+
+  it('removePack success', async () => {
+    const mock = mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      delete() {
+        return this;
+      },
+      from() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      execute() {
+        return this;
+      },
+      getOne() {
+        mock.mockReturnValueOnce({id:1}).mockReturnValueOnce(null);
+      }
+    })) as any;
+
+    expect(await service.removePack(1, 2)).toStrictEqual({ 
+      message: '삭제 성공!', status: 201
+    });  
+  });
 });
