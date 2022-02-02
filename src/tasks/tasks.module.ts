@@ -29,6 +29,6 @@ import { TasksService } from './tasks.service';
     ]),
     AuthModule,
     EventsModule,
-  ]
+  ],
 })
 export class TasksModule {}

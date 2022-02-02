@@ -1,9 +1,13 @@
-import { CallHandler, ExecutionContext, NestInterceptor } from "@nestjs/common";
-import { map, Observable } from "rxjs";
+import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
+import { map, Observable } from 'rxjs';
 
 export class UndefinedTonNllInterceptor implements NestInterceptor {
-    intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> | Promise<Observable<any>> {
-        
-        return next.handle().pipe(map((data) => data === undefined ? null : data));
-    }
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<any>,
+  ): Observable<any> | Promise<Observable<any>> {
+    return next
+      .handle()
+      .pipe(map((data) => (data === undefined ? null : data)));
+  }
 }

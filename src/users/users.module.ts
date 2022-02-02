@@ -27,6 +27,6 @@ import { UsersService } from './users.service';
       MovingInformations,
     ]),
     AuthModule,
-  ]
+  ],
 })
 export class UsersModule {}

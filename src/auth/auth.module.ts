@@ -12,23 +12,20 @@ import { UserLocalStrategy } from './user-local.strategy';
 
 @Module({
   providers: [
-    AuthService, 
-    UserLocalStrategy, 
-    UserJwtStrategy, 
+    AuthService,
+    UserLocalStrategy,
+    UserJwtStrategy,
     BusinessPersonLocalStrategy,
     BusinessPersonJwtStrategy,
   ],
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    TypeOrmModule.forFeature([
-      Users, 
-      BusinessPersons,
-    ]),
+    TypeOrmModule.forFeature([Users, BusinessPersons]),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_EXPIRESIN }
+      signOptions: { expiresIn: process.env.JWT_EXPIRESIN },
     }),
   ],
-  exports: [AuthService]
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -10,17 +10,17 @@ import { BusinessPersonsController } from './business-persons.controller';
 import { BusinessPersonsService } from './business-persons.service';
 
 @Module({
-    controllers: [BusinessPersonsController],
-    providers: [BusinessPersonsService],
-    imports: [
-        TypeOrmModule.forFeature([
-            BusinessPersons,
-            Reviews,
-            AreaCodes,
-            SystemMessages,
-            MovingInformations,
-        ]),
-        AuthModule,
-    ]
+  controllers: [BusinessPersonsController],
+  providers: [BusinessPersonsService],
+  imports: [
+    TypeOrmModule.forFeature([
+      BusinessPersons,
+      Reviews,
+      AreaCodes,
+      SystemMessages,
+      MovingInformations,
+    ]),
+    AuthModule,
+  ],
 })
 export class BusinessPersonsModule {}
