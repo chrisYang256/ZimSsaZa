@@ -110,7 +110,39 @@ describe('UsersService', () => {
     expect(service).toBeDefined();
   });
 
-  // it('signUp success', async () => {
+  it('signUp success', async () => {
+    mockUsersRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      insert() {
+        return this;
+      },
+      into() {
+        return this;
+      },
+      values() {
+        return this;
+      },
+      execute() {
+        return { raw: { affectedRows: 1 } }
+      },
+      getOne() {
+        return null;
+      }
+    })) as any;
+
+    const value = {
+      name: "브래드 피트",
+      email: "zimssaza123@gmail.com",
+      phone_number: "010-0000-0000",
+      password: "1234abcd!",
+    };
+    expect(await service.signUp(value))
+      .toStrictEqual({ raw: { affectedRows: 1 } });
+  });
+
+  // it('makePackForMoving success', async () => {
   //   mockUsersRepository.createQueryBuilder = jest.fn(() => ({
   //     insert() {
   //       return this;
@@ -122,56 +154,29 @@ describe('UsersService', () => {
   //       return this;
   //     },
   //     execute() {
-  //       return { raw: { affectedRows: 1 } }
-  //       }
+  //       return { raw: { affectedRows: 2 } };
+  //     },
   //   })) as any;
 
-  //   const value = {
-  //     name: "브래드 피트",
-  //     email: "zimssaza@gmail.com",
-  //     phone_number: "010-0000-0000",
-  //     password: "1234abcd!",
+  //   const values = {
+  //     start_point: '서울 특별시 중구',
+  //     destination: '서울 특별시 동작구',
+  //     move_date: '2021-12-30',
+  //     move_time: '15:30',
+  //     bed: 1,
+  //     closet: 1,
+  //     storage_closet: 1,
+  //     table: 1,
+  //     sofa: 1,
+  //     box: 2,
+  //     code: 1,
+  //     img_path: null,
   //   };
-  //   // expect(await service.signUp(value))
-  //   //   .resolves.toStrictEqual({ raw: { affectedRows: 1 } });
-  //   await service.signUp(value)
+  //   // jest.spyOn(queryRunner.manager, 'save').mockResolvedValueOnce(values);
+  //   expect(await service.makePackForMoving(values, [], 1)).toEqual({
+  //     affectedRows: 2,
+  //   });
+  //   expect(mockMovingInformationsRepository.save).toHaveBeenCalledTimes(1);
+  //   expect(mockMovingGoodsRepository.save).toHaveBeenCalledTimes(1);
   // });
-
-  it('makePackForMoving success', async () => {
-    mockUsersRepository.createQueryBuilder = jest.fn(() => ({
-      insert() {
-        return this;
-      },
-      into() {
-        return this;
-      },
-      values() {
-        return this;
-      },
-      execute() {
-        return { raw: { affectedRows: 2 } };
-      },
-    })) as any;
-
-    const values = {
-      start_point: '서울 특별시 중구',
-      destination: '서울 특별시 동작구',
-      move_date: '2021-12-30',
-      move_time: '15:30',
-      bed: 1,
-      closet: 1,
-      storage_closet: 1,
-      table: 1,
-      sofa: 1,
-      box: 2,
-      code: 1,
-      img_path: null,
-    };
-    // jest.spyOn(queryRunner.manager, 'save').mockResolvedValueOnce(values);
-    expect(await service.makePackForMoving(values, [], 1)).toEqual({
-      affectedRows: 2,
-    });
-    expect(mockMovingInformationsRepository.save).toHaveBeenCalledTimes(1);
-    expect(mockMovingGoodsRepository.save).toHaveBeenCalledTimes(1);
-  });
 });
