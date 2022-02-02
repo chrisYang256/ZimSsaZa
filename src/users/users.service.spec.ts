@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Connection, QueryBuilder, Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
+import { ForbiddenException } from '@nestjs/common';
 
 // import { JwtService } from '@nestjs/jwt';
 // jest.mock('JwtService')
@@ -14,7 +15,6 @@ import { AreaCodes } from '../entities/AreaCodes';
 import { SystemMessages } from '../entities/SystemMessages';
 import { Negotiations } from '../entities/Negotiations';
 import { Reviews } from '../entities/Reviews';
-import { CanActivate, ExecutionContext } from '@nestjs/common';
 
 export class MockUsersRepository {}
 export class MockMovingInformationsRepository {}
@@ -91,7 +91,6 @@ describe('UsersService', () => {
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    // connection = await module.get<Connection>(Connection);
     mockUsersRepository = module.get(getRepositoryToken(Users));
     mockMovingInformationsRepository = module.get(
       getRepositoryToken(MovingInformations),
@@ -140,6 +139,26 @@ describe('UsersService', () => {
     };
     expect(await service.signUp(value))
       .toStrictEqual({ raw: { affectedRows: 1 } });
+  });
+
+  it('signUp fail by duplicate user email', () => {
+    mockUsersRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      getOne() {
+        return this;
+      }
+    })) as any;
+
+    const value = {
+      name: "브래드 피트",
+      email: "zimssaza123@gmail.com",
+      phone_number: "010-0000-0000",
+      password: "1234abcd!",
+    };
+    expect(service.signUp(value))
+      .rejects.toThrow(new ForbiddenException(`'${value.email}'는 이미 가입된 이메일입니다.`));
   });
 
   // it('makePackForMoving success', async () => {
