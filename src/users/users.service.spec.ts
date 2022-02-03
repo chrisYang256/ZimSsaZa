@@ -282,7 +282,7 @@ describe('UsersService', () => {
         return this;
       },
       getOne() {
-        return {};
+        return { id : 1 };
       },
     })) as any;
 
@@ -300,10 +300,11 @@ describe('UsersService', () => {
       code: 1,
       img_path: null,
     }
+
+    // const result = service.makePackForMoving(values, [], 1)
+
     expect(service.makePackForMoving(values, [], 1)).rejects.toThrow(
-      new ForbiddenException(
-        '이사 진행중이거나 만들어진 이삿짐이 존재합니다.'
-      )
+      '이사 진행중이거나 만들어진 이삿짐이 존재합니다.'
     );  
   });
 
@@ -343,20 +344,20 @@ describe('UsersService', () => {
       code: 1,
       img_path: null,
     }
-    expect(service.makePackForMoving(values, [], 3)).rejects.toThrow(
-      new ForbiddenException('회원 정보를 찾을 수 없습니다.')
+    expect(service.makePackForMoving(values, [], 3)).toThrow(
+      '회원 정보를 찾을 수 없습니다.'
     );  
   });
 
   it('removePack success', async () => {
     const mock = mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
-      where() {
-        return this;
-      },
       delete() {
         return this;
       },
       from() {
+        return this;
+      },
+      where() {
         return this;
       },
       andWhere() {
@@ -365,13 +366,48 @@ describe('UsersService', () => {
       execute() {
         return this;
       },
-      getOne() {
-        mock.mockReturnValueOnce({id:1}).mockReturnValueOnce(null);
-      }
     })) as any;
+
+    mock.mockReturnValueOnce({
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return {
+          id: 7,
+          start_point: '서울 특별시 중구',
+          destination: '서울 특별시 동작구',
+          move_date: '2021-12-30',
+          move_time: '15:30',
+          picked_business_person: null,
+          user_done: 0,
+          business_person_done: 0,
+          createdAt: '2022-02-01T05:53:45.755Z',
+          updatedAt: '2022-02-01T05:53:45.755Z',
+          UserId: 10,
+          MovingStatusId: 1
+        };
+      }
+    })
+    .mockReturnValueOnce({
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return null;
+      }
+    })
 
     expect(await service.removePack(1, 2)).toStrictEqual({ 
       message: '삭제 성공!', status: 201
     });  
+    expect(mock).toHaveBeenNthCalledWith(1, 'movingInfo');
+    expect(mock).toHaveBeenNthCalledWith(2, 'movingInfo');
   });
 });
