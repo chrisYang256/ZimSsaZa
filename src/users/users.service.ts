@@ -97,7 +97,7 @@ export class UsersService {
           phone_number,
         })
         .execute();
-      return { 'message': '회원 가입 성공', 'statusCode': 200 };
+      return { 'message': '회원 가입 성공', 'statusCode': 201 };
     } catch (error) {
       console.error(error);
       throw error;
@@ -150,9 +150,7 @@ export class UsersService {
         .createQueryBuilder('user')
         .where('user.id = :id', { id: userId })
         .getOne();
-
-      console.log('user:', user)
-
+        
       if (!user) {
         throw new ForbiddenException('회원 정보를 찾을 수 없습니다.');
       }
@@ -268,7 +266,7 @@ export class UsersService {
 
       return { message: '삭제 성공!', status: 201 };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   }
@@ -336,9 +334,9 @@ export class UsersService {
       delete results.picked_business_person;
       console.log('results:::', results);
 
-      return { results: results, status: 200 };
+      return { message: '계약 완료!', status: 201 };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   }
@@ -389,8 +387,10 @@ export class UsersService {
           BusinessPersonId: businessPersonId,
         })
         .execute();
+
+      return { message: '리뷰 작성 완료!', status: 201 };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   }
@@ -429,9 +429,9 @@ export class UsersService {
           .execute();
       }
 
-      return { message: messages, 'status:': 200 };
+      return { messages: messages, 'status': 201 };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   }
@@ -446,14 +446,18 @@ export class UsersService {
         )
         .where('message.UserId = :userId', { userId })
         .getRawOne();
-      console.log(
-        'lastcheckDate:::',
-        checkLastDate.lastReadAt.toLocaleString('ko-KR', {
-          timeZone: 'Asia/Seoul',
-        }),
-      );
+      // console.log(
+      //   'lastcheckDate:::',
+      //   checkLastDate.lastReadAt.toLocaleString('ko-KR', {
+      //     timeZone: 'Asia/Seoul',
+      //   }),
+      // );
 
-      // readMessage에서 입력한 시점을 기준으로 이후 받은 메시지만 출력
+      if (checkLastDate.length === 0) {
+        return;
+      }
+
+      // readMessage에서 입력한 시점을 기준으로 이후 받은 메시지만 count
       const count = await this.systemMessagesRepository
         .createQueryBuilder('message')
         .where('message.UserId = :userId', { userId })
@@ -465,7 +469,7 @@ export class UsersService {
 
       return { count: count, 'status:': 200 };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   }

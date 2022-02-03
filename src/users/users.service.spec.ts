@@ -1,10 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Connection, Repository } from 'typeorm';
-import { ForbiddenException } from '@nestjs/common';
-
-// import { JwtService } from '@nestjs/jwt';
-// jest.mock('JwtService')
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 import { Users } from '../entities/Users';
@@ -138,7 +135,7 @@ describe('UsersService', () => {
       password: '1234abcd!',
     };
     expect(await service.signUp(value)).toStrictEqual({
-      'message': '회원 가입 성공', 'statusCode': 200,
+      'message': '회원 가입 성공', 'statusCode': 201,
     });
   });
 
@@ -300,11 +297,8 @@ describe('UsersService', () => {
       code: 1,
       img_path: null,
     }
-
-    // const result = service.makePackForMoving(values, [], 1)
-
     expect(service.makePackForMoving(values, [], 1)).rejects.toThrow(
-      '이사 진행중이거나 만들어진 이삿짐이 존재합니다.'
+      new ForbiddenException('이사 진행중이거나 만들어진 이삿짐이 존재합니다.')
     );  
   });
 
@@ -344,8 +338,8 @@ describe('UsersService', () => {
       code: 1,
       img_path: null,
     }
-    expect(service.makePackForMoving(values, [], 3)).toThrow(
-      '회원 정보를 찾을 수 없습니다.'
+    expect(service.makePackForMoving(values, [], 3)).rejects.toThrow(
+      new ForbiddenException('회원 정보를 찾을 수 없습니다.')
     );  
   });
 
@@ -376,20 +370,7 @@ describe('UsersService', () => {
         return this;
       },
       getOne() {
-        return {
-          id: 7,
-          start_point: '서울 특별시 중구',
-          destination: '서울 특별시 동작구',
-          move_date: '2021-12-30',
-          move_time: '15:30',
-          picked_business_person: null,
-          user_done: 0,
-          business_person_done: 0,
-          createdAt: '2022-02-01T05:53:45.755Z',
-          updatedAt: '2022-02-01T05:53:45.755Z',
-          UserId: 10,
-          MovingStatusId: 1
-        };
+        return { id: 1 };
       }
     })
     .mockReturnValueOnce({
@@ -407,7 +388,412 @@ describe('UsersService', () => {
     expect(await service.removePack(1, 2)).toStrictEqual({ 
       message: '삭제 성공!', status: 201
     });  
-    expect(mock).toHaveBeenNthCalledWith(1, 'movingInfo');
-    expect(mock).toHaveBeenNthCalledWith(2, 'movingInfo');
+  });
+
+  it('removePack fail by not exist movinginfo', () => {
+    mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return null;
+      }
+    })) as any;
+
+    expect(service.removePack(1, 2)).rejects.toThrow(
+      new ForbiddenException('이삿짐 정보를 찾을 수 없습니다.')
+    );  
+  });  
+
+  it('removePack fail by not exist movinginfo', () => {
+    const mock = mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({})) as any;
+    mock.mockReturnValueOnce({
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return { id: 1 };
+      }
+    })
+    mock.mockReturnValueOnce({
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return { id: 1 };
+      }
+    })
+
+    expect(service.removePack(1, 2)).rejects.toThrow(
+      new ForbiddenException(
+        '견적을 받는 중이거나 이사중인 경우 삭제할 수 없습니다.'
+      )
+    );  
+  });  
+
+  it('getContract success', async () => {
+    mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      select() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return this;
+      },
+    })) as any;
+
+    const myMovingPartner = mockNegotiationsRepository.createQueryBuilder = jest.fn(() => ({
+      innerJoin() {
+        return this;
+      },
+      select() {
+        return this;
+      },
+      addSelect() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return { 
+          BusinessPerson: { 
+            Reviews: [{ id: 1 }, { id: 2 }, { id: 3 }] 
+          }
+        };
+      },
+    })) as any;
+
+    expect(await service.getContract(11)).toStrictEqual({ 
+      message: '계약 완료!', status: 201
+    });
+  });
+
+  it('getContract fail by not exist myMovingInfo', () => {
+    mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      select() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return null;
+      }
+    })) as any;
+
+    expect(service.getContract(12)).rejects.toThrow(
+      new ForbiddenException('예약중인 이사가 존재하지 않습니다.')
+    );  
+  });  
+
+  it('getContract fail by not exist myMovingInfo', () => {
+    mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      select() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return { id: 1 }
+      }
+    })) as any;
+
+    mockNegotiationsRepository.createQueryBuilder = jest.fn(() => ({
+      innerJoin() {
+        return this;
+      },
+      select() {
+        return this;
+      },
+      addSelect() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return null;
+      },
+    })) as any;
+
+    expect(service.getContract(12)).rejects.toThrow(
+      new NotFoundException('해당 기사님이 존재하지 않습니다')
+    );  
+  });  
+
+  it('writeReview success', async () => {
+    mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      getOne() {
+        return { MovingStatusId: 4 };
+      },
+    })) as any;
+
+    mockReviewsRepository.createQueryBuilder = jest.fn(() => ({
+      innerJoin() {
+        return this;
+      },
+      select() {
+        return this;
+      },
+      insert() {
+        return this;
+      },
+      into() {
+        return this;
+      },
+      values() {
+        return this;
+      },
+      addSelect() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return null;
+      },
+      execute() {
+        return this;
+      }
+    })) as any;
+
+    const user = { 
+      id: 1, 
+      name: '오이사', 
+      email: 'kakarot@coco.com', 
+      phone_number: '010-0000-0000'
+    }
+    const data = { content: '유아굿맨', star: 5 }
+    expect(await service.writeReview(user, 1, 3, data)).toStrictEqual({ 
+      message: '리뷰 작성 완료!', status: 201
+    });
+  });
+
+  it('writeReview fail by movingStatus is not done', () => {
+    mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      getOne() {
+        return { MovingStatusId: 3 };
+      },
+    })) as any;
+
+    const user = { 
+      id: 1, 
+      name: '오이사', 
+      email: 'kakarot@coco.com', 
+      phone_number: '010-0000-0000'
+    }
+    const data = { content: '유아굿맨', star: 5 }
+    expect(service.writeReview(user, 1, 3, data)).rejects.toThrow(
+      new ForbiddenException('이사가 완료되지 않았습니다.')
+    );  
+  });  
+
+  it('writeReview fail by aleady write review', () => {
+    mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      getOne() {
+        return { MovingStatusId: 4 };
+      },
+    })) as any;
+
+    mockReviewsRepository.createQueryBuilder = jest.fn(() => ({
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getOne() {
+        return { id: 1 };
+      },
+    })) as any;
+
+    const user = { 
+      id: 1, 
+      name: '오이사', 
+      email: 'kakarot@coco.com', 
+      phone_number: '010-0000-0000'
+    }
+    const data = { content: '유아굿맨', star: 5 }
+    expect(service.writeReview(user, 1, 3, data)).rejects.toThrow(
+      new ForbiddenException('이미 리뷰를 작성하셨습니다.')
+    );  
+  });  
+
+  it('readMessage success', async () => {
+    const mock = mockSystemMessagesRepository.createQueryBuilder = jest.fn(() => ({})) as any;
+    mock.mockReturnValueOnce({
+      select() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      take() {
+        return this;
+      },
+      skip() {
+        return this;
+      },
+      orderBy() {
+        return this;
+      },
+      getMany() {
+        return [
+          { 
+            message: 'system message1', 
+            createdAt: '2022-01-30 19:06:04.268965'
+          },
+          { 
+            message: 'system message2', 
+            createdAt: '2022-01-31 19:06:04.268965'
+          },
+        ];
+      },
+    })
+
+    mock.mockReturnValueOnce({
+      update() {
+        return this;
+      },
+      set() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      orderBy() {
+        return this;
+      },
+      execute() {
+        return this;
+      },
+      limit() {
+        return 1;
+      },
+    });
+
+    const pagenation = { page: 1, perPage: 20 }
+    expect(await service.readMessage(1, pagenation)).toStrictEqual({ 
+      messages: [
+        { 
+          message: 'system message1', 
+          createdAt: '2022-01-30 19:06:04.268965'
+        },
+        { 
+          message: 'system message2', 
+          createdAt: '2022-01-31 19:06:04.268965'
+        },
+      ],
+      status: 201
+    });  
+  });
+
+  it('readMessage success in case message count is 0', async () => {
+    mockSystemMessagesRepository.createQueryBuilder = jest.fn(() => ({
+      select() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      take() {
+        return this;
+      },
+      skip() {
+        return this;
+      },
+      orderBy() {
+        return this;
+      },
+      getMany() {
+        return [];
+      },
+    })) as any;
+
+    const pagenation = { page: 1, perPage: 20 }
+    expect(await service.readMessage(1, pagenation)).toStrictEqual({
+      message: '받은 메시지가 없습니다.', status: 200
+    });
+  });
+
+  it('unreadCount success', async () => {
+    const checkLastDate = mockSystemMessagesRepository.createQueryBuilder = jest.fn(() => ({
+      select() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      andWhere() {
+        return this;
+      },
+      getRawOne() {
+        return { lastReadAt: '2022-01-30 19:06:04.268965' };
+      },
+      getCount() {
+        return 3;
+      },
+    })) as any;
+
+    expect(await service.unreadCount(1)).toStrictEqual({
+      count: 3, 'status:': 200
+    });
+  });
+
+  it('unreadCount just return by messages length is 0', async () => {
+    mockSystemMessagesRepository.createQueryBuilder = jest.fn(() => ({
+      select() {
+        return this;
+      },
+      where() {
+        return this;
+      },
+      getRawOne() {
+        return [];
+      },
+    })) as any;
+
+    expect(await service.unreadCount(1)).toBeUndefined();
   });
 });

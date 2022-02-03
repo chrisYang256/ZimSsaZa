@@ -310,6 +310,10 @@ export class BusinessPersonsService {
         }),
       );
 
+      if (checkLastDate.length === 0) {
+        return;
+      }
+
       const count = await this.systemMessagesRepository
         .createQueryBuilder('message')
         .where('message.BusinessPersonId = :businessPersonId', {
