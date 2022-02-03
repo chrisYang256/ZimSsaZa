@@ -151,6 +151,8 @@ export class UsersService {
         .where('user.id = :id', { id: userId })
         .getOne();
 
+      console.log('user:', user)
+
       if (!user) {
         throw new ForbiddenException('회원 정보를 찾을 수 없습니다.');
       }
