@@ -36,7 +36,7 @@
 
 <br/>
 
-그리고 각 단계를 진행하면서 상황에 따른 적절한 리액션이 발동되도록 장치들을 마련해 놓았으며 실재 어플리케이션 이용자들에 의해 발생할 수 있는 다양한 변수에 대응할 수 있도록 디테일한 부분들을 최대한 고려하여 설계하였습니다.
+그리고 각 단계를 진행하면서 상황에 따른 적절한 리액션이 발동되도록 장치들을 마련해 놓았으며 특정 단계에 대한 접근을 철저히 격리시키는 등 실재 어플리케이션 이용자들에 의해 발생할 수 있는 다양한 변수에 대응할 수 있도록 디테일한 부분들을 최대한 고려하여 설계하였습니다.
 
 고객이 견적요청을 한 경우를 예로 들어보겠습니다.
 
@@ -64,7 +64,7 @@
 <img src="https://img.shields.io/badge/NestJs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white">
 <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=white">
 <img src="https://img.shields.io/badge/TypeORM-18A497?style=for-the-badge&logo=기술스택아이콘&logoColor=white">
-<!-- <img src="https://img.shields.io/badge/jest-C21325?style=for-the-badge&logo=jest&logoColor=white"> -->
+<img src="https://img.shields.io/badge/jest-C21325?style=for-the-badge&logo=jest&logoColor=white">
 <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=white">
 <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white">
 <img src="https://img.shields.io/badge/Typescript-3178C6?style=for-the-badge&logo=TypeScript&logoColor=white">

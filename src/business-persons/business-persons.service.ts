@@ -55,7 +55,7 @@ export class BusinessPersonsService {
 
     const finishMovingList = await this.movingInformationsRepository
       .createQueryBuilder('movingInfo')
-      .leftJoin('movingInfo.Negotiations', 'nego')
+      .innerJoin('movingInfo.Negotiations', 'nego')
       .select([
         'movingInfo.destination',
         'movingInfo.start_point',
@@ -67,6 +67,9 @@ export class BusinessPersonsService {
       })
       .andWhere('movingInfo.MovingStatusId = :MSId', {
         MSId: MovingStatusEnum.DONE,
+      })
+      .andWhere('nego.BusinessPersonId = :NegoBPId', { 
+        NegoBPId: businessPerson.id,
       })
       .getMany();
     console.log('finishMovingList:::', finishMovingList);

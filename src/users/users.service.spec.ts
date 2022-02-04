@@ -661,8 +661,7 @@ describe('UsersService', () => {
   });  
 
   it('readMessage success', async () => {
-    const mock = mockSystemMessagesRepository.createQueryBuilder = jest.fn(() => ({})) as any;
-    mock.mockReturnValueOnce({
+    mockSystemMessagesRepository.createQueryBuilder = jest.fn(() => ({
       select() {
         return this;
       },
@@ -690,28 +689,19 @@ describe('UsersService', () => {
           },
         ];
       },
-    })
-
-    mock.mockReturnValueOnce({
       update() {
         return this;
       },
       set() {
         return this;
       },
-      where() {
-        return this;
-      },
-      orderBy() {
+      limit() {
         return this;
       },
       execute() {
         return this;
       },
-      limit() {
-        return 1;
-      },
-    });
+    })) as any;
 
     const pagenation = { page: 1, perPage: 20 }
     expect(await service.readMessage(1, pagenation)).toStrictEqual({ 
@@ -726,7 +716,7 @@ describe('UsersService', () => {
         },
       ],
       status: 201
-    });  
+    });
   });
 
   it('readMessage success in case message count is 0', async () => {
