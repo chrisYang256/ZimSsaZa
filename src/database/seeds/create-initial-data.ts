@@ -111,7 +111,7 @@ export class CreateInitialData implements Seeder {
       .insert()
       .into(Negotiations)
       .values({
-        id: 1,
+        id: 5,
         MovingInformationId: 5,
       })
       .execute();
@@ -176,51 +176,7 @@ export class CreateInitialData implements Seeder {
       .values(businessPersons)
       .execute();
 
-    const areacodes = [];
-    let areacodesId = 1;
-    let areacodesBusinessPersonId = 0;
-    for (let i = 0; i < 9; i++) {
-      areacodesBusinessPersonId += 1;
-      for (let j = 0; j < 3; j++) {
-        areacodesId += 1;
-        areacodes.push({
-          id: areacodesId,
-          code: 1 + j,
-          BusinessPersonId: areacodesBusinessPersonId,
-        });
-      }
-    }
-    await connection
-      .createQueryBuilder()
-      .insert()
-      .into(AreaCodes)
-      .values(areacodes)
-      .execute();
-
-    const estimates = [];
-    const getCost = () => {
-      const cost = Math.ceil(Math.random() * 100) * 10000;
-      if (cost < 200000 || cost > 500000) {
-        return getCost();
-      }
-      return cost;
-    };
-    for (let i = 1; i < 10; i++) {
-      estimates.push({
-        id: i + 1,
-        cost: getCost(),
-        MovingInformationId: 5,
-        BusinessPersonId: i,
-      });
-    }
-    await connection
-      .createQueryBuilder()
-      .insert()
-      .into(Negotiations)
-      .values(estimates)
-      .execute();
-
-    await connection
+      await connection
       .createQueryBuilder()
       .insert()
       .into(BusinessPersons)
@@ -291,6 +247,66 @@ export class CreateInitialData implements Seeder {
           BusinessPersonId: 10,
         },
       ])
+      .execute();
+
+    const areacodes = [];
+    let areacodesId = 1;
+    let areacodesBusinessPersonId = 0;
+    for (let i = 0; i < 9; i++) {
+      areacodesBusinessPersonId += 1;
+      for (let j = 0; j < 3; j++) {
+        areacodesId += 1;
+        areacodes.push({
+          id: areacodesId,
+          code: 1 + j,
+          BusinessPersonId: areacodesBusinessPersonId,
+        });
+      }
+    }
+    await connection
+      .createQueryBuilder()
+      .insert()
+      .into(AreaCodes)
+      .values(areacodes)
+      .execute();
+
+      const estimates1 = [];
+      for (let i = 1; i < 5; i++) {
+        estimates1.push({
+          id: i,
+          cost: Math.ceil(Math.random() * 100) * 10000,
+          MovingInformationId: i,
+          BusinessPersonId: 10,
+        });
+      }
+      await connection
+        .createQueryBuilder()
+        .insert()
+        .into(Negotiations)
+        .values(estimates1)
+        .execute();
+
+    const estimates2 = [];
+    const getCost2 = () => {
+      const cost = Math.ceil(Math.random() * 100) * 10000;
+      if (cost < 200000 || cost > 500000) {
+        return getCost2();
+      }
+      return cost;
+    };
+    for (let i = 5; i < 14; i++) {
+      estimates2.push({
+        id: i + 1,
+        cost: getCost2(),
+        MovingInformationId: 5,
+        BusinessPersonId: i - 4,
+      });
+    }
+    await connection
+      .createQueryBuilder()
+      .insert()
+      .into(Negotiations)
+      .values(estimates2)
       .execute();
   }
 }
