@@ -38,45 +38,55 @@ export class BusinessPersonsService {
     const myInfo = businessPerson;
     console.log('myInfo:::', myInfo);
 
-    const myReviews = await this.reviewsRepository
-      .createQueryBuilder('reviews')
-      .select(['reviews.star', 'reviews.writer', 'reviews.content'])
-      .where('reviews.BusinessPersonId = :BusinessPersonId', {
-        BusinessPersonId: businessPerson.id,
-      })
-      .getMany();
-    console.log('myReviews:::', myReviews);
-    myInfo['myReviews'] = myReviews;
+    try {
+      const myReviews = await this.reviewsRepository
+        .createQueryBuilder('reviews')
+        .select(['reviews.star', 'reviews.writer', 'reviews.content'])
+        .where('reviews.BusinessPersonId = :BusinessPersonId', {
+          BusinessPersonId: businessPerson.id,
+        })
+        .getMany();
+      console.log('myReviews:::', myReviews);
+  
+      myInfo['myReviews'] = myReviews;
 
-    let stars = 0;
-    myReviews.map((v) => (stars += v.star));
-    const starsAvg = Math.round((stars / myReviews.length) * 10) / 10;
-    myInfo['starsAvg'] = starsAvg;
-
-    const finishMovingList = await this.movingInformationsRepository
-      .createQueryBuilder('movingInfo')
-      .innerJoin('movingInfo.Negotiations', 'nego')
-      .select([
-        'movingInfo.destination',
-        'movingInfo.start_point',
-        'movingInfo.move_date',
-      ])
-      .addSelect('nego.cost')
-      .where('movingInfo.picked_business_person = :BPId', {
-        BPId: businessPerson.id,
-      })
-      .andWhere('movingInfo.MovingStatusId = :MSId', {
-        MSId: MovingStatusEnum.DONE,
-      })
-      .andWhere('nego.BusinessPersonId = :NegoBPId', { 
-        NegoBPId: businessPerson.id,
-      })
-      .getMany();
-    console.log('finishMovingList:::', finishMovingList);
-    myInfo['finishMovingList'] = finishMovingList;
-
-    console.log('myInfo:::', myInfo);
-    return { myInfo: myInfo, status: 200 };
+      let starsAvg = 0;
+      if (myReviews.length >= 1) {
+        let stars = 0;
+        myReviews.map((v) => (stars += v.star));
+        starsAvg = Math.round((stars / myReviews.length) * 10) / 10;
+      }
+      myInfo['starsAvg'] = starsAvg;
+  
+      const finishMovingList = await this.movingInformationsRepository
+        .createQueryBuilder('movingInfo')
+        .innerJoin('movingInfo.Negotiations', 'nego')
+        .select([
+          'movingInfo.destination',
+          'movingInfo.start_point',
+          'movingInfo.move_date',
+        ])
+        .addSelect('nego.cost')
+        .where('movingInfo.picked_business_person = :BPId', {
+          BPId: businessPerson.id,
+        })
+        .andWhere('movingInfo.MovingStatusId = :MSId', {
+          MSId: MovingStatusEnum.DONE,
+        })
+        .andWhere('nego.BusinessPersonId = :NegoBPId', { 
+          NegoBPId: businessPerson.id,
+        })
+        .getMany();
+      console.log('finishMovingList:::', finishMovingList);
+  
+      myInfo['finishMovingList'] = finishMovingList;
+  
+      console.log('myInfo:::', myInfo);
+      return { myInfo: myInfo, status: 200 };
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   async signUp(createBusinessPersonDto: CreateBusinessPersonDto) {
