@@ -38,6 +38,29 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { NoUserResponseDto } from './dto/noUser.response.dto';
+import { UserInfoResponseDto } from './dto/userInfo.response.dto';
+import { SignupFailByDataFormResponseDto } from './dto/signupFailByDataForm.response.dto';
+import { SignupFailByDataMissingResponseDto } from './dto/signupFailByDataMissing.response.dto';
+import { SignupFailByDuplicateEmailResponseDto } from './dto/signupFailByDuplicateEmail.response.dto';
+import { SignUpResponseDto } from './dto/signup.response.dto';
+import { LoginFailByNoUserResponseDto } from './dto/loginFailByNoUser.response.dto';
+import { LoginFailByPasswordResponseDto } from './dto/loginFailByPassword.response.dto';
+import { LoginResponseDto } from './dto/login.response.dto';
+import { MakePackForMovingUnauthorizedResponseDto } from './dto/makePackForMovingUnauthorized.response.dto';
+import { MakePackForMovingExistPackResponseDto } from './dto/makePackForMovingExistPack.response.dto';
+import { MakePackForMovingResponseDto } from './dto/makePackForMoving.response.dto';
+import { RemovePackResponseDto } from './dto/removePack.response.dto';
+import { RemovePackNotExistPackResponseDto } from './dto/removePackNotExistPack.response.dto';
+import { RemovePackInProgressPackResponseDto } from './dto/removePackInProgressPack.response.dto';
+import { GetContractRespnseDto } from './dto/getContract.response.dto';
+import { GetContractNoContractResponseDto } from './dto/getContractNoContract.response.dto';
+import { GetContractNoBusinesspersonResponseDto } from './dto/getContractNoBusinessperson.response.dto';
+import { WriteReviewResponseDto } from './dto/writeReview.response.dto';
+import { WriteReviewMovingIsNotDoneResponseDto } from './dto/writeReviewMovingIsNotDone.response.dto';
+import { WriteReviewAlreadyWriteResponseDto } from './dto/writeReviewAlreadyWrite.response.dto';
+import { ReadMessageNoMessageResponseDto } from 'src/common/dto/readMessageNoMessage.response.dto';
+import { ReadMessageResponseDto } from 'src/common/dto/readMessage.response.dto';
 
 try {
   fs.readdirSync('img-uploads');
@@ -56,8 +79,16 @@ export class UsersController {
   ) {}
 
   @ApiOperation({ summary: '내 정보 조회' })
-  @ApiResponse({ status: 200, description: 'response 성공' })
-  @ApiResponse({ status: 401, description: 'response 실패' })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'response success',
+    type: UserInfoResponseDto,
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'no_token',
+    type: NoUserResponseDto,
+  })
   @ApiBearerAuth('User-JWT-Auth')
   @UseGuards(UserJwtAuthGuard)
   @Get()
@@ -66,8 +97,26 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: '회원 가입' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
-  @ApiResponse({ status: 409, description: 'response 실패' })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'response success',
+    type: SignUpResponseDto,
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: '데이터 누락',
+    type: SignupFailByDataMissingResponseDto,
+  })
+  @ApiResponse({ 
+    status: 402, 
+    description: '데이터 형식 틀림',
+    type: SignupFailByDataFormResponseDto,
+  })
+  @ApiResponse({ 
+    status: 403, 
+    description: '이미 가입된 이메일',
+    type: SignupFailByDuplicateEmailResponseDto,
+  })
   @UseGuards(NotLoggedInGuard)
   @Post('signup')
   signUp(@Body() createUserDto: CreateUserDto) {
@@ -75,8 +124,21 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: '로그인' })
-  @ApiResponse({ status: 200, description: '인증 성공' })
-  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'response success',
+    type: LoginResponseDto,
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: '존재하지 않는 회원',
+    type:  LoginFailByNoUserResponseDto,
+  })
+  @ApiResponse({ 
+    status: 402, 
+    description: '비밀번호 틀림',
+    type:  LoginFailByPasswordResponseDto,
+  })
   @ApiBody({ type: LoginDto })
   @UseGuards(UserLocalAuthGuard)
   @Post('login')
@@ -85,8 +147,21 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: '이삿짐 생성' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
-  @ApiResponse({ status: 409, description: 'response 실패' }) // response 세분화해서 추가하기
+  @ApiResponse({ 
+    status: 201, 
+    description: 'response success',
+    type: MakePackForMovingResponseDto,
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: '만들어진 이삿짐 존재', 
+    type: MakePackForMovingExistPackResponseDto,
+  }) 
+  @ApiResponse({ 
+    status: 402, 
+    description: 'no_token',
+    type: MakePackForMovingUnauthorizedResponseDto,
+  }) 
   @ApiConsumes('multipart/form-data') // m/f-d
   @ApiBody({ description: '이삿짐 정보 / 이미지', type: CreateMovingGoodsDto }) // m/f-d
   @UseInterceptors(
@@ -130,8 +205,21 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: '이삿짐 삭제' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
-  @ApiResponse({ status: 401, description: 'response 실패' })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'response success', 
+    type: RemovePackResponseDto,
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: '만들어진 이삿짐 없음',
+    type: RemovePackNotExistPackResponseDto,
+  })
+  @ApiResponse({ 
+    status: 402, 
+    description: '견적 받는 중 or 이사중 삭제 요청',
+    type: RemovePackInProgressPackResponseDto,
+  })
   @ApiParam({ name: 'movingInfoId', example: '5' })
   @ApiBearerAuth('User-JWT-Auth')
   @UseGuards(UserJwtAuthGuard)
@@ -143,9 +231,22 @@ export class UsersController {
     return this.usersService.removePack(user.id, movingInfoId);
   }
 
-  @ApiOperation({ summary: '계약 후 이사정보 조회하기(기사님 정보 등)' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
-  @ApiResponse({ status: 401, description: 'response 실패' })
+  @ApiOperation({ summary: '계약 후 이사정보 조회하기(기사님 정보 포함)' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'response success',
+    type: GetContractRespnseDto,
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: '계약된 이사 없음', 
+    type: GetContractNoContractResponseDto,
+  })
+  @ApiResponse({ 
+    status: 402, 
+    description: '기사님 정보 없음', 
+    type: GetContractNoBusinesspersonResponseDto,
+  })
   @ApiBearerAuth('User-JWT-Auth')
   @UseGuards(UserJwtAuthGuard)
   @Get('contract')
@@ -154,8 +255,21 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: '이사 완료시 파트너 기사님에게 리뷰 작성' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
-  @ApiResponse({ status: 400, description: 'response 실패' })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'response success', 
+    type: WriteReviewResponseDto,
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: '이사가 완료되지 않음', 
+    type: WriteReviewMovingIsNotDoneResponseDto,
+  })
+  @ApiResponse({ 
+    status: 402, 
+    description: '작성한 리뷰가 있음', 
+    type: WriteReviewAlreadyWriteResponseDto,
+  })
   @ApiParam({ name: 'movingInfoId', example: '5' })
   @ApiParam({ name: 'businessPersonId', example: '10' })
   @ApiBearerAuth('User-JWT-Auth')
@@ -176,7 +290,16 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: '시스템 메시지 보기' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'response success(No message)', 
+    type: ReadMessageNoMessageResponseDto,
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'response success', 
+    type: ReadMessageResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'response 실패' })
   @ApiBearerAuth('User-JWT-Auth')
   @UseGuards(UserJwtAuthGuard)
@@ -189,7 +312,16 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: '읽지않은 시스템 메시지 카운팅' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'response success(No new message)', 
+    // type: ,
+  })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'response success', 
+    // type: ,
+  })
   @ApiResponse({ status: 401, description: 'response 실패' })
   @ApiBearerAuth('User-JWT-Auth')
   @UseGuards(UserJwtAuthGuard)

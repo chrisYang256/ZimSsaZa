@@ -97,7 +97,7 @@ export class UsersService {
           phone_number,
         })
         .execute();
-      return { 'message': '회원 가입 성공', 'statusCode': 201 };
+      return { message: '회원 가입 성공!', status: 201 };
     } catch (error) {
       console.error(error);
       throw error;
@@ -237,7 +237,7 @@ export class UsersService {
       console.log('findMovingInfo:::', findMovingInfo);
 
       if (!findMovingInfo) {
-        throw new ForbiddenException('이삿짐 정보를 찾을 수 없습니다.');
+        throw new NotFoundException('이삿짐 정보를 찾을 수 없습니다.');
       }
 
       // 이삿짐 정보 삭제는 movingStatus가 STAY(견적 제출 전), DONE(이사 완료)인 경우만 가능
@@ -315,7 +315,7 @@ export class UsersService {
       console.log('myMovingPartner:::', myMovingPartner);
 
       if (!myMovingPartner) {
-        throw new NotFoundException('해당 기사님이 존재하지 않습니다');
+        throw new NotFoundException('해당 기사님이 존재하지 않습니다.');
       }
 
       let stars = 0;
@@ -334,7 +334,7 @@ export class UsersService {
       delete results.picked_business_person;
       console.log('results:::', results);
 
-      return { message: '계약 완료!', status: 201 };
+      return { results: results, status: 201 };
     } catch (error) {
       console.error(error);
       throw error;
