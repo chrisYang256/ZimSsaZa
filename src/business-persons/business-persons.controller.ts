@@ -86,8 +86,14 @@ export class BusinessPersonsController {
   @ApiBearerAuth('BusinessPerson-JWT-Auth')
   @UseGuards(BusinessPersonJwtAuthGuard)
   @Get('contract/undone/detail/:movingInfoId')
-  getScheduleDetail(@Param('movingInfoId', ParseIntPipe) movingInfoId: number) {
-    return this.businessPersonService.getScheduleDetail(movingInfoId);
+  getScheduleDetail(
+    @GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto,
+    @Param('movingInfoId', ParseIntPipe) movingInfoId: number
+  ) {
+    return this.businessPersonService.getScheduleDetail(
+      businessPerson.id, 
+      movingInfoId
+    );
   }
 
   @ApiOperation({ summary: '시스템 메시지 보기' })

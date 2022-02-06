@@ -133,12 +133,12 @@ export class BusinessPersonsService {
       );
     }
 
-    const user = await this.businessPersonsRepository
+    const businessPerson = await this.businessPersonsRepository
       .createQueryBuilder('business_persons')
       .where('business_persons.email = :email', { email })
       .getOne();
 
-    if (user) {
+    if (businessPerson) {
       throw new ForbiddenException(`'${email}'는 이미 가입된 이메일입니다.`);
     }
 
@@ -183,7 +183,7 @@ export class BusinessPersonsService {
       await queryRunner.commitTransaction();
       console.log('isTransactionActive-3:::', queryRunner.isTransactionActive);
 
-      return { message: '회원 가입 성공', statusCode: 201 };
+      return { message: '회원 가입 성공', status: 201 };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
@@ -196,7 +196,7 @@ export class BusinessPersonsService {
   async getScheduleList(businessPersonId: number) {
     try {
       // 이사 일자가 가까운 날부터 차례대로
-      const schedule = await this.movingInformationsRepository
+      const schedules = await this.movingInformationsRepository
         .createQueryBuilder('movingInfo')
         .select([
           'movingInfo.id',
@@ -213,20 +213,23 @@ export class BusinessPersonsService {
         })
         .orderBy('move_date', 'ASC')
         .getMany();
-      console.log('schedule:::', schedule);
+      console.log('schedule:::', schedules);
 
-      if (schedule.length === 0) {
-        throw new NotFoundException('예약중인 일정이 없습니다.');
+      if (schedules.length === 0) {
+        return { message: '예약중인 일정이 없습니다.', status: 200 };
       }
 
-      return { schedule: schedule, status: 200 };
+      return { schedules: schedules, status: 200 };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   }
 
-  async getScheduleDetail(movingInfoId: number) {
+  async getScheduleDetail(
+    businessPersonId: number,
+    movingInfoId: number
+  ) {
     try {
       // 완료여부 정보까지 확인하게 하고 FE에서 완료버튼도 함께 위치하도록
       const movingInfo = await this.movingInformationsRepository
@@ -254,7 +257,12 @@ export class BusinessPersonsService {
         .addSelect('images.img_path')
         .addSelect('nego.cost')
         .addSelect(['user.name', 'user.phone_number'])
-        .where('movingInfo.id = :id', { id: movingInfoId })
+        .where('movingInfo.id = :id', { 
+          id: movingInfoId 
+        })
+        .andWhere('nego.BusinessPersonId = :BPId', { 
+          BPId: businessPersonId 
+        })
         .getOne();
       console.log('movingInfo:::', movingInfo);
 
@@ -264,7 +272,7 @@ export class BusinessPersonsService {
 
       return { movingInfo: movingInfo, status: 200 };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   }
@@ -300,9 +308,9 @@ export class BusinessPersonsService {
           .execute();
       }
 
-      return { message: messages, 'status:': 200 };
+      return { messages: messages, 'status': 201 };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   }
@@ -316,12 +324,12 @@ export class BusinessPersonsService {
           businessPersonId,
         })
         .getRawOne();
-      console.log(
-        'lastcheckDate:::',
-        checkLastDate.lastReadAt.toLocaleString('ko-KR', {
-          timeZone: 'Asia/Seoul',
-        }),
-      );
+      // console.log(
+      //   'lastcheckDate:::',
+      //   checkLastDate.lastReadAt.toLocaleString('ko-KR', {
+      //     timeZone: 'Asia/Seoul',
+      //   }),
+      // );
 
       if (checkLastDate.length === 0) {
         return;
@@ -340,7 +348,7 @@ export class BusinessPersonsService {
 
       return { count: count, 'status:': 200 };
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw error;
     }
   }
