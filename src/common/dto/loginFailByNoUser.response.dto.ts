@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 
-export class RemovePackNotExistPackResponseDto {
+export class LoginFailByNoUserResponseDto {
     @ApiProperty({ example: false, description: '성공 여부',
     })
     success: boolean;
@@ -9,7 +9,7 @@ export class RemovePackNotExistPackResponseDto {
     })
     status: number;
 
-    @ApiProperty({ example: '이삿짐 정보를 찾을 수 없습니다.', description: '상태 메시지',
+    @ApiProperty({ example: `'zimssaza@gmail.com' 회원을 찾을 수 없습니다.`, description: '상태 메시지',
     })
     message: string;
 }

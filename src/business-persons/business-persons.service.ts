@@ -183,7 +183,7 @@ export class BusinessPersonsService {
       await queryRunner.commitTransaction();
       console.log('isTransactionActive-3:::', queryRunner.isTransactionActive);
 
-      return { message: '회원 가입 성공', status: 201 };
+      return { message: '회원 가입 성공!', status: 201 };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
@@ -308,7 +308,7 @@ export class BusinessPersonsService {
           .execute();
       }
 
-      return { messages: messages, 'status': 201 };
+      return { messages: messages, status: 201 };
     } catch (error) {
       console.error(error);
       throw error;
@@ -346,7 +346,7 @@ export class BusinessPersonsService {
         .getCount();
       console.log('count:::', count);
 
-      return { count: count, 'status:': 200 };
+      return { count: count, status: 200 };
     } catch (error) {
       console.error(error);
       throw error;

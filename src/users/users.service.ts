@@ -457,7 +457,7 @@ export class UsersService {
         return;
       }
 
-      // readMessage에서 입력한 시점을 기준으로 이후 받은 메시지만 count
+      // readMessage에서 업데이트한 시점을 기준으로 이후 받은 메시지만 count
       const count = await this.systemMessagesRepository
         .createQueryBuilder('message')
         .where('message.UserId = :userId', { userId })

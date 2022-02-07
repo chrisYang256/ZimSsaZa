@@ -221,7 +221,7 @@ describe('BusinessPersonsService', () => {
       code: [1, 4, 5],
     };
     expect(await service.signUp(value)).toStrictEqual({
-      message: '회원 가입 성공', status: 201,
+      message: '회원 가입 성공!', status: 201,
     });
   });
 
@@ -534,7 +534,7 @@ describe('BusinessPersonsService', () => {
     })) as any;
 
     expect(await service.unreadCount(1)).toStrictEqual({
-      count: 3, 'status:': 200
+      count: 3, status: 200
     });
   });
 

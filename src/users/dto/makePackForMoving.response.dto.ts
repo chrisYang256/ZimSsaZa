@@ -7,5 +7,5 @@ export class MakePackForMovingResponseDto {
 
     @ApiProperty({ example: '201', description: '상태 코드',
     })
-    statusCode: number;
+    status: number;
 }
