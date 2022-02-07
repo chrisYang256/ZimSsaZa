@@ -38,7 +38,7 @@ export class Reviews {
 
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({ example: '5', description: '평점' })
+  @ApiProperty({ example: 5, description: '평점' })
   @Column('int', { name: 'star', width: 5 })
   star: number;
 

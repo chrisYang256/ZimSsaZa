@@ -22,6 +22,6 @@ export class CreateBusinessPersonDto {
   @ApiProperty({ example: '123-45-67890', description: '사업자 번호' })
   business_license: string;
 
-  @ApiProperty({ example: '[1, 4, 5]', description: '지역 코드' })
+  @ApiProperty({ example: [1, 4, 5], description: '지역 코드' })
   code: Array<number>;
 }

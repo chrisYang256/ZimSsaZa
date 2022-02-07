@@ -22,7 +22,7 @@ export class AreaCodes {
 
   @IsNumber()
   @IsNotEmpty()
-  @ApiProperty({ example: '1', description: '이사 지역 코드' })
+  @ApiProperty({ example: 1, description: '이사 지역 코드' })
   @Column('int', { name: 'code', width: 10 })
   code: number;
 

@@ -17,6 +17,8 @@ import { MovingInformations } from 'src/entities/MovingInformations';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
 import { SendSystemMessage } from '../common/send-systemMessages';
 import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
+import { PagenationDto } from 'src/common/dto/pagenation.dto';
+import { NegoCostDto } from './dto/nego-cost.dto';
 
 @Injectable()
 export class TasksService {

@@ -37,10 +37,10 @@ export class GetScheduleDetailResponseDto {
         phone_number: '010-1234-5678',
       },
     },
-    description: '조회 결과',
+    description: '요청 결과',
   })
   movingInfo: object;
 
-  @ApiProperty({ example: '200', description: '상태 코드' })
+  @ApiProperty({ example: 200, description: '상태 코드' })
   status: number;
 }

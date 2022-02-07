@@ -14,7 +14,7 @@ export class ReadMessageResponseDto {
         createdAt: '2022-02-07T11:00:11.548Z',
       },
     ],
-    description: '받은 메시지들',
+    description: '요청 결과',
   })
   messages: any;
 

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class GetScheduleListNoScheduleResponseDto {
-  @ApiProperty({ example: '200', description: '상태 코드' })
+  @ApiProperty({ example: 200, description: '상태 코드' })
   status: number;
 
   @ApiProperty({

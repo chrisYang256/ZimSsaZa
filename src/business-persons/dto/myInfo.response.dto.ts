@@ -83,7 +83,7 @@ export class MyInfoResponseDto {
         },
       ],
     },
-    description: '조회 결과',
+    description: '요청 결과',
   })
   myInfo: any;
 

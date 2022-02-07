@@ -4,7 +4,7 @@ export class MakeMovingToDoneFailByAlreadyDoneResponseDto {
   @ApiProperty({ example: false, description: '성공 여부' })
   success: boolean;
 
-  @ApiProperty({ example: '403', description: '상태 코드' })
+  @ApiProperty({ example: 403, description: '상태 코드' })
   status: number;
 
   @ApiProperty({ example: '완료된 이사건입니다.', description: '상태 메시지' })
