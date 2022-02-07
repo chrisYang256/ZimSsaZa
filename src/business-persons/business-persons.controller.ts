@@ -17,12 +17,12 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { NotLoggedInGuard } from '../auth/not-logged-in.guard';
 import { AuthService } from '../auth/auth.service';
+import { BusinessPersonsService } from './business-persons.service';
 import { GetMyInfo } from '../common/decorator/get-myInfo.decorator';
+import { NotLoggedInGuard } from '../auth/not-logged-in.guard';
 import { BusinessPersonJwtAuthGuard } from '../auth/businessPerson-jwt-auth.guard';
 import { BusinessPersonLocalAuthGuard } from '../auth/businessPerson-local-auth.guard';
-import { BusinessPersonsService } from './business-persons.service';
 
 import { BusinessPersonWithoutPasswordDto } from './dto/businessPerson-without-password.dto';
 import { CreateBusinessPersonDto } from './dto/create-businessPerson.dto';
@@ -55,14 +55,14 @@ export class BusinessPersonsController {
   ) {}
 
   @ApiOperation({ summary: '내 정보 조회' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'response success', 
+  @ApiResponse({
+    status: 200,
+    description: 'response success',
     type: MyInfoResponseDto,
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: 'no_token', 
+  @ApiResponse({
+    status: 401,
+    description: 'no_token',
     type: NoBusinessPersonResponseDto,
   })
   @ApiBearerAuth('BusinessPerson-JWT-Auth')
@@ -73,28 +73,28 @@ export class BusinessPersonsController {
   }
 
   @ApiOperation({ summary: '회원 가입' })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'response success',
     type: SignUpResponseDto,
   })
-  @ApiResponse({ 
-    status: 401, 
+  @ApiResponse({
+    status: 401,
     description: '데이터 누락',
     type: SignupFailByDataMissingResponseDto,
   })
-  @ApiResponse({ 
-    status: 402, 
+  @ApiResponse({
+    status: 402,
     description: '데이터 형식 틀림',
     type: SignupFailByDataFormResponseDto,
   })
-  @ApiResponse({ 
-    status: 403, 
+  @ApiResponse({
+    status: 403,
     description: '이미 가입된 이메일',
     type: SignupFailByDuplicateEmailResponseDto,
   })
-  @ApiResponse({ 
-    status: 404, 
+  @ApiResponse({
+    status: 404,
     description: '이미 가입된 사업자번호',
     type: SignupFailByDuplicateLicenseResponseDto,
   })
@@ -105,20 +105,20 @@ export class BusinessPersonsController {
   }
 
   @ApiOperation({ summary: '로그인' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'response success',
     type: LoginResponseDto,
   })
-  @ApiResponse({ 
-    status: 401, 
+  @ApiResponse({
+    status: 401,
     description: '존재하지 않는 회원',
-    type:  LoginFailByNoUserResponseDto,
+    type: LoginFailByNoUserResponseDto,
   })
-  @ApiResponse({ 
-    status: 402, 
+  @ApiResponse({
+    status: 402,
     description: '비밀번호 틀림',
-    type:  LoginFailByPasswordResponseDto,
+    type: LoginFailByPasswordResponseDto,
   })
   @ApiBody({ type: LoginDto })
   @UseGuards(BusinessPersonLocalAuthGuard)
@@ -129,14 +129,14 @@ export class BusinessPersonsController {
   }
 
   @ApiOperation({ summary: '예약된 이사 목록 보기' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'response success(예약중인 일정 없음)', 
+  @ApiResponse({
+    status: 200,
+    description: 'response success(예약중인 일정 없음)',
     type: GetScheduleListNoScheduleResponseDto,
   })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'response success', 
+  @ApiResponse({
+    status: 201,
+    description: 'response success',
     type: GetScheduleListResponseDto,
   })
   @ApiBearerAuth('BusinessPerson-JWT-Auth')
@@ -149,14 +149,14 @@ export class BusinessPersonsController {
   }
 
   @ApiOperation({ summary: '예약된 이사 상세 보기' })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'response success', 
+  @ApiResponse({
+    status: 201,
+    description: 'response success',
     type: GetScheduleDetailResponseDto,
   })
-  @ApiResponse({ 
-    status: 401, 
-    description: '이사정보 없음', 
+  @ApiResponse({
+    status: 401,
+    description: '이사정보 없음',
     type: GetScheduleDetailNoMovingInfoResponseDto,
   })
   @ApiParam({ name: 'movingInfoId', example: '5' })
@@ -165,23 +165,23 @@ export class BusinessPersonsController {
   @Get('contract/undone/detail/:movingInfoId')
   getScheduleDetail(
     @GetMyInfo() businessPerson: BusinessPersonWithoutPasswordDto,
-    @Param('movingInfoId', ParseIntPipe) movingInfoId: number
+    @Param('movingInfoId', ParseIntPipe) movingInfoId: number,
   ) {
     return this.businessPersonService.getScheduleDetail(
-      businessPerson.id, 
-      movingInfoId
+      businessPerson.id,
+      movingInfoId,
     );
   }
 
   @ApiOperation({ summary: '시스템 메시지 보기' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'response success(No message)', 
+  @ApiResponse({
+    status: 200,
+    description: 'response success(No message)',
     type: ReadMessageNoMessageResponseDto,
   })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'response success', 
+  @ApiResponse({
+    status: 201,
+    description: 'response success',
     type: ReadMessageResponseDto,
   })
   @ApiBearerAuth('BusinessPerson-JWT-Auth')
@@ -198,9 +198,9 @@ export class BusinessPersonsController {
   }
 
   @ApiOperation({ summary: '읽지않은 시스템 메시지 카운팅' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'response success(No new message)', 
+  @ApiResponse({
+    status: 200,
+    description: 'response success(No new message)',
     type: UnreadCountResponseDto,
   })
   @ApiBearerAuth('BusinessPerson-JWT-Auth')

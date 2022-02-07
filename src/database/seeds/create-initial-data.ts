@@ -176,7 +176,7 @@ export class CreateInitialData implements Seeder {
       .values(businessPersons)
       .execute();
 
-      await connection
+    await connection
       .createQueryBuilder()
       .insert()
       .into(BusinessPersons)
@@ -270,21 +270,21 @@ export class CreateInitialData implements Seeder {
       .values(areacodes)
       .execute();
 
-      const estimates1 = [];
-      for (let i = 1; i < 5; i++) {
-        estimates1.push({
-          id: i,
-          cost: Math.ceil(Math.random() * 100) * 10000,
-          MovingInformationId: i,
-          BusinessPersonId: 10,
-        });
-      }
-      await connection
-        .createQueryBuilder()
-        .insert()
-        .into(Negotiations)
-        .values(estimates1)
-        .execute();
+    const estimates1 = [];
+    for (let i = 1; i < 5; i++) {
+      estimates1.push({
+        id: i,
+        cost: Math.ceil(Math.random() * 100) * 10000,
+        MovingInformationId: i,
+        BusinessPersonId: 10,
+      });
+    }
+    await connection
+      .createQueryBuilder()
+      .insert()
+      .into(Negotiations)
+      .values(estimates1)
+      .execute();
 
     const estimates2 = [];
     const getCost2 = () => {

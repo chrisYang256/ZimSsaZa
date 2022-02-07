@@ -150,7 +150,7 @@ export class UsersService {
         .createQueryBuilder('user')
         .where('user.id = :id', { id: userId })
         .getOne();
-        
+
       if (!user) {
         throw new ForbiddenException('회원 정보를 찾을 수 없습니다.');
       }
@@ -334,7 +334,7 @@ export class UsersService {
       delete results.picked_business_person;
       console.log('results:::', results);
 
-      return { results: results, status: 201 };
+      return { results: results, status: 200 };
     } catch (error) {
       console.error(error);
       throw error;
@@ -427,9 +427,10 @@ export class UsersService {
           .orderBy('updatedAt', 'DESC')
           .limit(1)
           .execute();
+        return { messages: messages, status: 201 };
       }
 
-      return { messages: messages, 'status': 201 };
+      return { messages: messages, status: 200 };
     } catch (error) {
       console.error(error);
       throw error;
@@ -467,7 +468,7 @@ export class UsersService {
         .getCount();
       console.log('count:::', count);
 
-      return { count: count, 'status:': 200 };
+      return { count: count, status: 200 };
     } catch (error) {
       console.error(error);
       throw error;

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class SignUpResponseDto {
-  @ApiProperty({ example: '회원 가입 성공', description: '상태 메시지' })
+export class MakeMovingToDoneResponseDto {
+  @ApiProperty({ example: '이사완료 확인!', description: '상태 메시지' })
   message: string;
 
   @ApiProperty({ example: '201', description: '상태 코드' })

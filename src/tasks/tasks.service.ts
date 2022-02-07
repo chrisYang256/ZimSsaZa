@@ -3,20 +3,20 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import util from 'util';
+import { Connection, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PagenationDto } from 'src/common/dto/pagenation.dto';
-import { MovingStatusEnum } from 'src/common/movingStatus.enum';
-import { SendSystemMessage } from '../common/send-systemMessages';
-import { BusinessPersons } from 'src/entities/BusinessPersons';
-import { MovingInformations } from 'src/entities/MovingInformations';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { EventsGateway } from 'src/events/events.gateway';
+
 import { Negotiations } from 'src/entities/Negotiations';
 import { SystemMessages } from 'src/entities/SystemMessages';
-import { EventsGateway } from 'src/events/events.gateway';
-import { Connection, Repository } from 'typeorm';
-import { NegoCostDto } from './dto/nego-cost.dto';
-const util = require('util');
+import { BusinessPersons } from 'src/entities/BusinessPersons';
+import { MovingInformations } from 'src/entities/MovingInformations';
+
+import { MovingStatusEnum } from 'src/common/movingStatus.enum';
+import { SendSystemMessage } from '../common/send-systemMessages';
+import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
 
 @Injectable()
 export class TasksService {
@@ -194,6 +194,7 @@ export class TasksService {
         .execute();
 
       await queryRunner.commitTransaction();
+      return { message: '견적 요청이 정상적으로 처리되었습니다!', status: 201 };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
@@ -234,9 +235,10 @@ export class TasksService {
       console.log('results:::', movingInfoList);
 
       if (movingInfoList.length === 0) {
-        throw new NotFoundException(
-          '현재 담당 지역에서 견적 요청이 존재하지 않습니다..',
-        );
+        return {
+          message: '현재 담당구역 내 견적 요청이 존재하지 않습니다.',
+          status: 200,
+        };
       }
 
       return { movingInfoList: movingInfoList, status: 200 };
@@ -357,7 +359,7 @@ export class TasksService {
 
       if (checkBeforeSubmitCount >= 10) {
         throw new ForbiddenException(
-          '이미 10건의 견적서 제출이 완료되었습니다',
+          '이미 10건의 견적서 접수가 완료되었습니다.',
         );
       }
 
@@ -541,6 +543,7 @@ export class TasksService {
       console.log('checkAleadyPicked:::', checkAleadyPicked);
 
       if (checkAleadyPicked.picked_business_person !== null) {
+        // 버튼 연타 대비
         throw new ForbiddenException(
           `이미 '${checkBusinessPerson.name}'기사님의 견적서를 선택하셨습니다.`,
         );
@@ -642,7 +645,7 @@ export class TasksService {
 
       await queryRunner.commitTransaction();
 
-      return { message: '유저 이사완료 확인', status: 201 };
+      return { message: '이사완료 확인', status: 201 };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
@@ -716,7 +719,7 @@ export class TasksService {
 
       await queryRunner.commitTransaction();
 
-      return { message: '기사님 이사완료 확인', status: 201 };
+      return { message: '이사완료 확인!', status: 201 };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
