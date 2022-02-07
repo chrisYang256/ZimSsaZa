@@ -32,7 +32,7 @@ export class TasksController {
   constructor(private taskService: TasksService) {}
 
   @ApiOperation({ summary: 'User: 견적요청' })
-  @ApiResponse({ status: 200, description: 'response 성공' })
+  @ApiResponse({ status: 200, description: 'response success' })
   @ApiResponse({ status: 401, description: 'response 실패' })
   @ApiBearerAuth('User-JWT-Auth')
   @UseGuards(UserJwtAuthGuard)
@@ -44,7 +44,7 @@ export class TasksController {
   @ApiOperation({
     summary: 'Business Person: 기사님 본인 관할 견적요청 목록 조회',
   })
-  @ApiResponse({ status: 200, description: 'response 성공' })
+  @ApiResponse({ status: 200, description: 'response success' })
   @ApiResponse({ status: 401, description: 'response 실패' })
   @ApiBearerAuth('BusinessPerson-JWT-Auth')
   @UseGuards(BusinessPersonJwtAuthGuard)
@@ -57,7 +57,7 @@ export class TasksController {
   }
 
   @ApiOperation({ summary: 'Business Person: 견적요청 상세 조회' })
-  @ApiResponse({ status: 200, description: 'response 성공' })
+  @ApiResponse({ status: 200, description: 'response success' })
   @ApiResponse({ status: 404, description: '게시물이 존재하지 않습니다.' })
   @ApiParam({ name: 'movingInfoId', example: '5' })
   @ApiBearerAuth('BusinessPerson-JWT-Auth')
@@ -68,7 +68,7 @@ export class TasksController {
   }
 
   @ApiOperation({ summary: 'Business Person: 견적 금액 제출' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
+  @ApiResponse({ status: 201, description: 'response success' })
   @ApiResponse({ status: 401, description: 'response 실패' })
   @ApiParam({ name: 'movingInfoId', example: '5' })
   @ApiBody({ description: '이사 견적 금액', type: NegoCostDto })
@@ -88,7 +88,7 @@ export class TasksController {
   }
 
   @ApiOperation({ summary: 'User: 받은 견적 리스트 보기' })
-  @ApiResponse({ status: 200, description: 'response 성공' })
+  @ApiResponse({ status: 200, description: 'response success' })
   @ApiResponse({ status: 401, description: 'response 실패' })
   @ApiBearerAuth('User-JWT-Auth')
   @UseGuards(UserJwtAuthGuard)
@@ -98,7 +98,7 @@ export class TasksController {
   }
 
   @ApiOperation({ summary: 'User: 견적서 선택(이사 담당 기사님 선택)' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
+  @ApiResponse({ status: 201, description: 'response success' })
   @ApiResponse({ status: 401, description: 'response 실패' })
   @ApiParam({ name: 'movingInfoId', example: '5' })
   @ApiParam({ name: 'businessPersonId', example: '10' })
@@ -113,7 +113,7 @@ export class TasksController {
   }
 
   @ApiOperation({ summary: 'User: 유저 이사완료 체크' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
+  @ApiResponse({ status: 201, description: 'response success' })
   @ApiResponse({ status: 401, description: 'response 실패' })
   @ApiParam({ name: 'movingInfoId', example: '5' })
   @ApiParam({ name: 'businessPersonId', example: '10' })
@@ -131,7 +131,7 @@ export class TasksController {
   }
 
   @ApiOperation({ summary: 'Business Person: 기사님 이사완료 체크' })
-  @ApiResponse({ status: 201, description: 'response 성공' })
+  @ApiResponse({ status: 201, description: 'response success' })
   @ApiResponse({ status: 401, description: 'response 실패' })
   @ApiParam({ name: 'movingInfoId', example: '5' })
   @ApiBearerAuth('BusinessPerson-JWT-Auth')

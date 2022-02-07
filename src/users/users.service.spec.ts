@@ -538,7 +538,7 @@ describe('UsersService', () => {
       }
     }
     expect(await service.getContract(11)).toStrictEqual({ 
-      results: results, status: 201
+      results: results, status: 200
     });
   });
 
@@ -823,7 +823,7 @@ describe('UsersService', () => {
     })) as any;
 
     expect(await service.unreadCount(1)).toStrictEqual({
-      count: 3, 'status:': 200
+      count: 3, status: 200
     });
   });
 

@@ -16,7 +16,7 @@ export class ReadMessageResponseDto {
     })
     messages: Array<Object>;
 
-    @ApiProperty({ example: '201', description: '상태 코드',
+    @ApiProperty({ example: '200(page > 1) | 201(page === 1)', description: '상태 코드',
     })
     status: number;
 }

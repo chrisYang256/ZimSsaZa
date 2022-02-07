@@ -306,9 +306,10 @@ export class BusinessPersonsService {
           .orderBy('updatedAt', 'DESC')
           .limit(1)
           .execute();
+        return { messages: messages, status: 201 };
       }
 
-      return { messages: messages, status: 201 };
+      return { messages: messages, status: 200 };
     } catch (error) {
       console.error(error);
       throw error;
