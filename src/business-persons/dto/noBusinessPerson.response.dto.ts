@@ -1,10 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger"
 
-export class NoUserResponseDto {
+export class NoBusinessPersonResponseDto {
     @ApiProperty({ example: false, description: '성공 여부',
     })
     success: boolean;
-    
+
     @ApiProperty({ example: '401', description: '상태 코드',
     })
     status: number;

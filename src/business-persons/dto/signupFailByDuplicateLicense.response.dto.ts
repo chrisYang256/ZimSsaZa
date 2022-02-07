@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 
-export class WriteReviewMovingIsNotDoneResponseDto {
+export class SignupFailByDuplicateLicenseResponseDto {
     @ApiProperty({ example: false, description: '성공 여부',
     })
     success: boolean;
@@ -9,7 +9,7 @@ export class WriteReviewMovingIsNotDoneResponseDto {
     })
     status: number;
 
-    @ApiProperty({ example: '이사가 완료되지 않았습니다.', description: '상태 메시지',
+    @ApiProperty({ example: "'123-45-67890'는 이미 가입된 사업자번호입니다.", description: '상태 메시지',
     })
     message: string;
 }

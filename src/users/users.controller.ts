@@ -20,33 +20,31 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AuthService } from 'src/auth/auth.service';
+
+import fs from 'fs';
+import path from 'path';
+import multer from 'multer';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { NotLoggedInGuard } from 'src/auth/not-logged-in.guard';
 import { UserJwtAuthGuard } from 'src/auth/user-jwt-auth.guard';
 import { UserLocalAuthGuard } from 'src/auth/user-local-auth.guard';
 import { GetMyInfo } from 'src/common/decorator/get-myInfo.decorator';
-import { LoginDto } from 'src/common/dto/login.dto';
-import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
 import { UndefinedTonNllInterceptor } from 'src/common/interceptor/undefinedToNull.interceptor';
+
 import { Users } from 'src/entities/Users';
+import { UsersService } from './users.service';
+import { AuthService } from 'src/auth/auth.service';
+
+import { CreateMovingGoodsDto } from 'src/users/dto/create-movingGoods.dto';
+import { LoginDto } from 'src/common/dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserWithoutPasswordDto } from './dto/user-without-password.dto';
-import { UsersService } from './users.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { NotLoggedInGuard } from 'src/auth/not-logged-in.guard';
 import { PagenationDto } from 'src/common/dto/pagenation.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
 import { NoUserResponseDto } from './dto/noUser.response.dto';
 import { UserInfoResponseDto } from './dto/userInfo.response.dto';
-import { SignupFailByDataFormResponseDto } from './dto/signupFailByDataForm.response.dto';
-import { SignupFailByDataMissingResponseDto } from './dto/signupFailByDataMissing.response.dto';
-import { SignupFailByDuplicateEmailResponseDto } from './dto/signupFailByDuplicateEmail.response.dto';
-import { SignUpResponseDto } from './dto/signup.response.dto';
-import { LoginFailByNoUserResponseDto } from './dto/loginFailByNoUser.response.dto';
-import { LoginFailByPasswordResponseDto } from './dto/loginFailByPassword.response.dto';
-import { LoginResponseDto } from './dto/login.response.dto';
+import { SignUpResponseDto } from '../common/dto/signup.response.dto';
+import { LoginResponseDto } from '../common/dto/login.response.dto';
 import { MakePackForMovingUnauthorizedResponseDto } from './dto/makePackForMovingUnauthorized.response.dto';
 import { MakePackForMovingExistPackResponseDto } from './dto/makePackForMovingExistPack.response.dto';
 import { MakePackForMovingResponseDto } from './dto/makePackForMoving.response.dto';
@@ -61,6 +59,12 @@ import { WriteReviewMovingIsNotDoneResponseDto } from './dto/writeReviewMovingIs
 import { WriteReviewAlreadyWriteResponseDto } from './dto/writeReviewAlreadyWrite.response.dto';
 import { ReadMessageNoMessageResponseDto } from 'src/common/dto/readMessageNoMessage.response.dto';
 import { ReadMessageResponseDto } from 'src/common/dto/readMessage.response.dto';
+import { UnreadCountResponseDto } from 'src/common/dto/unreadCount.response.dto';
+import { SignupFailByDataMissingResponseDto } from 'src/common/dto/signupFailByDataMissing.response.dto';
+import { SignupFailByDuplicateEmailResponseDto } from 'src/common/dto/signupFailByDuplicateEmail.response.dto';
+import { SignupFailByDataFormResponseDto } from 'src/common/dto/signupFailByDataForm.response.dto';
+import { LoginFailByNoUserResponseDto } from 'src/common/dto/loginFailByNoUser.response.dto';
+import { LoginFailByPasswordResponseDto } from 'src/common/dto/loginFailByPassword.response.dto';
 
 try {
   fs.readdirSync('img-uploads');
@@ -315,14 +319,8 @@ export class UsersController {
   @ApiResponse({ 
     status: 200, 
     description: 'response success(No new message)', 
-    // type: ,
+    type: UnreadCountResponseDto,
   })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'response success', 
-    // type: ,
-  })
-  @ApiResponse({ status: 401, description: 'response 실패' })
   @ApiBearerAuth('User-JWT-Auth')
   @UseGuards(UserJwtAuthGuard)
   @Get('messages/unreads')
