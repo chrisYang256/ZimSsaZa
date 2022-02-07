@@ -47,7 +47,7 @@ export class BusinessPersonsService {
         })
         .getMany();
       console.log('myReviews:::', myReviews);
-  
+
       myInfo['myReviews'] = myReviews;
 
       let starsAvg = 0;
@@ -57,7 +57,7 @@ export class BusinessPersonsService {
         starsAvg = Math.round((stars / myReviews.length) * 10) / 10;
       }
       myInfo['starsAvg'] = starsAvg;
-  
+
       const finishMovingList = await this.movingInformationsRepository
         .createQueryBuilder('movingInfo')
         .innerJoin('movingInfo.Negotiations', 'nego')
@@ -73,14 +73,14 @@ export class BusinessPersonsService {
         .andWhere('movingInfo.MovingStatusId = :MSId', {
           MSId: MovingStatusEnum.DONE,
         })
-        .andWhere('nego.BusinessPersonId = :NegoBPId', { 
+        .andWhere('nego.BusinessPersonId = :NegoBPId', {
           NegoBPId: businessPerson.id,
         })
         .getMany();
       console.log('finishMovingList:::', finishMovingList);
-  
+
       myInfo['finishMovingList'] = finishMovingList;
-  
+
       console.log('myInfo:::', myInfo);
       return { myInfo: myInfo, status: 200 };
     } catch (error) {
@@ -226,10 +226,7 @@ export class BusinessPersonsService {
     }
   }
 
-  async getScheduleDetail(
-    businessPersonId: number,
-    movingInfoId: number
-  ) {
+  async getScheduleDetail(businessPersonId: number, movingInfoId: number) {
     try {
       // 완료여부 정보까지 확인하게 하고 FE에서 완료버튼도 함께 위치하도록
       const movingInfo = await this.movingInformationsRepository
@@ -257,11 +254,11 @@ export class BusinessPersonsService {
         .addSelect('images.img_path')
         .addSelect('nego.cost')
         .addSelect(['user.name', 'user.phone_number'])
-        .where('movingInfo.id = :id', { 
-          id: movingInfoId 
+        .where('movingInfo.id = :id', {
+          id: movingInfoId,
         })
-        .andWhere('nego.BusinessPersonId = :BPId', { 
-          BPId: businessPersonId 
+        .andWhere('nego.BusinessPersonId = :BPId', {
+          BPId: businessPersonId,
         })
         .getOne();
       console.log('movingInfo:::', movingInfo);

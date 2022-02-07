@@ -150,7 +150,7 @@ export class UsersService {
         .createQueryBuilder('user')
         .where('user.id = :id', { id: userId })
         .getOne();
-        
+
       if (!user) {
         throw new ForbiddenException('회원 정보를 찾을 수 없습니다.');
       }

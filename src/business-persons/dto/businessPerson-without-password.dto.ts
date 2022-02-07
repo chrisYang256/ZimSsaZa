@@ -12,6 +12,9 @@ export class BusinessPersonWithoutPasswordDto extends PickType(
     'finish_count',
   ] as const,
 ) {
-  @ApiProperty({ example: '[{ code: 1 }, { code: 2 }]', description: '이사 지역 코드' })
+  @ApiProperty({
+    example: '[{ code: 1 }, { code: 2 }]',
+    description: '이사 지역 코드',
+  })
   AreaCodes: Array<object>;
 }

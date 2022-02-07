@@ -1,14 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { number } from 'joi';
 
-export class GetScheduleDetailResponseDto {
+export class GetMovingInfoDetailResponseDto {
   @ApiProperty({
     example: {
+      id: 5,
       start_point: '서울 특별시 중구',
       destination: '서울 특별시 동작구',
       move_date: '2021-12-30',
       move_time: '13:30',
-      user_done: 0,
-      business_person_done: 0,
+      createdAt: '2022-02-07T06:36:52.309Z',
+      AreaCode: {
+        code: 1,
+      },
       MovingGoods: {
         bed: 2,
         closet: 1,
@@ -27,20 +31,11 @@ export class GetScheduleDetailResponseDto {
           },
         ],
       },
-      Negotiations: [
-        {
-          cost: 200000,
-        },
-      ],
-      User: {
-        name: '브래드 피트',
-        phone_number: '010-1234-5678',
-      },
     },
-    description: '조회 결과',
+    description: '요청 결과',
   })
-  movingInfo: object;
+  results: any;
 
-  @ApiProperty({ example: '200', description: '상태 코드' })
+  @ApiProperty({ example: 200, description: '상태 코드' })
   status: number;
 }
