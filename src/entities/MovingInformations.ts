@@ -50,19 +50,19 @@ export class MovingInformations {
   move_time: string;
 
   @IsNumber()
-  @ApiProperty({ example: '5', description: '유저에게 선택된 기사님 id' })
+  @ApiProperty({ example: 5, description: '유저에게 선택된 기사님 id' })
   @Column('int', { name: 'picked_business_person', nullable: true })
   picked_business_person: number | null;
 
   @IsNumber()
   @IsNotEmpty()
-  @ApiProperty({ example: '1', description: '유저 이사완료 확인 여부' })
+  @ApiProperty({ example: 1, description: '유저 이사완료 확인 여부' })
   @Column('tinyint', { name: 'user_done', width: 1, default: () => "'0'" })
   user_done: boolean;
 
   @IsNumber()
   @IsNotEmpty()
-  @ApiProperty({ example: '1', description: '기사님 이사완료 확인 여부' })
+  @ApiProperty({ example: 1, description: '기사님 이사완료 확인 여부' })
   @Column('tinyint', {
     name: 'business_person_done',
     width: 1,

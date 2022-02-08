@@ -17,6 +17,8 @@ import { MovingInformations } from 'src/entities/MovingInformations';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
 import { SendSystemMessage } from '../common/send-systemMessages';
 import { BusinessPersonWithoutPasswordDto } from 'src/business-persons/dto/businessPerson-without-password.dto';
+import { PagenationDto } from 'src/common/dto/pagenation.dto';
+import { NegoCostDto } from './dto/nego-cost.dto';
 
 @Injectable()
 export class TasksService {
@@ -50,7 +52,7 @@ export class TasksService {
         .where('DATE_ADD(nego.createdAt, INTERVAL 1 DAY) < NOW()')
         .andWhere('nego.timeout IS FALSE')
         .andWhere('nego.cost IS NULL')
-        .execute();
+        .getRawMany();
       console.log('timeoutFilter:::', timeoutFilter);
 
       if (timeoutFilter.length === 0) {
@@ -151,6 +153,10 @@ export class TasksService {
         .getMany();
       console.log('isNegoing:::', isNegoing);
 
+      if (!isNegoing) {
+        throw new NotFoundException('이삿짐 정보가 존재하지 않습니다.');
+      }
+
       // 견적서 반복제출 방지
       if (
         isNegoing.find(
@@ -169,10 +175,6 @@ export class TasksService {
         .orderBy('movingInfo.createdAt', 'DESC')
         .getOne();
       console.log('movingInfoToNego:::', movingInfoToNego);
-
-      if (!movingInfoToNego) {
-        throw new NotFoundException('이삿짐 정보가 존재하지 않습니다.');
-      }
 
       await this.negotiationsRepository
         .createQueryBuilder('negotiations', queryRunner)
@@ -359,7 +361,7 @@ export class TasksService {
 
       if (checkBeforeSubmitCount >= 10) {
         throw new ForbiddenException(
-          '이미 10건의 견적서 접수가 완료되었습니다.',
+          '이미 10건의 견적서 접수가 완료되었습니다.'
         );
       }
 
@@ -459,7 +461,6 @@ export class TasksService {
         .leftJoin('nego.BusinessPerson', 'businessPerson')
         .leftJoin('nego.MovingInformation', 'movingInfo')
         .leftJoin('businessPerson.Reviews', 'reviews')
-        .leftJoin('reviews.User', 'reviewer')
         .select(['nego.id', 'nego.cost'])
         .addSelect([
           'businessPerson.id',
@@ -473,7 +474,6 @@ export class TasksService {
           'reviews.content',
           'reviews.createdAt',
         ])
-        .addSelect('reviewer.name')
         .addSelect('movingInfo.id')
         .where('nego.MovingInformationId = :movingInfoId', {
           movingInfoId: myMovingInfo.id,
@@ -483,6 +483,7 @@ export class TasksService {
         .addOrderBy('reviews.createdAt', 'DESC')
         .take(5)
         .getMany();
+      console.log('estimateList(no starsAvg):::', estimateList);
 
       if (estimateList.length === 0) {
         return { message: '받은 견적 내역이 없습니다.', status: 200 };
@@ -645,7 +646,7 @@ export class TasksService {
 
       await queryRunner.commitTransaction();
 
-      return { message: '이사완료 확인', status: 201 };
+      return { message: '이사완료 확인!', status: 201 };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);

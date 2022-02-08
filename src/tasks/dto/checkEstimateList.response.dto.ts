@@ -74,7 +74,7 @@ export class CheckEstimateListResponseDto {
         },
       },
     ],
-    description: '상태 메시지',
+    description: '요청 결과',
   })
   estimateListmessage: Array<any>;
 

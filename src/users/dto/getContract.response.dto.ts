@@ -36,6 +36,6 @@ export class GetContractRespnseDto {
   })
   results: any;
 
-  @ApiProperty({ example: '200', description: '상태 코드' })
+  @ApiProperty({ example: 200, description: '상태 코드' })
   status: number;
 }

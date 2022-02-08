@@ -18,10 +18,10 @@ export class GetScheduleListResponseDto {
         move_time: '11:00',
       },
     ],
-    description: '조회 결과',
+    description: '요청 결과',
   })
   schedules: Array<object>;
 
-  @ApiProperty({ example: '200', description: '상태 코드' })
+  @ApiProperty({ example: 200, description: '상태 코드' })
   status: number;
 }
