@@ -59,7 +59,7 @@
 
 - 개발기간: 2022.01.03 ~ 01.22 (20일)
   
-  • 이후 추가: swagger api response, unit test
+  • 기간 이후 추가: swagger api response, unit test
 
 - 사용 기술
 <div align="center">
