@@ -1,0 +1,30 @@
+version: "3.1"
+
+services: 
+  db: 
+    image: mysql:8.0.28  # docker hub에서 pull 받을 이미지
+    container_name: mysql-zimssaza # 컨테이너 이름 적당하게
+    restart: always
+    env_file:
+      - ./docker.env
+    ports:
+      - "3308:3306" 
+      # published:target
+      # client가 3308 port로 들어오면 3306 port로 연결된 app container로 연결됨
+    environment: # 환경 변수 정의 마이그레이션
+      TZ: Asia/Seoul
+      # 아래처럼 명시하여 사용하면 env file name을 custom 하는 경우 read하지 못하여 상단처럼 env_file을 지정
+      # MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}" # docker-compose config
+      # MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      # MYSQL_USER: "${MYSQL_USER}"
+      # MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+    command:
+      - --character-set-server=utf8mb4 # db 인코딩 옵션 지정
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./mysql_data:/var/lib/mysql_zimssaza
+      # Docker 컨테이너의 파일을 사용자 시스템의 파일에 연결(mount가 필요한 호스트의 경로와 컨테이너의 경로를 명시)
+      # 컨테이너 안에 파일이 저장되기 때문에 컨테이너를 새로 만들면 데이터가 유실됨
+      # 그래서 데이터를 컨테이너 밖인 호스트에 저장하므로 데이터를 안전하게 저장함
+      # bind mount 방식은 container를 생성하기 전에 host에서 사용할 경로를 미리 생성해 놓아야 하는 반면 
+      # volume 방식은 container를 생성하면서 volume을 지정해 놓으면 host에 docker가 지정한 경로를 만듦. 
