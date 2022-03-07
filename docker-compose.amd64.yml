@@ -1,0 +1,48 @@
+# docker compose for M1(amd64) local test!
+version: "3.7"
+
+services: 
+  db: 
+    image: mysql/mysql-server:8.0.23
+    # 아래 두 줄은 m1 이슈 처리를 위한 방법 중 하나였지만 amd64 전용 mysql/mysql-server:8.0.23 단독으로 사용하는 경우만 성공
+    # platform: linux/amd64 # linux/x86_64 
+    # image: mysql
+    container_name: zimssaza_local_test # 컨테이너 이름 지정
+    ports:
+      - "6033:3306" # host:container
+    restart: always
+    env_file:
+      - ./docker.env
+    environment: # 환경 변수 정의 마이그레이션
+      TZ: Asia/Seoul
+      # 아래처럼 명시하여 사용하면 env file name을 custom 하는 경우 read하지 못하여 상단처럼 env_file을 지정
+      # MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      # MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}" # docker-compose config
+      # MYSQL_USER: "${MYSQL_USER}" # root로 자동생성되므로 필요에 따라 입력
+      # MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+    command:
+      - --character-set-server=utf8mb4 # db 인코딩 옵션 지정
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./mysql-test:/var/lib/mysql # host:container
+      - ./init.sql:/data/application/init.sql # MYSQL_DATABASE와 함께 db 자동 생성시 필요
+      # Docker 컨테이너의 파일을 사용자 시스템의 파일(host)에 연결(mount가 필요한 호스트의 경로와 컨테이너의 경로를 명시)
+      # 컨테이너 안에 파일이 저장되기 때문에 컨테이너를 새로 만들면 데이터가 유실됨
+      # 그래서 데이터를 컨테이너 밖인 호스트에 저장하므로 데이터를 안전하게 저장함
+      # bind mount 방식은 container를 생성하기 전에 host에서 사용할 경로를 미리 생성해 놓아야 하는 반면 
+      # volume 방식은 container를 생성하면서 volume을 지정해 놓으면 host에 docker가 지정한 경로를 만듦. 
+
+
+# hwo to use
+# 1. docker-compose -f docker-compose.amd64.yml up -d (if file is docker-compose.amd64.yml, just enter docker-compose up -d)
+# postscript) -d is option to operate docker as daemon
+
+# <clean step after docker-compose up [-d]>
+# 1. docker-compose -f docker-compose.amd64.yml down
+# 2. docker rm <image>
+# 3. docker system prune --force --volumes
+
+# <check success>
+# 1. docker exec -it <condtainer name> bin
+# 2. mysql -u root -p
+# 3. show databases
