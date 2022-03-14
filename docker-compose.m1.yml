@@ -1,10 +1,10 @@
-# docker compose for M1(amd64) local test!
+# docker compose for M1 local test!
 version: "3.7"
 
 services: 
   db: 
-    image: mysql/mysql-server:8.0.23
-    # 아래 두 줄은 m1 이슈 처리를 위한 방법 중 하나였지만 amd64 전용 mysql/mysql-server:8.0.23 단독으로 사용하는 경우만 성공
+    image: mysql/mysql-server:8.0.23 # amd64 전용 mysql/mysql-server:8.0.23 단독으로 사용하는 경우만 성공
+    # 아래 두 줄은 m1 이슈 처리를 위한 방법 중 하나였고 mysql 및 platform으로 여러 조합을 해봤지만 동작 안됨.
     # platform: linux/amd64 # linux/x86_64 
     # image: mysql
     container_name: zimssaza_local_test # 컨테이너 이름 지정
@@ -15,7 +15,7 @@ services:
       - ./docker.env
     environment: # 환경 변수 정의 마이그레이션
       TZ: Asia/Seoul
-      # 아래처럼 명시하여 사용하면 env file name을 custom 하는 경우 read하지 못하여 상단처럼 env_file을 지정
+      # 아래처럼 명시하여 사용하면 env file name을 custom하는 경우 read하지 못하여 상단처럼 env_file을 지정
       # MYSQL_DATABASE: "${MYSQL_DATABASE}"
       # MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}" # docker-compose config
       # MYSQL_USER: "${MYSQL_USER}" # root로 자동생성되므로 필요에 따라 입력
