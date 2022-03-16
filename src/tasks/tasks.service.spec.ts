@@ -1,3 +1,8 @@
+import { 
+  ForbiddenException, 
+  NotFoundException, 
+  CACHE_MANAGER 
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Connection, Repository } from 'typeorm';
@@ -7,8 +12,8 @@ import { SystemMessages } from '../entities/SystemMessages';
 import { BusinessPersons } from '../entities/BusinessPersons';
 import { MovingInformations } from '../entities/MovingInformations';
 import { EventsGateway } from '../events/events.gateway';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { MovingStatusEnum } from 'src/common/movingStatus.enum';
+import { Cache } from 'cache-manager'
 
 export class MockNegotiationsRepository {}
 export class MockSystemMessagesRepository {}
@@ -32,9 +37,15 @@ const mockConnection = () => ({
   }),
 });
 
+let mockCachedValue = {
+  get: () => 'hola~ you have succeeded!',
+  set: () => jest.fn(),
+}
+
 describe('TasksService', () => {
   let service: TasksService;
   let eventsGateway: EventsGateway;
+  let cacheManager: Cache;
   let mockNegotiationsRepository: Repository<Negotiations>;
   let mockSystemMessagesRepository: Repository<SystemMessages>;
   let mockBusinessPersonsRepository: Repository<BusinessPersons>;
@@ -68,11 +79,16 @@ describe('TasksService', () => {
           provide: getRepositoryToken(MovingInformations),
           useClass: MockMovingInformationsRepository,
         },
+        {
+          provide: CACHE_MANAGER,
+          useValue: mockCachedValue,
+        },
       ],
     }).compile();
 
     service = module.get<TasksService>(TasksService);
     eventsGateway = module.get<EventsGateway>(EventsGateway);
+    cacheManager = module.get<any>(CACHE_MANAGER);
     mockNegotiationsRepository = module.get(getRepositoryToken(Negotiations));
     mockMovingInformationsRepository = module.get(
       getRepositoryToken(MovingInformations),
@@ -299,6 +315,26 @@ describe('TasksService', () => {
     );
   });
 
+  it('getMovingInfoList success in case cachedValue is not null', async () => {
+
+    const pagenation = { perPage: 20, page: 1 };
+    const businessPerson = {
+      id: 1,
+      name: '박정직',
+      email: 'zimssaza@gmail.com',
+      phone_number: '010-0000-0000',
+      business_license: '123-45-67890',
+      finish_count: 100,
+      AreaCodes: [{ code: 1 }, { code: 2 }],
+    };
+    expect(
+      await service.getMovingInfoList(pagenation, businessPerson),
+    ).toStrictEqual({
+      movingInfoList: 'hola~ you have succeeded!',
+      status: 200,
+    });
+  });
+
   it('getMovingInfoList success in case movingInfoList is 0', async () => {
     mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
       innerJoin() {
@@ -323,6 +359,8 @@ describe('TasksService', () => {
         return [];
       },
     })) as any;
+
+    mockCachedValue.get = jest.fn(() => null) // update for return value of get method
 
     const pagenation = { perPage: 20, page: 1 };
     const businessPerson = {
@@ -363,7 +401,7 @@ describe('TasksService', () => {
         createdAt: '2022-02-10T06:36:52.309Z',
       },
     ];
-
+   
     mockMovingInformationsRepository.createQueryBuilder = jest.fn(() => ({
       innerJoin() {
         return this;

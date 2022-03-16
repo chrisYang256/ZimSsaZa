@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { AreaCodes } from 'src/entities/AreaCodes';
@@ -29,6 +29,7 @@ import { TasksService } from './tasks.service';
     ]),
     AuthModule,
     EventsModule,
+    CacheModule.register({isGlobal: true,}),
   ],
 })
 export class TasksModule {}

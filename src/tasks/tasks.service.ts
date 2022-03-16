@@ -1,5 +1,7 @@
 import {
+  CACHE_MANAGER,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +10,7 @@ import { Connection, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventsGateway } from 'src/events/events.gateway';
+import { Cache } from 'cache-manager'
 
 import { Negotiations } from 'src/entities/Negotiations';
 import { SystemMessages } from 'src/entities/SystemMessages';
@@ -31,6 +34,8 @@ export class TasksService {
     private movingInformationsRepository: Repository<MovingInformations>,
     @InjectRepository(SystemMessages)
     private systemMessagesRepository: Repository<MovingInformations>,
+    @Inject(CACHE_MANAGER) 
+    private cacheManager: Cache,
     private eventsGateway: EventsGateway,
     private connection: Connection,
   ) {}
@@ -216,34 +221,44 @@ export class TasksService {
       const businessPersonAreaCodes = businessPerson.AreaCodes.map((v) => v);
       console.log('businessPersonAreaCodes:::', businessPersonAreaCodes);
 
-      const movingInfoList = await this.movingInformationsRepository
-        .createQueryBuilder('movingInfo')
-        .innerJoin('movingInfo.Negotiations', 'nego')
-        .innerJoin('movingInfo.AreaCode', 'AC')
-        .select([
-          'movingInfo.id',
-          'movingInfo.start_point',
-          'movingInfo.destination',
-          'movingInfo.createdAt',
-        ])
-        .where('movingInfo.MovingStatusId = :id', {
-          id: MovingStatusEnum.NEGO,
-        })
-        .andWhere('nego.timeout IS FALSE')
-        .andWhere('AC.code In (:...codes)', { codes: businessPersonAreaCodes })
-        .take(perPage)
-        .skip(perPage * (page - 1))
-        .getMany();
-      console.log('results:::', movingInfoList);
+      const cachedValue = await this.cacheManager.get('cachedMovingInfoList');
 
-      if (movingInfoList.length === 0) {
-        return {
-          message: '현재 담당구역 내 견적 요청이 존재하지 않습니다.',
-          status: 200,
-        };
+      if (cachedValue) {
+        return { movingInfoList: cachedValue, status: 200 };
+  
+      } else {
+        const movingInfoList = await this.movingInformationsRepository
+          .createQueryBuilder('movingInfo')
+          .innerJoin('movingInfo.Negotiations', 'nego')
+          .innerJoin('movingInfo.AreaCode', 'AC')
+          .select([
+            'movingInfo.id',
+            'movingInfo.start_point',
+            'movingInfo.destination',
+            'movingInfo.createdAt',
+          ])
+          .where('movingInfo.MovingStatusId = :id', {
+            id: MovingStatusEnum.NEGO,
+          })
+          .andWhere('nego.timeout IS FALSE')
+          .andWhere('AC.code In (:...codes)', { codes: businessPersonAreaCodes })
+          .take(perPage)
+          .skip(perPage * (page - 1))
+          .getMany();
+        console.log('results:::', movingInfoList);
+
+        if (movingInfoList.length === 0) {
+          return {
+            message: '현재 담당구역 내 견적 요청이 존재하지 않습니다.',
+            status: 200,
+          };
+        }
+
+        await this.cacheManager.set('cachedMovingInfoList', movingInfoList, { ttl: 60 });
+
+        return { movingInfoList: movingInfoList, status: 200 };
       }
 
-      return { movingInfoList: movingInfoList, status: 200 };
     } catch (error) {
       console.error(error);
       throw error;
