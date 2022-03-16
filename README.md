@@ -59,7 +59,12 @@
 
 - 개발기간: 2022.01.03 ~ 01.22 (20일)
   
-  • 기간 이후 추가: swagger api response, unit test
+  • 기간 이후 추가: 
+    - swagger api response,
+    - unit test
+    - in-memory caching
+
+<br/>
 
 - 사용 기술
 <div align="center">
@@ -72,6 +77,7 @@
 <img src="https://img.shields.io/badge/Typescript-3178C6?style=for-the-badge&logo=TypeScript&logoColor=white">
 <img src="https://img.shields.io/badge/cron-945DD6?style=for-the-badge&logo=기술스택아이콘&logoColor=white">
 <img src="https://img.shields.io/badge/socket.io-010101?style=for-the-badge&logo=socket.io&logoColor=white">
+<img src="https://img.shields.io/badge/cache manager-9cf?style=for-the-badge&logo=&logoColor=">
 </div>
 
 <br/>
